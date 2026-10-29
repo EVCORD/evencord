@@ -10,8 +10,8 @@ A Discord client modification based on [Equicord](https://github.com/Equicord/Eq
 
 | Installer | Download |
 | --- | --- |
-| Windows GUI | [Download EvenCord Installer](https://github.com/alrimii/evencord-installer/releases/download/installer-v0.1.0-beta.7/EvenCordInstaller-x64.exe) |
-| Windows CLI | [Download CLI](https://github.com/alrimii/evencord-installer/releases/download/installer-v0.1.0-beta.7/EvenCordInstallerCli-x64.exe) |
+| Windows GUI | [Download EvenCord Installer](https://github.com/alrimii/evencord-installer/releases/download/installer-v0.1.0-beta.8/EvenCordInstaller-x64.exe) |
+| Windows CLI | [Download CLI](https://github.com/alrimii/evencord-installer/releases/download/installer-v0.1.0-beta.8/EvenCordInstallerCli-x64.exe) |
 
 1. Download and open the installer.
 2. Save any unsaved clips or work. The installer closes the selected Discord channel.
