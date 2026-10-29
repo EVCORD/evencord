@@ -12,12 +12,12 @@ This repository is an independent, open-source fork of [Equicord](https://github
 
 | Component | Repository | Upstream | Local checkout |
 | --- | --- | --- | --- |
-| Core | [alrimii/evencord](https://github.com/alrimii/evencord) | Equicord/Equicord | `C:\Users\MainRec\Desktop\DiscordModFoundation\core` |
-| Installer | [alrimii/evencord-installer](https://github.com/alrimii/evencord-installer) | Equicord/Equilotl | `C:\Users\MainRec\Desktop\DiscordModFoundation\installer` |
+| Core | [alrimii/evencord](https://github.com/alrimii/evencord) | Equicord/Equicord | `<workspace>\core` |
+| Installer | [alrimii/evencord-installer](https://github.com/alrimii/evencord-installer) | Equicord/Equilotl | `<workspace>\installer` |
 
 Each checkout has its own `.git` directory. `origin` points to the corresponding alrimii fork, and `upstream` points to the official repository above. `main` tracks `origin/main`. Local pulls are configured as fast-forward only, with pushes defaulting to `origin`.
 
-The core fork started at `a5753f70a1e4ccde881ea516a5d1b2fc51cadd86`. Existing upstream history, authorship, copyright notices, and licenses are retained. The separate development repository at `C:\Users\MainRec\Desktop\Equicord` is outside this project and must remain untouched. Reclip and the locally customized Quoter were not imported; upstream's normal Quoter remains part of the inherited source.
+The core fork started at `a5753f70a1e4ccde881ea516a5d1b2fc51cadd86`. Existing upstream history, authorship, copyright notices, and licenses are retained. The separate development repository at `<legacy-source>` is outside this project and must remain untouched. Reclip and the locally customized Quoter were not imported; upstream's normal Quoter remains part of the inherited source.
 
 ## Current scope and safeguards
 

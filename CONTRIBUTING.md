@@ -1,6 +1,6 @@
 # EvenCord contributions
 
-EvenCord is independently maintained. Upstream guidance below remains useful, but upstream maintainers do not support this fork. See [branding/README.md](branding/README.md) for identity rules and [PHASE2.md](PHASE2.md) for disabled capabilities.
+EvenCord is independently maintained. Upstream guidance below remains useful, but upstream maintainers do not support this fork. See [branding/README.md](branding/README.md) for identity rules and [release security](docs/RELEASE-SECURITY.md) for distribution requirements.
 
 # Introduction
 
