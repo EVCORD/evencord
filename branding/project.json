@@ -50,9 +50,10 @@
         "banner": "branding/assets/banner.svg"
     },
     "colors": {
-        "dark": "#101820",
-        "primary": "#36D6B0",
-        "accent": "#F2B56B",
-        "text": "#F4F7F8"
+        "dark": "#191A1E",
+        "surface": "#34353B",
+        "primary": "#805263",
+        "accent": "#805263",
+        "text": "#F0EDEB"
     }
 }

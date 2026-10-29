@@ -1,5 +1,7 @@
 .vc-plugin-modal-header {
-    align-items: flex-start;
+    display: flex;
+    gap: 8px;
+    align-items: center;
     position: relative;
 }
 
@@ -86,4 +88,10 @@
     padding: 16px;
     border-radius: 8px;
     border: 1px solid var(--border-normal, var(--background-modifier-accent));
+}
+
+.vc-plugin-modal-source-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }

@@ -104,6 +104,9 @@ test("host persistence shares directory loader contract and refuses foreign host
     for (const [name,data] of Object.entries({"package.json":'{"name":"discord","main":"index.js"}',"index.js":loader,"runtime.cjs":engine,"trust.json":trustData,"evencord-owner.json":JSON.stringify(owner)}))
         fs.writeFileSync(path.join(source,"app.asar",name),data);
     fs.writeFileSync(path.join(source,"evencord-install.json"),JSON.stringify(owner));
+    const older = target("1.0.0");
+    assert.throws(() => host.persist(older,source,f.trust,loader,engine,trustData), /newer Discord/);
+    assert.equal(fs.readFileSync(path.join(older,"app.asar"),"utf8"),original.toString());
     const next = target("1.0.2");
     assert.equal(host.persist(next,source,f.trust,loader,engine,trustData),true);
     assert.equal(host.ownership(next,loader,engine,trustData).originalSHA256,runtime.sha(original));
@@ -111,6 +114,12 @@ test("host persistence shares directory loader contract and refuses foreign host
     fs.writeFileSync(path.join(unknown,"app.asar"),"unknown modification");
     assert.throws(() => host.persist(unknown,source,f.trust,loader,engine,trustData));
     assert.equal(fs.readFileSync(path.join(unknown,"app.asar"),"utf8"),"unknown modification");
+    const expired = {...f.manifest, publishedAt: new Date(Date.now()-86400000*2).toISOString(), expiresAt: new Date(Date.now()-86400000).toISOString()};
+    fs.writeFileSync(path.join(dataRoot,"current.json"),f.sign(expired));
+    const unapproved = target("1.0.5");
+    assert.throws(() => host.persist(unapproved,source,f.trust,loader,engine,trustData), /expired/);
+    assert.equal(fs.existsSync(path.join(unapproved,"_app.asar")),false);
+    fs.writeFileSync(path.join(dataRoot,"current.json"),f.sign());
     const interrupted = target("1.0.4");
     assert.throws(() => host.persist(interrupted,source,f.trust,loader,engine,trustData,()=>{throw Error("interrupted")}));
     assert.equal(fs.readFileSync(path.join(interrupted,"_app.asar"),"utf8"),original.toString());

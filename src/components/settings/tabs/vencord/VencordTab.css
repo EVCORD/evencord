@@ -57,10 +57,22 @@
     display: flex;
     align-items: flex-start;
     gap: 20px;
-    padding: 24px 0;
+    padding: 24px;
+    border-radius: 12px;
+    background: var(--evencord-dark);
+    color: var(--evencord-text);
+    border-inline-start: 4px solid var(--evencord-primary);
 }
 
 .vc-vencord-tab-identity > svg {
-    color: #36d6b0;
+    color: var(--evencord-text);
     flex-shrink: 0;
+}
+
+.vc-vencord-tab-identity :is(h1, h2, p, a) {
+    color: var(--evencord-text);
+}
+
+.vc-vencord-tab-identity a {
+    text-decoration: underline;
 }

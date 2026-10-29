@@ -105,7 +105,8 @@ const enum SearchStatus {
     VENCORD,
     NEW,
     USER_PLUGINS,
-    API_PLUGINS
+    API_PLUGINS,
+    EVENCORD
 }
 
 export const ExcludedReasons: Record<PluginTarget, string> = {
@@ -214,6 +215,9 @@ export default function PluginSettings() {
                 break;
             case SearchStatus.ENABLED:
                 if (!isPluginEnabled(plugin.name)) return false;
+                break;
+            case SearchStatus.EVENCORD:
+                if (!PluginMeta[plugin.name].folderName.startsWith("src/evencordplugins/")) return false;
                 break;
             case SearchStatus.EQUICORD:
                 if (!PluginMeta[plugin.name].folderName.startsWith("src/equicordplugins/")) return false;
@@ -420,6 +424,7 @@ export default function PluginSettings() {
                             { label: "Show Favorites", value: SearchStatus.FAVORITES },
                             { label: "Show Enabled", value: SearchStatus.ENABLED },
                             { label: "Show Disabled", value: SearchStatus.DISABLED },
+                            { label: "Show EvenCord", value: SearchStatus.EVENCORD },
                             { label: "Show Equicord", value: SearchStatus.EQUICORD },
                             { label: "Show Vencord", value: SearchStatus.VENCORD },
                             { label: "Show New", value: SearchStatus.NEW },

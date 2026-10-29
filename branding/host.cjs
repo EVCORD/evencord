@@ -23,6 +23,7 @@ function validate(resources) {
 }
 function ownership(resources, loader, engine, trustData) {
     validate(resources);
+    runtime.safePath(path.join(resources, "evencord-install.json"));
     const owner = JSON.parse(fs.readFileSync(path.join(resources, "evencord-install.json"), "utf8"));
     if (owner.schemaVersion !== 1 || owner.product !== "evencord" || !path.isAbsolute(owner.dataRoot)) throw new Error("Unknown loader ownership.");
     if (owner.files["index.js"] !== runtime.sha(loader) || owner.files["runtime.cjs"] !== runtime.sha(engine) || owner.files["trust.json"] !== runtime.sha(trustData)) throw new Error("Loader identity differs.");
@@ -30,8 +31,11 @@ function ownership(resources, loader, engine, trustData) {
     const directory = path.join(resources, "app.asar");
     runtime.safePath(directory);
     if (fs.readdirSync(directory).length !== Object.keys(files).length) throw new Error("Unknown loader files.");
-    for (const [name, value] of Object.entries(files))
+    for (const [name, value] of Object.entries(files)) {
+        runtime.safePath(path.join(directory, name));
         if (!fs.readFileSync(path.join(directory, name)).equals(Buffer.from(value))) throw new Error("Loader contents changed.");
+    }
+    runtime.safePath(path.join(resources, "_app.asar"));
     if (runtime.sha(fs.readFileSync(path.join(resources, "_app.asar"))) !== owner.originalSHA256) throw new Error("Recovery archive missing or changed.");
     return owner;
 }
@@ -39,11 +43,14 @@ function persist(resources, source, trust, loader, engine, trustData, afterStep 
     validate(resources);
     if (path.resolve(resources) === path.resolve(source) || path.dirname(resources) === path.dirname(source)) throw new Error("A different host version is required.");
     if (path.dirname(path.dirname(resources)) !== path.dirname(path.dirname(source))) throw new Error("Target belongs to another Discord installation.");
+    if (runtime.compare(path.basename(path.dirname(resources)).slice(4), path.basename(path.dirname(source)).slice(4)) <= 0) throw new Error("Host persistence requires a newer Discord version.");
     const owner = ownership(source, loader, engine, trustData);
     const release = runtime.current(owner.dataRoot, trust);
+    runtime.verify(release.data, trust, "core", true);
     const app = path.join(resources, "app.asar"), backup = path.join(resources, "_app.asar");
     if (fs.existsSync(path.join(resources, "evencord-install.json"))) {
-        ownership(resources, loader, engine, trustData);
+        const existing = ownership(resources, loader, engine, trustData);
+        if (path.resolve(existing.dataRoot) !== path.resolve(owner.dataRoot)) throw new Error("Target uses another EvenCord data root.");
         return false;
     }
     if (fs.existsSync(backup) || fs.existsSync(path.join(resources, ".evencord-transaction.json"))) throw new Error("Modification or unfinished transaction detected.");

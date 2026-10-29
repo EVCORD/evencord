@@ -45,3 +45,7 @@ Based on [Equicord](https://github.com/Equicord/Equicord), derived from [Vencord
 The core is GPL-3.0-or-later. See [LICENSE](LICENSE), preserved third-party licenses, and [PRIVACY_POLICY.md](PRIVACY_POLICY.md). EvenCord is independent and not affiliated with Discord Inc., Equicord or Vencord. Client modifications may violate Discord's terms; account safety is not guaranteed.
 
 EvenCord is a working brand pending legal and trademark clearance. Original artwork is provided with editable SVG sources and is licensed under GPL-3.0-or-later.
+
+## EvenCord plugin ecosystem
+
+See [ECOSYSTEM.md](ECOSYSTEM.md) for the official palette, Reclip, Quoter Enhanced, source badges, and current update safeguards. The current source is a development preview; installing it is a separate explicit action.

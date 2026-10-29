@@ -5,7 +5,8 @@
  */
 
 import { Project } from "@shared/project";
-import { resolve } from "path";
+import { readFileSync } from "original-fs";
+import { dirname, join, resolve } from "path";
 
 import runtime from "../../../branding/runtime.cjs";
 import trust from "../../../branding/trust.json";
@@ -36,6 +37,10 @@ async function check() {
     const data = Buffer.from(bytes as Uint8Array);
     const next = runtime.verify(data, trust);
     runtime.advance(next, installed);
+    const original = join(dirname(process.execPath), "resources", "_app.asar");
+    runtime.safePath(original);
+    if (!next.discordArchives.includes(runtime.sha(readFileSync(original))))
+        throw new Error("This release has not approved your Discord bootstrap archive. Keep your current build until a compatible release is available.");
     const highest = runtime.accepted(root, trust);
     if (highest) runtime.advance(next, highest);
     const newer = runtime.compare(next.version, installed.version) > 0;
@@ -54,6 +59,10 @@ const secureUpdater: Updater = {
         if (!pending) throw new Error("No verified release is pending.");
         const next = runtime.verify(pending, trust);
         runtime.advance(next, running(root));
+        const original = join(dirname(process.execPath), "resources", "_app.asar");
+        runtime.safePath(original);
+        if (!next.discordArchives.includes(runtime.sha(readFileSync(original))))
+            throw new Error("Discord changed since the release check. Check for a compatible release again.");
         const url = "https://github.com/" + next.repository + "/releases/download/core-v" + next.version + "/" + next.artifact.name;
         const bytes = await runtime.download(url, next.artifact.size);
         runtime.activate(root, pending, Buffer.from(bytes as Uint8Array), trust);

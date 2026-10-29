@@ -159,7 +159,7 @@ function Switches() {
 function EquicordSettings() {
     return (
         <SettingsTab>
-            <div className="vc-vencord-tab-identity">
+            <div className="vc-vencord-tab-identity" style={{ "--evencord-dark": Project.colors.dark, "--evencord-primary": Project.colors.primary, "--evencord-text": Project.colors.text } as React.CSSProperties}>
                 <EvenCordIcon width={56} height={56} />
                 <div>
                     <Heading>{Project.displayName}</Heading>

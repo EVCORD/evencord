@@ -70,7 +70,7 @@ function EquibopSection() {
 }
 
 function Updater() {
-    if (!Project.capabilities.distribution || !Project.capabilities.updates) return <SettingsTab><Heading>Updates unavailable</Heading><Paragraph>EvenCord updates are disabled until installer and updater safety work is complete. This development build has no public update channel.</Paragraph></SettingsTab>;
+    if (!Project.capabilities.distribution || !Project.capabilities.updates) return <SettingsTab><Heading>Updates unavailable</Heading><Paragraph>This development build has no active public update channel. Signed release verification is implemented; production signing keys and approved releases are not configured. Install a reviewed local build manually. Your current build remains installed.</Paragraph></SettingsTab>;
     const settings = useSettings(["autoUpdate", "autoUpdateNotification"]);
 
     const [repo, err, repoPending] = useAwaiter(getRepo, { fallbackValue: "Loading..." });

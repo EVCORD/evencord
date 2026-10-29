@@ -14,9 +14,8 @@ import { Logger } from "@utils/Logger";
 import { Plugin } from "@utils/types";
 import { React, showToast } from "@webpack/common";
 
-import { PluginMeta } from "~plugins";
-
 import { openPluginModal } from "./PluginModal";
+import { pluginSource, PluginSourceIcon } from "./PluginSource";
 
 const logger = new Logger("PluginCard");
 const cl = classNameFactory("vc-plugins-");
@@ -31,11 +30,7 @@ interface PluginCardProps extends React.HTMLProps<HTMLDivElement> {
 
 export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, onMouseLeave, isNew }: PluginCardProps) {
     const settings = Settings.plugins[plugin.name];
-    const pluginMeta = PluginMeta[plugin.name];
-    const isEquicordPlugin = pluginMeta.folderName.startsWith("src/equicordplugins/") ?? false;
-    const isVencordPlugin = pluginMeta.folderName.startsWith("src/plugins/") ?? false;
-    const isUserPlugin = pluginMeta?.userPlugin ?? false;
-    const isModifiedPlugin = plugin.isModified ?? false;
+    const source = pluginSource(plugin);
 
     const isEnabled = () => isPluginEnabled(plugin.name);
 
@@ -87,44 +82,8 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
         settings.enabled = !wasEnabled;
     }
 
-    const pluginInfo = [
-        {
-            condition: isModifiedPlugin,
-            src: "https://equicord.org/assets/icons/equicord/modified.png",
-            alt: "Modified",
-            title: "Modified Vencord Plugin"
-        },
-        {
-            condition: isEquicordPlugin,
-            src: "https://equicord.org/assets/favicon.png",
-            alt: "Equicord",
-            title: "Equicord Plugin"
-        },
-        {
-            condition: isVencordPlugin,
-            src: "https://equicord.org/assets/icons/vencord/icon-light.png",
-            alt: "Vencord",
-            title: "Vencord Plugin"
-        },
-        {
-            condition: isUserPlugin,
-            src: "https://equicord.org/assets/icons/misc/userplugin.png",
-            alt: "User",
-            title: "User Plugin"
-        }
-    ];
-
-    const pluginDetails = pluginInfo.find(p => p.condition);
-
-    const sourceBadge = pluginDetails ? (
-        <img
-            src={pluginDetails.src}
-            alt={pluginDetails.alt}
-            className={cl("source")}
-        />
-    ) : null;
-
-    const tooltip = pluginDetails?.title || "Unknown Plugin";
+    const sourceBadge = <PluginSourceIcon plugin={plugin} className={cl("source")} />;
+    const tooltip = source.label;
 
     return (
         <AddonCard

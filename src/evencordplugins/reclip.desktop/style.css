@@ -1,0 +1,111 @@
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.vc-reclip-panel {
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    border: 1px solid var(--background-modifier-accent);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+
+.vc-reclip-heading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.vc-reclip-heading strong {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--header-primary);
+}
+
+.vc-reclip-heading > svg {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    color: var(--reclip-accent, var(--brand-500));
+}
+
+.vc-reclip-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.vc-reclip-brand > span {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.vc-reclip-status {
+    margin-inline-start: auto;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.vc-reclip-status[data-recording="true"]::before {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-inline-end: 6px;
+    background: currentcolor;
+}
+
+.vc-reclip-status[data-recording="true"] {
+    color: var(--status-danger);
+}
+
+.vc-reclip-timeline {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.vc-reclip-progress {
+    height: 6px;
+    overflow: hidden;
+    background: var(--background-modifier-accent);
+    border-radius: 4px;
+    margin: 8px 0 14px;
+}
+
+.vc-reclip-progress > div {
+    height: 100%;
+    background: var(--reclip-accent, var(--brand-500));
+}
+
+.vc-reclip-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.vc-reclip-error {
+    color: var(--text-danger);
+    margin-bottom: 12px;
+    overflow-wrap: anywhere;
+}
+
+.vc-reclip-details summary {
+    cursor: pointer;
+    color: var(--header-primary);
+    margin-bottom: 8px;
+}
+
+.vc-reclip-details summary:focus-visible {
+    outline: 2px solid var(--reclip-accent, var(--brand-500));
+    outline-offset: 4px;
+}

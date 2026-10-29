@@ -16,7 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { readdirSync, writeFileSync } from "fs";
+import { existsSync, readdirSync, writeFileSync } from "fs";
+import { includePlugin, pluginSource } from "./pluginSources.mjs";
 import { getEntryPoint, isPluginFile, parseDevs, parseEquicordDevs, parseFile, PluginData } from "./utils";
 
 (async () => {
@@ -25,17 +26,20 @@ import { getEntryPoint, isPluginFile, parseDevs, parseEquicordDevs, parseFile, P
 
     const args = process.argv.slice(2);
 
+    const evencordFlag = args.includes("--evencord");
     const equicordFlag = args.includes("--equicord");
     const vencordFlag = args.includes("--vencord");
 
     let dirs: string[];
 
-    if (equicordFlag) {
+    if (evencordFlag) {
+        dirs = ["src/evencordplugins/_core", "src/evencordplugins"];
+    } else if (equicordFlag) {
         dirs = ["src/equicordplugins/_core", "src/equicordplugins"];
     } else if (vencordFlag) {
         dirs = ["src/plugins", "src/plugins/_core"];
     } else {
-        dirs = ["src/plugins", "src/plugins/_core", "src/equicordplugins/_core", "src/equicordplugins"];
+        dirs = ["src/plugins", "src/plugins/_core", "src/equicordplugins/_core", "src/equicordplugins", "src/evencordplugins/_core", "src/evencordplugins"];
     }
 
     const outputPath = args.find(a => !a.startsWith("--")) ?? null;
@@ -43,16 +47,21 @@ import { getEntryPoint, isPluginFile, parseDevs, parseEquicordDevs, parseFile, P
     const plugins = [] as PluginData[];
 
     await Promise.all(
-        dirs.flatMap(dir =>
+        dirs.filter(existsSync).flatMap(dir =>
             readdirSync(dir, { withFileTypes: true })
                 .filter(isPluginFile)
+                .filter(entry => entry.isDirectory() || /\.tsx?$/.test(entry.name))
+                .filter(entry => includePlugin(`${dir}/${entry.name}`))
                 .map(async dirent => {
                     const [data] = await parseFile(await getEntryPoint(dir, dirent));
-                    plugins.sort().push(data);
+                    data.source = pluginSource(`${dir}/${dirent.name}`);
+                    plugins.push(data);
                 })
         )
     );
 
+    plugins.sort((a, b) => a.name.localeCompare(b.name));
+    if (new Set(plugins.map(p => p.name)).size !== plugins.length) throw new Error("Duplicate plugin metadata registration");
     const data = JSON.stringify(plugins);
 
     if (outputPath) {

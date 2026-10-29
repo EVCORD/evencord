@@ -1,9 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
 <title id="title">EvenCord</title><desc id="desc">An open-source Discord client modification based on Equicord.</desc>
-<rect width="1280" height="640" rx="32" fill="#101820"/>
-<g transform="translate(88 160) scale(12)" fill="#36D6B0"><path d="M5 4H21L18 8H9V10H17L14 14H9V16H21L18 20H5Z"/></g>
-<text x="420" y="300" font-family="Segoe UI, sans-serif" font-size="106" font-weight="600" fill="#F4F7F8">EvenCord</text>
-<path d="M424 345h84" stroke="#F2B56B" stroke-width="8"/>
-<text x="420" y="404" font-family="Segoe UI, sans-serif" font-size="28" fill="#F4F7F8">An open-source Discord client modification.</text>
-<text x="420" y="449" font-family="Segoe UI, sans-serif" font-size="24" fill="#36D6B0">Based on Equicord and Vencord.</text>
+<rect width="1280" height="640" rx="32" fill="#191A1E"/>
+<rect x="88" y="160" width="288" height="288" rx="60" fill="#805263"/>
+<g transform="translate(88 160) scale(12)" fill="#F0EDEB"><path d="M4 4H20L17 8H8V10H17L14 14H8V16H20L17 20H4Z"/></g>
+<text x="420" y="300" font-family="Segoe UI, sans-serif" font-size="106" font-weight="600" fill="#F0EDEB">EvenCord</text>
+<path d="M424 345h720" stroke="#34353B" stroke-width="2"/>
+<text x="420" y="404" font-family="Segoe UI, sans-serif" font-size="28" fill="#F0EDEB">An open-source Discord client modification.</text>
+<text x="420" y="449" font-family="Segoe UI, sans-serif" font-size="24" fill="#F0EDEB">Based on Equicord and Vencord.</text>
 </svg>

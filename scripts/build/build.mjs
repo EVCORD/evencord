@@ -19,6 +19,8 @@
 
 // @ts-check
 
+import { includePlugin, officialPluginRoots } from "../pluginSources.mjs";
+
 import { project } from "../project.mjs";
 import { localPreviewPlugin } from "./localPreview.mjs";
 
@@ -83,7 +85,7 @@ const globNativesPlugin = {
         });
 
         build.onLoad({ filter, namespace: "import-natives" }, async () => {
-            const pluginDirs = ["plugins", "equicordplugins", "userplugins"];
+            const pluginDirs = [...officialPluginRoots.flatMap(root => [root, root + "/_api", root + "/_core"]), "userplugins"];
             let code = "";
             let natives = "\n";
             let i = 0;
@@ -97,6 +99,7 @@ const globNativesPlugin = {
                 const plugins = await readdir(dirPath, { withFileTypes: true });
                 for (const file of plugins) {
                     const fileName = file.name;
+                    if (!includePlugin(`src/${dir}/${fileName}`)) continue;
                     const nativePath = join(dirPath, fileName, "native.ts");
                     const indexNativePath = join(dirPath, fileName, "native/index.ts");
 

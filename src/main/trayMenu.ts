@@ -68,6 +68,8 @@ function openAboutWindow() {
 
     const aboutParams = aboutHtml
         .replaceAll("{{PROJECT_NAME}}", Project.displayName)
+        .replaceAll("{{COLOR_DARK}}", Project.colors.dark)
+        .replaceAll("{{COLOR_TEXT}}", Project.colors.text)
         .replaceAll("{{DESCRIPTION}}", Project.description)
         .replaceAll("{{SOURCE}}", Project.links.source)
         .replaceAll("{{DOCUMENTATION}}", Project.links.documentation)

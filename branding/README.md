@@ -12,7 +12,7 @@ Keep VencordNative, DiscordNative, Vencord globals, IPC names, webpack aliases, 
 
 ## Artwork
 
-The geometric E uses three open horizontal bands with diagonal endings. Teal is the primary color, dark blue the foundation, amber an accent, and light gray the text color. SVG masters and PNG/ICO exports are in assets. Icons have no external image dependency.
+The geometric E uses three open horizontal bands with diagonal endings. The official palette uses #191A1E backgrounds, #34353B secondary surfaces, #805263 brand accent and #F0EDEB text. Light marks on accent tiles stay legible at small sizes. SVG masters and PNG/ICO exports are in assets. Icons have no external image dependency.
 
 Core branding/generate_assets.py regenerates exports with Pillow and Windows Segoe UI for banner text; the symbol is entirely original geometry. No font binaries are redistributed. The SVG wordmark remains editable. Artwork copyright 2026 EvenCord contributors, GPL-3.0-or-later.
 

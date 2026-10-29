@@ -30,6 +30,8 @@ import { dirname, join, relative, resolve } from "path";
 import { fileURLToPath } from "url";
 import { promisify } from "util";
 
+import { includePlugin, officialPluginRoots } from "../pluginSources.mjs";
+
 import { project } from "../project.mjs";
 
 import { getPluginTarget } from "../utils.mjs";
@@ -149,7 +151,7 @@ export const globPlugins = kind => ({
         });
 
         build.onLoad({ filter, namespace: "import-plugins" }, async () => {
-            const pluginDirs = ["plugins/_api", "plugins/_core", "plugins", "equicordplugins/_api", "equicordplugins/_core", "equicordplugins", "userplugins"];
+            const pluginDirs = [...officialPluginRoots.flatMap(root => [root + "/_api", root + "/_core", root]), "userplugins"];
             let code = "";
             let pluginsCode = "\n";
             let metaCode = "\n";
@@ -167,6 +169,8 @@ export const globPlugins = kind => ({
                     if (fileName === "index.ts") continue;
                     if (/\.(zip|rar|7z|tar|gz|bz2)/.test(fileName)) continue;
 
+                    if (!file.isDirectory() && !/\.tsx?$/.test(fileName)) continue;
+                    if (!includePlugin(`src/${dir}/${fileName}`)) continue;
                     const target = getPluginTarget(fileName);
 
                     if (target && !IS_REPORTER) {
@@ -190,12 +194,12 @@ export const globPlugins = kind => ({
 
                     const mod = `p${i}`;
                     code += `import ${mod} from "./${dir}/${fileName.replace(/\.tsx?$/, "")}";\n`;
-                    pluginsCode += `[${mod}.name]:${mod},\n`;
+                    pluginsCode += `[${mod}.name,${mod}],\n`;
                     metaCode += `[${mod}.name]:${JSON.stringify({ folderName, userPlugin })},\n`;
                     i++;
                 }
             }
-            code += `export default {${pluginsCode}};export const PluginMeta={${metaCode}};export const ExcludedPlugins={${excludedCode}};`;
+            code += `const entries=[${pluginsCode}];if(new Set(entries.map(([name])=>name)).size!==entries.length)throw new Error("Duplicate plugin registration");export default Object.fromEntries(entries);export const PluginMeta={${metaCode}};export const ExcludedPlugins={${excludedCode}};`;
             return {
                 contents: code,
                 resolveDir: "./src",

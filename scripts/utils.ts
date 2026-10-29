@@ -36,6 +36,7 @@ export interface Command {
 }
 
 export interface PluginData {
+    source?: string;
     name: string;
     description: string;
     tags: string[];
@@ -250,7 +251,8 @@ export async function parseFile(fileName: string) {
             .join(posixSep)
             .replace(/\/index\.([jt]sx?)$/, "")
             .replace(/^src\/plugins\//, "")
-            .replace(/^src\/equicordplugins\//, "");
+            .replace(/^src\/equicordplugins\//, "")
+            .replace(/^src\/evencordplugins\//, "");
 
         return [data] as const;
     }

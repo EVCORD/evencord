@@ -38,6 +38,12 @@ jobs:
         run: |
           node scripts/build/build.mjs --desktop-only
           if ($LASTEXITCODE) {exit $LASTEXITCODE}
+          node node_modules/tsx/dist/cli.mjs scripts/generatePluginList.ts dist/plugins.json
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+          node node_modules/tsx/dist/cli.mjs scripts/generatePluginList.ts --evencord dist/evencord-plugins.json
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+          node scripts/check-plugin-build.cjs
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
           node scripts/release-tools.cjs candidate core dist
           if ($LASTEXITCODE) {exit $LASTEXITCODE}
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -47,4 +53,6 @@ jobs:
           path: |
             dist/desktop.asar
             dist/core.candidate.json
+            dist/plugins.json
+            dist/evencord-plugins.json
           retention-days: 7
