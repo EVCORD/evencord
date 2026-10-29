@@ -31,5 +31,23 @@ if (command === "candidate") {
         const version = fs.readFileSync("buildinfo/git_data.go","utf8").match(/InstallerTag\s*=\s*"([^"]+)"/);
         if (!version || version[1] !== m.version) throw Error("Installer manifest version does not match source.");
     }
+    if (component === "core") {
+        const asar = require("@electron/asar");
+        const archive = path.join(dir, m.artifact.name);
+        const native = asar.extractFile(archive, "patcher.js").toString();
+        const renderer = asar.extractFile(archive, "renderer.js").toString();
+        for (const code of [native, renderer]) {
+            if (!code.includes("// EvenCord " + m.sourceCommit) || !code.includes("// Updater Disabled: false")) throw Error("Packaged source identity or updater capability differs.");
+        }
+        for (const key of Object.values(trust.keys)) if (!native.includes(key)) throw Error("Packaged trusted key differs.");
+        if (!native.includes("payload:__dirname") || !native.includes("EVENCORD_RUNNING_RELEASE")) throw Error("Managed running identity is not included.");
+        if (!native.includes("Choose Reclip save folder") || !renderer.includes("Choose folder")) throw Error("Folder picker missing from packaged build.");
+        for (const name of asar.listPackage(archive)) {
+            const entry = name.replace(/^[\\/]+/, "");
+            if (asar.statFile(archive, entry).files) continue;
+            const text = asar.extractFile(archive, entry).toString();
+            if (/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|C:[\\/]+Users[\\/]+MainRec/i.test(text)) throw Error("Sensitive material in packaged file: " + entry);
+        }
+    }
     console.log("Verified release "+m.version+" from "+m.sourceCommit);
 } else throw Error("Unknown release tool command.");

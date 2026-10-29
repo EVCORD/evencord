@@ -90,13 +90,13 @@ function Updater() {
             <EquibopSection />
             <Heading className={Margins.top16}>Update Preferences</Heading>
             <Paragraph className={Margins.bottom20}>
-                Control how EvenCord keeps itself up to date. You can choose to update automatically in the background or be notified when new updates are available.
+                EvenCord checks its signed beta channel after startup and every 30 minutes. Equicord changes reach you only after review and publication in an EvenCord release.
             </Paragraph>
 
             <div className="vc-settings-switches">
                 <FormSwitch
-                    title="Automatically update"
-                    description="When enabled, EvenCord will automatically download and install updates in the background without asking for confirmation. You'll need to restart Discord to apply the changes."
+                    title="Automatically download verified beta updates"
+                    description="Opt in to background downloads. Compatible, verified updates are staged with recovery data. Discord restarts only when you choose. When disabled, you receive an update notification."
                     value={settings.autoUpdate}
                     onChange={(v: boolean) => settings.autoUpdate = v}
                     hideBorder

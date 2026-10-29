@@ -107,12 +107,12 @@ async function save() {
     try {
         const format = settings.store.exportFormat;
         if (format !== "webm" && format !== "mp4" && format !== "mkv") throw new Error("Choose WebM, MP4 or MKV in Reclip settings.");
-        const result = await Native.saveClip(format);
+        const result = await Native.saveClip(format, settings.store.saveFolder);
         if (token !== lifecycle) return;
         if (result.error) notify(result.error, true);
         else {
             update({ lastSaved: result.path });
-            notify(`Saved ${duration(result.seconds ?? 0)} to Videos/bossclip. Recording continues.`);
+            notify(`Saved ${duration(result.seconds ?? 0)} to your selected clips folder. Recording continues.`);
             if (result.warning) notify(result.warning, true);
         }
     } catch (error) {
@@ -122,7 +122,7 @@ async function save() {
 }
 
 async function openFolder() {
-    try { const error = await Native.openFolder(); if (error) notify(error, true); }
+    try { const error = await Native.openFolder(settings.store.saveFolder); if (error) notify(error, true); }
     catch (error) { logger.error("Could not open clip folder", error); notify("Could not open the clip folder.", true); }
 }
 

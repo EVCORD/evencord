@@ -11,7 +11,7 @@ assert.equal(project.id,"evencord");
 assert.equal(project.repositories.core.slug,"alrimii/evencord");
 assert.equal(project.repositories.installer.slug,"alrimii/evencord-installer");
 assert.equal(trust.schemaVersion,1);
-for (const [name, value] of Object.entries(project.capabilities)) assert.equal(value,["distribution","installation","repair"].includes(name),"Unexpected beta capability: " + name);
+for (const [name, value] of Object.entries(project.capabilities)) assert.equal(value,["distribution","installation","repair","updates"].includes(name),"Unexpected beta capability: " + name);
 assert.equal(project.release.channel,"beta");
 assert.deepEqual(trust.channels,["beta"]);
 assert.equal(Object.keys(trust.keys).length,1,"Beta requires one reviewed signing key.");
@@ -23,4 +23,4 @@ if (process.argv[2]) {
         assert.equal(normalize(path.join(__dirname,"../branding",name)),normalize(path.join(peer,"branding",name)),name+" differs across components");
     }
 }
-console.log("Release identities, shared protocol and manual beta activation verified.");
+console.log("Release identities, shared protocol and managed beta activation verified.");

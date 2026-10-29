@@ -40,12 +40,12 @@ import { SettingsRouter } from "@webpack/common";
 
 import { get as dsGet } from "./api/DataStore";
 import { showNotice } from "./api/Notices";
-import { NotificationData, showNotification } from "./api/Notifications";
+import { showNotification } from "./api/Notifications";
 import { initPluginManager, PMLogger, startAllPlugins } from "./api/PluginManager";
 import { PlainSettings, Settings, SettingsStore } from "./api/Settings";
 import { areLocalSettingsDirty, getCloudSettings, getCloudSyncDirection, markLocalSettingsDirty, putCloudSettings, shouldCloudSync } from "./api/SettingsSync/cloudSync";
 import { relaunch } from "./utils/native";
-import { checkForUpdates, update, UpdateLogger } from "./utils/updater";
+import { checkForUpdates, getUpdateStatus, update, UpdateLogger } from "./utils/updater";
 import { onceReady } from "./webpack";
 import { patches } from "./webpack/patchWebpack";
 
@@ -121,52 +121,37 @@ async function syncSettings() {
     });
 }
 
-let notifiedForUpdatesThisSession = false;
+let notifiedUpdate = "";
+let updateCheckRunning = false;
 
 async function runUpdateCheck() {
-    if (IS_UPDATER_DISABLED) return;
-
-    const notify = (data: NotificationData) => {
-        if (notifiedForUpdatesThisSession) return;
-        notifiedForUpdatesThisSession = true;
-
-        setTimeout(() => showNotification({
-            permanent: true,
-            noPersist: true,
-            ...data
-        }), 10_000);
-    };
-
+    if (IS_UPDATER_DISABLED || updateCheckRunning) return;
+    updateCheckRunning = true;
     try {
-        const isOutdated = await checkForUpdates();
-        if (!isOutdated) return;
-
-        if (Settings.autoUpdate) {
-            await update();
+        const outdated = await checkForUpdates();
+        if (!outdated) return;
+        if (Settings.autoUpdate) await update();
+        const status = await getUpdateStatus();
+        const identity = status.phase + status.availableVersion;
+        if (notifiedUpdate === identity) return;
+        if (status.phase === "ready") {
             if (Settings.autoUpdateNotification) {
-                if (notifiedForUpdatesThisSession) return;
-                notifiedForUpdatesThisSession = true;
-
-                showNotice(
-                    "EvenCord has been updated!",
-                    "Restart",
-                    relaunch
-                );
+                notifiedUpdate = identity;
+                showNotice("Update ready — Restart Discord", "Restart Discord", () => { void update().then(ready => { if (ready) relaunch(); }).catch(error => UpdateLogger.error(error)); });
             }
-            return;
+        } else if (status.phase === "available" && UpdaterTab) {
+            const tab = UpdaterTab;
+            notifiedUpdate = identity;
+            showNotice(`EvenCord ${status.availableVersion} is available`, "View Update", () => openSettingsTabModal(tab));
         }
-
-        if (notifiedForUpdatesThisSession) return;
-        notifiedForUpdatesThisSession = true;
-
-        showNotice(
-            "A new version of EvenCord is available!",
-            "View Update",
-            () => openSettingsTabModal(UpdaterTab!)
-        );
-    } catch (err) {
-        UpdateLogger.error("Failed to check for updates", err);
-    }
+    } catch (error) {
+        UpdateLogger.error("Failed to check for updates", error);
+        if (UpdaterTab && notifiedUpdate !== "error") {
+            const tab = UpdaterTab;
+            notifiedUpdate = "error";
+            showNotice("EvenCord could not complete its update check. Your current build is preserved.", "Details", () => openSettingsTabModal(tab));
+        }
+    } finally { updateCheckRunning = false; }
 }
 
 async function init() {
@@ -176,12 +161,8 @@ async function init() {
     syncSettings();
 
     if (!IS_DEV && !IS_WEB && !IS_UPDATER_DISABLED) {
-        runUpdateCheck();
-
-        // this tends to get really annoying, so only do this if the user has auto-update without notification enabled
-        if (Settings.autoUpdate && !Settings.autoUpdateNotification) {
-            setInterval(runUpdateCheck, 1000 * 60 * 30); // 30 minutes
-        }
+        setTimeout(runUpdateCheck, 20_000);
+        setInterval(runUpdateCheck, 30 * 60_000);
     }
 
     if (IS_DEV) {

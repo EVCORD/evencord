@@ -5,13 +5,37 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { Button } from "@components/Button";
 import { Paragraph } from "@components/Paragraph";
-import { OptionType } from "@utils/types";
-import { MediaEngineStore, Select, useStateFromStores } from "@webpack/common";
+import { OptionType, type PluginNative } from "@utils/types";
+import { MediaEngineStore, Select, useState, useStateFromStores } from "@webpack/common";
 
 import type { CaptureOptions } from "./types";
 
 const MIC_KEYS: ["microphoneDevice"] = ["microphoneDevice"];
+const FOLDER_KEYS: ["saveFolder"] = ["saveFolder"];
+
+function SaveFolderPicker() {
+    const { saveFolder } = settings.use(FOLDER_KEYS);
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState("");
+    return <div role="group" aria-label="Clip save folder">
+        <Paragraph>Save folder: {saveFolder || "Videos/bossclip (default)"}</Paragraph>
+        <Button disabled={busy} onClick={async () => {
+            setBusy(true);
+            setError("");
+            try {
+                const native = VencordNative.pluginHelpers.Reclip as PluginNative<typeof import("./native")>;
+                const selected = await native.chooseFolder(saveFolder);
+                if (selected !== null) settings.store.saveFolder = selected;
+            } catch { setError("Could not choose that folder. Select an available local folder."); }
+            finally { setBusy(false); }
+        }}>Choose folder</Button>
+        <Button variant="secondary" disabled={busy || !saveFolder} onClick={() => { settings.store.saveFolder = ""; setError(""); }}>Use default folder</Button>
+        <Paragraph>Applies to the next saved clip. Existing recordings stay in their current folders.</Paragraph>
+        {error && <Paragraph role="alert">{error}</Paragraph>}
+    </div>;
+}
 
 function MicrophonePicker() {
     const { microphoneDevice } = settings.use(MIC_KEYS);
@@ -36,6 +60,8 @@ function MicrophonePicker() {
 }
 
 export const settings = definePluginSettings({
+    saveFolder: { type: OptionType.STRING, default: "", hidden: true, description: "Folder selected with the native folder picker. Empty uses Videos/bossclip." },
+    saveFolderPicker: { type: OptionType.COMPONENT, component: SaveFolderPicker },
     clipLength: {
         displayName: "Clip length",
         type: OptionType.SELECT,

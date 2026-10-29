@@ -10,6 +10,7 @@ import type { PluginIpcMappings } from "@main/ipcPlugins";
 import { UserThemeHeader } from "@main/themes";
 import { UpdateData } from "@main/updater";
 import { IpcEvents } from "@shared/IpcEvents";
+import type { UpdateStatus } from "@shared/UpdateStatus";
 import type { IpcRes } from "@utils/types";
 import { ipcRenderer } from "electron/renderer";
 
@@ -47,6 +48,7 @@ export default {
     },
 
     updater: {
+        getStatus: () => invoke<IpcRes<UpdateStatus>>(IpcEvents.UPDATER_GET_STATUS),
         getRepo: () => invoke<IpcRes<string>>(IpcEvents.UPDATER_GET_REPO),
         getUpdates: () => invoke<IpcRes<UpdateData[]>>(IpcEvents.UPDATER_LIST_UPDATES),
         fetchUpdate: () => invoke<IpcRes<boolean>>(IpcEvents.UPDATER_FETCH_UPDATE),

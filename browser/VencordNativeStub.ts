@@ -72,6 +72,7 @@ window.VencordNative = {
     },
 
     updater: {
+        getStatus: async () => ({ ok: true, value: { phase: "error", installedVersion: "", keyId: "", availableVersion: "", received: 0, total: 0, error: "Managed updates require Windows x64 Discord Stable." } }),
         getRepo: async () => ({ ok: true, value: Project.links.source }),
         getUpdates: async () => ({ ok: true, value: [] }),
         fetchUpdate: async () => ({ ok: true, value: false }),

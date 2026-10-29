@@ -37,7 +37,7 @@
     },
     "capabilities": {
         "distribution": true,
-        "updates": false,
+        "updates": true,
         "installation": true,
         "repair": true,
         "selfUpdate": false,

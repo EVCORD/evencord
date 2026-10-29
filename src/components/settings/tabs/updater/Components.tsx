@@ -11,10 +11,11 @@ import { Flex } from "@components/Flex";
 import { Link } from "@components/Link";
 import { Paragraph } from "@components/Paragraph";
 import { Span } from "@components/Span";
+import type { UpdateStatus } from "@shared/UpdateStatus";
 import { Margins } from "@utils/margins";
 import { relaunch } from "@utils/native";
-import { changes, checkForUpdates, update, updateError } from "@utils/updater";
-import { ConfirmModal, openModal, React, showToast, useState } from "@webpack/common";
+import { changes, checkForUpdates, getUpdateStatus, update } from "@utils/updater";
+import { React, useState } from "@webpack/common";
 
 import { runWithDispatch } from "./runWithDispatch";
 
@@ -50,7 +51,7 @@ export function Changes({ updates, repo, repoPending }: CommonProps & { updates:
                             {message}
                         </Span>
                         <Span size="sm" color="text-subtle">
-                            — {author}
+                            â€” {author}
                         </Span>
                     </Flex>
                 </div>
@@ -72,83 +73,55 @@ export function Newer(props: CommonProps) {
 
 export function Updatable(props: CommonProps) {
     const [updates, setUpdates] = useState(changes);
-    const [isChecking, setIsChecking] = useState(false);
-    const [isUpdating, setIsUpdating] = useState(false);
+    const [status, setStatus] = useState<UpdateStatus>();
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState("");
 
-    const isOutdated = (updates?.length ?? 0) > 0;
+    React.useEffect(() => {
+        let active = true;
+        let timer: ReturnType<typeof setTimeout>;
+        const refresh = async () => {
+            try {
+                const next = await getUpdateStatus();
+                if (active) setStatus(next);
+            } catch { if (active) setError("Could not read updater status. Restart Discord or use the verified installer."); }
+            finally { if (active) timer = setTimeout(refresh, 750); }
+        };
+        void refresh();
+        return () => { active = false; clearTimeout(timer); };
+    }, []);
 
-    return (
-        <>
-            <Flex className={Margins.bottom8} gap="8px">
-                <Button
-                    disabled={isUpdating || isChecking}
-                    onClick={runWithDispatch(setIsChecking, async () => {
-                        const outdated = await checkForUpdates();
-
-                        if (outdated) {
-                            setUpdates(changes);
-                        } else {
-                            setUpdates([]);
-
-                            showToast({ text: "No updates found!", position: "bottom" });
-
-                        }
-                    })}
-                >
-                    Check for Updates
-                </Button>
-                {isOutdated && (
-                    <Button
-                        size="small"
-                        variant="primary"
-                        disabled={isUpdating || isChecking}
-                        onClick={runWithDispatch(setIsUpdating, async () => {
-                            if (await update()) {
-                                setUpdates([]);
-
-                                await new Promise<void>(r => {
-                                    openModal(props => (
-                                        <ConfirmModal
-                                            {...props}
-                                            title="Update Success!"
-                                            subtitle="Successfully updated. Restart now to apply the changes?"
-                                            confirmText="Restart"
-                                            cancelText="Not now!"
-                                            variant="primary"
-                                            onConfirm={() => {
-                                                relaunch();
-                                                r();
-                                            }}
-                                            onCancel={r}
-                                        />
-                                    ));
-                                });
-                            }
-                        })}
-                    >
-                        Update Now
-                    </Button>
-                )}
-            </Flex>
-            {updateError ? (
-                <>
-                    <Span size="md" weight="medium" color="text-strong">Error checking for updates</Span>
-                    <ErrorCard className={Margins.top8} style={{ padding: "1em" }}>
-                        <p>{updateError.message || updateError.stderr || updateError.stdout || "An unknown error occurred"}</p>
-                    </ErrorCard>
-                </>
-            ) : isOutdated ? (
-                <>
-                    <Paragraph>
-                        There {updates.length === 1 ? "is 1 update" : `are ${updates.length} updates`} available. Click the button above to download and install.
-                    </Paragraph>
-                    <Changes updates={updates} {...props} />
-                </>
-            ) : (
-                <Paragraph>
-                    {updates ? "No newer approved release is available." : "Check for an approved EvenCord release."}
-                </Paragraph>
-            )}
-        </>
-    );
+    const phase = status?.phase;
+    const pending = busy || ["checking", "downloading", "verifying", "staging"].includes(phase || "");
+    const message = phase === "ready" ? "The signed update is staged. Your current session is unchanged until you restart."
+        : phase === "current" ? "No newer approved beta release is available."
+            : phase === "checking" ? "Checking approved EvenCord beta releases..."
+                : phase === "downloading" ? `Downloading ${((status?.received || 0) / 1048576).toFixed(1)} of ${((status?.total || 0) / 1048576).toFixed(1)} MiB...`
+                    : phase === "verifying" ? "Verifying the signature, artifact and Discord compatibility..."
+                        : phase === "staging" ? "Staging the verified update and preserving recovery files..."
+                            : phase === "available" ? `EvenCord ${status?.availableVersion} is available.`
+                                : "Check for an approved EvenCord beta release.";
+    return <>
+        {status?.installedVersion && <Paragraph>Running {status.installedVersion} · Verified key: {status.keyId}</Paragraph>}
+        <Flex className={Margins.bottom8} gap="8px">
+            <Button disabled={pending || phase === "ready"} onClick={runWithDispatch(setBusy, async () => {
+                setError("");
+                await checkForUpdates();
+                setUpdates(changes);
+                setStatus(await getUpdateStatus());
+            })}>Check for Updates</Button>
+            {phase === "available" && <Button disabled={pending} onClick={runWithDispatch(setBusy, async () => {
+                setError("");
+                if (await checkForUpdates()) await update();
+                setStatus(await getUpdateStatus());
+            })}>Download update</Button>}
+            {phase === "ready" && <Button disabled={pending} onClick={runWithDispatch(setBusy, async () => {
+                if (await update()) relaunch();
+            })}>Update ready — Restart Discord</Button>}
+        </Flex>
+        <Paragraph aria-live="polite">{message}</Paragraph>
+        {phase === "downloading" && <progress aria-label="Update download" max={status?.total || 1} value={status?.received || 0} style={{ width: "100%" }} />}
+        {(status?.error || error) && <ErrorCard className={Margins.top8} style={{ padding: "1em" }}><p>{status?.error || error}</p></ErrorCard>}
+        {updates?.length > 0 && <Changes updates={updates} {...props} />}
+    </>;
 }

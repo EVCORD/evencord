@@ -8,7 +8,7 @@ import { IpcEvents } from "@shared/IpcEvents";
 import { ipcMain } from "electron";
 
 import { serializeErrors } from "./common";
-import secureUpdater from "./secure";
+import secureUpdater, { getUpdateStatus } from "./secure";
 
 export type UpdateData = Record<"hash" | "message" | "author", string>;
 
@@ -20,6 +20,8 @@ export interface Updater {
 }
 
 const updater: Updater = secureUpdater;
+
+ipcMain.handle(IpcEvents.UPDATER_GET_STATUS, serializeErrors(getUpdateStatus));
 
 ipcMain.handle(IpcEvents.UPDATER_GET_REPO, serializeErrors(updater.getRepo));
 ipcMain.handle(IpcEvents.UPDATER_LIST_UPDATES, serializeErrors(updater.listUpdates));

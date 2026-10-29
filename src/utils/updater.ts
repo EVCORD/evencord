@@ -45,7 +45,8 @@ export async function checkForUpdates() {
 }
 
 export async function update() {
-    if (!isOutdated) return true;
+    if ((await getUpdateStatus()).phase === "ready") return Unwrap(VencordNative.updater.applyUpdate());
+    if (!isOutdated) return false;
 
     const res = await Unwrap(VencordNative.updater.fetchUpdate());
 
@@ -57,6 +58,8 @@ export async function update() {
 
     return res;
 }
+
+export const getUpdateStatus = () => Unwrap(VencordNative.updater.getStatus());
 
 export const getRepo = () => Unwrap(VencordNative.updater.getRepo());
 
@@ -70,8 +73,7 @@ export async function maybePromptToUpdate(confirmMessage: string, checkForDev = 
             const wantsUpdate = confirm(confirmMessage);
             if (wantsUpdate && isNewer) return alert("Your local copy has more recent commits. Please stash or reset them.");
             if (wantsUpdate) {
-                await update();
-                relaunch();
+                if (await update()) relaunch();
             }
         }
     } catch (err) {

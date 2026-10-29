@@ -5,69 +5,44 @@
  */
 
 import { Project } from "@shared/project";
-import { readFileSync } from "original-fs";
+import type { UpdateStatus } from "@shared/UpdateStatus";
+import loaderSource from "file://../../../branding/loader.cjs?trim=false";
+import engineSource from "file://../../../branding/runtime.cjs?trim=false";
+import trustSource from "file://../../../branding/trust.json?trim=false";
 import { dirname, join, resolve } from "path";
 
+import gitHash from "~git-hash";
+
+import host from "../../../branding/host.cjs";
+import { createUpdater } from "../../../branding/managed-updater.cjs";
 import runtime from "../../../branding/runtime.cjs";
 import trust from "../../../branding/trust.json";
 import type { Updater } from ".";
 
-let pending: Buffer | undefined;
-function requireChannel() {
-    if (!Project.capabilities.distribution || !Project.capabilities.updates || Object.keys(trust.keys).length === 0)
-        throw new Error("Automatic beta updates are disabled. Download the latest verified installer from the EvenCord release page.");
-    if (process.platform !== "win32" || process.arch !== "x64")
-        throw new Error("EvenCord updates support Windows x64 only.");
-    const root = process.env.EVENCORD_MANAGED_ROOT;
-    if (!root) throw new Error("This is not a managed EvenCord installation. Source checkouts are never updated by the client.");
-    return runtime.safePath(root);
-}
-function running(root: string) {
-    const encoded = process.env.EVENCORD_RUNNING_RELEASE;
-    if (!encoded) throw new Error("The running release has no authenticated identity.");
-    const m = runtime.verify(Buffer.from(encoded, "base64"), trust, "core", false);
-    if (resolve(runtime.payloadPath(root, m)) !== resolve(__dirname))
-        throw new Error("Running payload does not match its release identity.");
-    return m;
-}
-async function check() {
-    const root = requireChannel();
-    const installed = running(root);
-    const bytes = await runtime.latest(trust, "core");
-    const data = Buffer.from(bytes as Uint8Array);
-    const next = runtime.verify(data, trust);
-    runtime.advance(next, installed);
-    const original = join(dirname(process.execPath), "resources", "_app.asar");
-    runtime.safePath(original);
-    if (!next.discordArchives.includes(runtime.sha(readFileSync(original))))
-        throw new Error("This release has not approved your Discord bootstrap archive. Keep your current build until a compatible release is available.");
-    const highest = runtime.accepted(root, trust);
-    if (highest) runtime.advance(next, highest);
-    const newer = runtime.compare(next.version, installed.version) > 0;
-    pending = newer ? data : undefined;
-    return newer ? next : undefined;
-}
+const managed = createUpdater({
+    trust,
+    context() {
+        if (!Project.capabilities.distribution || !Project.capabilities.updates || Object.keys(trust.keys).length === 0)
+            throw new Error("Beta updates are unavailable in this build. Use the verified EvenCord installer for the one-time upgrade.");
+        if (process.platform !== "win32" || process.arch !== "x64") throw new Error("EvenCord updates support Windows x64 only.");
+        const root = process.env.EVENCORD_MANAGED_ROOT;
+        const encoded = process.env.EVENCORD_RUNNING_RELEASE;
+        if (!root || !encoded) throw new Error("This is not a managed signed EvenCord installation. Source checkouts must be updated manually.");
+        const resources = join(dirname(process.execPath), "resources");
+        const owner = host.ownership(resources, loaderSource.replaceAll("\r\n", "\n"), engineSource.replaceAll("\r\n", "\n"), trustSource.replaceAll("\r\n", "\n"));
+        if (resolve(root) !== resolve(owner.dataRoot)) throw new Error("The running data root does not match the EvenCord loader.");
+        return { root: runtime.safePath(root), envelope: Buffer.from(encoded, "base64"), payload: __dirname, sourceCommit: gitHash, originalHash: owner.originalSHA256 };
+    }
+});
+
+export const getUpdateStatus = (): UpdateStatus => managed.status();
 const secureUpdater: Updater = {
     getRepo: async () => Project.links.source,
     listUpdates: async () => {
-        const next = await check();
+        const next = await managed.check();
         return next ? [{ hash: next.sourceCommit, author: "EvenCord release", message: next.version + "\n" + next.notes }] : [];
     },
-    fetchUpdate: async () => Boolean(await check()),
-    applyUpdate: async () => {
-        const root = requireChannel();
-        if (!pending) throw new Error("No verified release is pending.");
-        const next = runtime.verify(pending, trust);
-        runtime.advance(next, running(root));
-        const original = join(dirname(process.execPath), "resources", "_app.asar");
-        runtime.safePath(original);
-        if (!next.discordArchives.includes(runtime.sha(readFileSync(original))))
-            throw new Error("Discord changed since the release check. Check for a compatible release again.");
-        const url = "https://github.com/" + next.repository + "/releases/download/core-v" + next.version + "/" + next.artifact.name;
-        const bytes = await runtime.download(url, next.artifact.size);
-        runtime.activate(root, pending, Buffer.from(bytes as Uint8Array), trust);
-        pending = undefined;
-        return true;
-    }
+    fetchUpdate: async () => Boolean(await managed.check()),
+    applyUpdate: () => managed.apply()
 };
 export default secureUpdater;

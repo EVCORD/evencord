@@ -6,9 +6,9 @@
 
 import { randomUUID } from "node:crypto";
 import { lstat, mkdir, open, rename, unlink } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 
-import { app, BrowserWindow, globalShortcut, type IpcMainInvokeEvent, session, shell, type WebContents } from "electron";
+import { app, BrowserWindow, dialog, globalShortcut, type IpcMainInvokeEvent, session, shell, type WebContents } from "electron";
 
 import { capture } from "./capture";
 import { convertClip } from "./encode";
@@ -76,12 +76,26 @@ function fire(action: ShortcutAction) {
     else pending = action;
 }
 
-async function folder() {
-    const path = join(app.getPath("videos"), "bossclip");
-    await mkdir(path, { recursive: true });
+async function folder(selected = "") {
+    if (typeof selected !== "string" || selected.includes("\0") || (selected && !isAbsolute(selected))) throw new Error("Invalid clip folder.");
+    const path = selected ? resolve(selected) : join(app.getPath("videos"), "bossclip");
+    if (!selected) await mkdir(path, { recursive: true });
+    for (let parent = path; ; parent = dirname(parent)) {
+        if ((await lstat(parent)).isSymbolicLink()) throw new Error("Linked clip folders are unsupported.");
+        if (dirname(parent) === parent) break;
+    }
     const info = await lstat(path);
     if (!info.isDirectory() || info.isSymbolicLink()) throw new Error("Invalid clip folder.");
     return path;
+}
+
+export async function chooseFolder(event: IpcMainInvokeEvent, selected: string) {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (!window || event.senderFrame !== event.sender.mainFrame) throw new Error("Open Reclip settings in Discord.");
+    const defaultPath = await folder(selected).catch(() => app.getPath("videos"));
+    const result = await dialog.showOpenDialog(window, { title: "Choose Reclip save folder", defaultPath, properties: ["openDirectory", "createDirectory"] });
+    if (result.canceled || !result.filePaths[0]) return null;
+    return folder(result.filePaths[0]);
 }
 
 export function initialize(event: IpcMainInvokeEvent, saveKey: string, toggleKey: string) {
@@ -227,7 +241,7 @@ export async function status(event: IpcMainInvokeEvent): Promise<CaptureStatus> 
     }
 }
 
-export async function saveClip(event: IpcMainInvokeEvent, format: ExportFormat) {
+export async function saveClip(event: IpcMainInvokeEvent, format: ExportFormat, selectedFolder = "") {
     const window = helper;
     if (!authorized(event) || !window || starting) return { error: "Start the buffer before saving a clip." };
     if (saving) return { error: "A clip is already being saved." };
@@ -242,7 +256,7 @@ export async function saveClip(event: IpcMainInvokeEvent, format: ExportFormat) 
         if (snapshot.error) return { error: snapshot.error };
         if (!Number.isInteger(snapshot.pieces) || snapshot.pieces < 2 || snapshot.pieces > 2000) return { error: "The clip buffer is invalid." };
         stage = "disk";
-        const directory = await folder();
+        const directory = await folder(selectedFolder);
         const filename = `reclip-${new Date().toISOString().replace(/[:.]/g, "-")}-${randomUUID().slice(0, 8)}.webm`;
         const destination = join(directory, filename);
         const temporary = `${destination}.part`;
@@ -280,7 +294,7 @@ export async function saveClip(event: IpcMainInvokeEvent, format: ExportFormat) 
     } catch {
         return { error: stage === "buffer"
             ? "Could not read the video buffer. Check that recording is still active."
-            : "Could not save the clip. Check free space and access to your Videos folder, and keep the buffer running until saving finishes." };
+            : "Could not save the clip. Check that your selected folder is connected, writable and has free space. Keep the buffer running until saving finishes." };
     } finally {
         conversion = undefined;
         if (partial) await unlink(partial).catch(() => {});
@@ -304,10 +318,10 @@ export function waitForShortcut(event: IpcMainInvokeEvent): Promise<ShortcutActi
     });
 }
 
-export async function openFolder(event: IpcMainInvokeEvent) {
+export async function openFolder(event: IpcMainInvokeEvent, selectedFolder = "") {
     if (!authorized(event)) return "Enable Reclip first.";
-    try { return (await shell.openPath(await folder())) ? "Could not open the Videos/bossclip folder." : ""; }
-    catch { return "Could not access the Videos/bossclip folder."; }
+    try { return (await shell.openPath(await folder(selectedFolder))) ? "Could not open the selected clips folder." : ""; }
+    catch { return "Could not access the selected clips folder. Choose an available folder in Reclip settings."; }
 }
 
 export async function showLastClip(event: IpcMainInvokeEvent) {

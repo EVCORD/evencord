@@ -75,3 +75,7 @@ The EvenCord integration was compiled and type checked. Recording, voice and for
 This is an official EvenCord distribution plugin adapted from the local Equicord implementation, not an accepted upstream Vencord plugin. Its user-controls button relies on Equicord's UserArea API, which is absent from the upstream Vencord source reviewed for this update. An upstream version needs a supported button integration, real author attribution, a full compatibility review, and human validation before submission. The author list remains empty pending the maintainer's public identity.
 
 Read [Vencord's contribution rules](https://github.com/Vendicated/Vencord/blob/main/CONTRIBUTING.md) and [plugin setup documentation](https://docs.vencord.dev/plugins/). Vencord requires disclosure of AI assistance and a human who fully understands the submitted code. Discuss the recorder and optional FFmpeg requirement with maintainers before preparing a submission. No pull request or issue has been created.
+
+### Save folder
+
+Use **Choose folder** in Reclip settings to open the Windows folder picker. The default remains `Videos/bossclip`; **Use default folder** restores it. The choice applies to future clips and persists in EvenCord plugin settings. Existing clips are not moved. A disconnected or inaccessible folder produces an error instead of silently redirecting the recording.
