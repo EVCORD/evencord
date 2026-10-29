@@ -4,7 +4,9 @@
 
 An independent, open-source Discord client modification based on **Equicord and Vencord**. A familiar plugin ecosystem, a distinct identity, and settings that stay separate from other modifications.
 
-**Public beta preparation:** version `0.1.0-beta.1` is undergoing release verification. Downloads will be linked only after the signed artifacts are published and checked. This is experimental software, not a stable release.
+**Public Beta:** core `0.1.0-beta.2`, installer `0.1.0-beta.1`. Component versions are independent. Experimental software, not a stable release. Windows x64 and the reviewed Discord Stable 1.0.9266 archive only.
+
+[Download for Windows](https://github.com/alrimii/evencord-installer/releases/download/installer-v0.1.0-beta.1/EvenCordInstaller-x64.exe) | [Website & plugins](https://alrimii.github.io/evencord/) | [Installer release notes and verification](https://github.com/alrimii/evencord-installer/releases/tag/installer-v0.1.0-beta.1) | [Core release](https://github.com/alrimii/evencord/releases/tag/core-v0.1.0-beta.2)
 
 [Explore the source plugins](src) · [Report a problem](https://github.com/alrimii/evencord/issues) · [Release security](docs/RELEASE-SECURITY.md) · [Installer](https://github.com/alrimii/evencord-installer)
 
@@ -23,7 +25,7 @@ Plugin availability does not guarantee compatibility with every future Discord u
 The initial target is **Windows 10/11 x64 and Discord Stable 1.0.9266**, with the exact reviewed original archive in [compatibility metadata](branding/discord-compatibility.json). Other archives are rejected, including newer ones until reviewed. No standalone, browser, macOS or Linux download is offered.
 
 1. Start with official Discord Stable. If another modification is installed, remove it using its supported uninstaller. EvenCord refuses foreign loaders instead of overwriting them.
-2. Fully exit Discord, including its tray process. Download the approved installer from the release link once published.
+2. Fully exit Discord, including its tray process. Download the approved installer from the link above.
 3. Choose **Detect Discord Stable**, then **Install / Update**. Start Discord and open EvenCord settings after installation completes.
 
 EvenCord beta installers are **not Windows Authenticode signed**. SmartScreen or unknown-publisher warnings are possible. Ed25519 authenticates the release manifest, not the Windows publisher. Do not disable Windows security globally or run files from untrusted mirrors.
