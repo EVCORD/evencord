@@ -1,1 +1,8 @@
-{"published":false,"version":"0.1.0-beta.1","installer":"","release":"","coreRelease":""}
+{
+  "published": true,
+  "version": "0.1.0-beta.2",
+  "installerVersion": "0.1.0-beta.1",
+  "installer": "https://github.com/alrimii/evencord-installer/releases/download/installer-v0.1.0-beta.1/EvenCordInstaller-x64.exe",
+  "release": "https://github.com/alrimii/evencord-installer/releases/tag/installer-v0.1.0-beta.1",
+  "coreRelease": "https://github.com/alrimii/evencord/releases/tag/core-v0.1.0-beta.2"
+}
