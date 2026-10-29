@@ -20,8 +20,12 @@
 // @ts-check
 
 import { project } from "../project.mjs";
+import { localPreviewPlugin } from "./localPreview.mjs";
 
 import { createPackage } from "@electron/asar";
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { readdir, writeFile } from "fs/promises";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
@@ -132,7 +136,8 @@ const buildConfigs = ([
         plugins: [
             // @ts-ignore this is never undefined
             ...nodeCommonOpts.plugins,
-            globNativesPlugin
+            globNativesPlugin,
+            localPreviewPlugin
         ],
         define: {
             ...defines,
@@ -184,7 +189,8 @@ const buildConfigs = ([
         sourcemap,
         plugins: [
             ...nodeCommonOpts.plugins,
-            globNativesPlugin
+            globNativesPlugin,
+            localPreviewPlugin
         ],
         define: {
             ...defines,
@@ -246,3 +252,12 @@ await Promise.all([
     createPackage("dist/desktop", "dist/desktop.asar"),
     ...desktopOnly ? [] : [createPackage("dist/equibop", "dist/equibop.asar")],
 ]);
+
+if (process.env.EVENCORD_LOCAL_TRUST) {
+    const hash = file => createHash("sha256").update(readFileSync(file)).digest("hex");
+    await writeFile("dist/local-preview.json", JSON.stringify({
+        sourceCommit: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
+        trustSHA256: hash(process.env.EVENCORD_LOCAL_TRUST),
+        artifactSHA256: hash("dist/desktop.asar")
+    }));
+}
