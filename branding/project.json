@@ -46,7 +46,7 @@
         "installation": true,
         "repair": true,
         "selfUpdate": false,
-        "hostRepatch": false,
+        "hostRepatch": true,
         "cloud": false
     },
     "artwork": {

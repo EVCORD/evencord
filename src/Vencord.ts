@@ -44,7 +44,7 @@ import { initPluginManager, PMLogger, startAllPlugins } from "./api/PluginManage
 import { PlainSettings, Settings, SettingsStore } from "./api/Settings";
 import { areLocalSettingsDirty, getCloudSettings, getCloudSyncDirection, markLocalSettingsDirty, putCloudSettings, shouldCloudSync } from "./api/SettingsSync/cloudSync";
 import { relaunch } from "./utils/native";
-import { checkForUpdates, getUpdateStatus, update, UpdateLogger } from "./utils/updater";
+import { checkForUpdates, getUpdateStatus, restartAfterUpdate, update, UpdateLogger } from "./utils/updater";
 import { onceReady } from "./webpack";
 import { patches } from "./webpack/patchWebpack";
 
@@ -154,7 +154,11 @@ async function runUpdateCheck() {
             if (Settings.autoUpdateNotification) {
                 notifiedUpdate = identity;
                 notifyUpdate({ title: "EvenCord has been updated!", body: "Update ready. Click here to restart Discord.", permanent: true, noPersist: true, useNative: false,
-                    onClick: () => { void update().then(ready => { if (ready) relaunch(); }).catch(error => UpdateLogger.error(error)); }
+                    onClick: () => { void restartAfterUpdate().catch(error => {
+                        UpdateLogger.error(error);
+                        const tab = UpdaterTab;
+                        if (tab) notifyUpdate({ title: "EvenCord restart blocked", body: "Your session is preserved. Click here for recovery details.", permanent: true, onClick: () => openSettingsTabModal(tab) });
+                    }); }
                 });
             }
         } else if (status.phase === "available" && UpdaterTab) {

@@ -48,6 +48,7 @@ export default {
     },
 
     updater: {
+        prepareRestart: () => invoke<IpcRes<boolean>>(IpcEvents.UPDATER_PREPARE_RESTART),
         getStatus: () => invoke<IpcRes<UpdateStatus>>(IpcEvents.UPDATER_GET_STATUS),
         getRepo: () => invoke<IpcRes<string>>(IpcEvents.UPDATER_GET_REPO),
         getUpdates: () => invoke<IpcRes<UpdateData[]>>(IpcEvents.UPDATER_LIST_UPDATES),

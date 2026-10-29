@@ -23,7 +23,7 @@ assert.equal(project.release.platform, "win32");
 assert.equal(project.release.architecture, "x64");
 assert.equal(project.release.discordChannel, "stable");
 for (const [name, enabled] of Object.entries(project.capabilities))
-    assert.equal(enabled, ["distribution", "installation", "repair", "updates"].includes(name), "Unexpected beta capability: " + name);
+    assert.equal(enabled, ["distribution", "installation", "repair", "updates", "hostRepatch"].includes(name), "Unexpected beta capability: " + name);
 for (const asset of Object.values(project.artwork))
     assert.ok(existsSync(resolve(root, asset)), "Missing branding asset: " + asset);
 const pkg = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8"));

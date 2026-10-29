@@ -13,8 +13,7 @@ import { Paragraph } from "@components/Paragraph";
 import { Span } from "@components/Span";
 import type { UpdateStatus } from "@shared/UpdateStatus";
 import { Margins } from "@utils/margins";
-import { relaunch } from "@utils/native";
-import { changes, checkForUpdates, getUpdateStatus, update } from "@utils/updater";
+import { changes, checkForUpdates, getUpdateStatus, restartAfterUpdate, update } from "@utils/updater";
 import { React, useState } from "@webpack/common";
 
 import { runWithDispatch } from "./runWithDispatch";
@@ -116,7 +115,7 @@ export function Updatable(props: CommonProps) {
                 setStatus(await getUpdateStatus());
             })}>Download update</Button>}
             {phase === "ready" && <Button disabled={pending} onClick={runWithDispatch(setBusy, async () => {
-                if (await update()) relaunch();
+                await restartAfterUpdate();
             })}>Update ready — Restart Discord</Button>}
         </Flex>
         <Paragraph aria-live="polite">{message}</Paragraph>

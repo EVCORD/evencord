@@ -18,6 +18,7 @@ import host from "../../../branding/host.cjs";
 import { createUpdater } from "../../../branding/managed-updater.cjs";
 import runtime from "../../../branding/runtime.cjs";
 import trust from "../../../branding/trust.json";
+import { findStaleSibling, isAlreadyPatched, patchResourcesDir } from "../applyHostPatch";
 import type { Updater } from ".";
 
 const managed = createUpdater({
@@ -38,7 +39,25 @@ const managed = createUpdater({
     }
 });
 
-export const getUpdateStatus = (): UpdateStatus => managed.status();
+let restartError = "";
+export const getUpdateStatus = (): UpdateStatus => ({ ...managed.status(), error: restartError || managed.status().error });
+export async function prepareUpdateRestart() {
+    restartError = "";
+    try {
+        if (managed.status().phase !== "ready") throw new Error("No verified staged update is ready.");
+        await managed.apply();
+        const target = findStaleSibling(dirname(process.execPath));
+        if (target) {
+            patchResourcesDir(target, join(__dirname, "patcher.js"));
+            if (!isAlreadyPatched(target))
+                throw new Error("The pending Discord host could not be prepared.");
+        }
+        return true;
+    } catch (error) {
+        restartError = "Restart blocked to protect EvenCord. A pending Discord version could not be prepared safely. Keep this session open and use the latest verified installer to repair the selected channel. " + (error instanceof Error ? error.message : String(error));
+        throw new Error(restartError);
+    }
+}
 const secureUpdater: Updater = {
     getRepo: async () => Project.links.source,
     listUpdates: async () => {

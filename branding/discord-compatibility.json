@@ -45,6 +45,17 @@
       "setupSize": 160561592,
       "verification": "Official Discord setup and extracted channel executable Authenticode verified as Discord Inc. Files extracted without executing setup.",
       "verifiedOn": "2026-10-29"
+    },
+    {
+      "discordChannel": "canary",
+      "version": "1.0.1286",
+      "archiveSHA256": "d9db63f95b194f62f2f5fac727843689c644ac4783a80604dbb1e02179f1b3af",
+      "archiveSize": 3476699,
+      "sourceURL": "https://canary.dl2.discordapp.net/distro/app/canary/win/x64/1.0.1286/DiscordCanarySetup.exe",
+      "setupSHA256": "3e3a64605fb4e8c8dfc8be7df737b970fcb1d4148438ea6e4a05669195cd4636",
+      "setupSize": 160561592,
+      "verification": "Downloaded from official Discord CDN. Setup and extracted DiscordCanary.exe verified by Windows Authenticode as Discord Inc. Extracted without executing setup.",
+      "verifiedOn": "2026-10-29"
     }
   ]
 }

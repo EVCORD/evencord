@@ -59,6 +59,13 @@ export async function update() {
     return res;
 }
 
+export async function restartAfterUpdate() {
+    if (!await update()) return false;
+    if (!await Unwrap(VencordNative.updater.prepareRestart())) throw new Error("The pending Discord host is not ready. Keep Discord open and repair with the latest installer.");
+    relaunch();
+    return true;
+}
+
 export const getUpdateStatus = () => Unwrap(VencordNative.updater.getStatus());
 
 export const getRepo = () => Unwrap(VencordNative.updater.getRepo());
@@ -73,7 +80,7 @@ export async function maybePromptToUpdate(confirmMessage: string, checkForDev = 
             const wantsUpdate = confirm(confirmMessage);
             if (wantsUpdate && isNewer) return alert("Your local copy has more recent commits. Please stash or reset them.");
             if (wantsUpdate) {
-                if (await update()) relaunch();
+                await restartAfterUpdate();
             }
         }
     } catch (err) {

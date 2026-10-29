@@ -26,6 +26,7 @@ export const isAlreadyPatched = (resources: string) => {
 export const patchResourcesDir = (resources: string, _patcherJsPath: string): boolean => {
     if (!Project.capabilities.distribution || !Project.capabilities.hostRepatch) return false;
     if (process.platform !== "win32" || process.arch !== "x64") throw new Error("Host persistence supports Windows x64 only.");
+    if (process.env.DISABLE_UPDATER_AUTO_PATCHING && !isAlreadyPatched(resources)) throw new Error("Automatic Discord repatching is disabled by the environment. Use the verified installer before restarting.");
     return host.persist(resources, join(dirname(process.execPath), "resources"), trust,
         loaderSource.replaceAll("\r\n", "\n"), engineSource.replaceAll("\r\n", "\n"), trustSource.replaceAll("\r\n", "\n"));
 };

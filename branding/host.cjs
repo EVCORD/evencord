@@ -42,7 +42,7 @@ function ownership(resources, loader, engine, trustData) {
     return owner;
 }
 function persist(resources, source, trust, loader, engine, trustData, afterStep = () => {}) {
-    validate(resources);
+    if (validate(resources) !== validate(source)) throw new Error("Discord channel differs from the owned installation.");
     if (path.resolve(resources) === path.resolve(source) || path.dirname(resources) === path.dirname(source)) throw new Error("A different host version is required.");
     if (path.dirname(path.dirname(resources)) !== path.dirname(path.dirname(source))) throw new Error("Target belongs to another Discord installation.");
     if (runtime.compare(path.basename(path.dirname(resources)).slice(4), path.basename(path.dirname(source)).slice(4)) <= 0) throw new Error("Host persistence requires a newer Discord version.");
@@ -53,6 +53,7 @@ function persist(resources, source, trust, loader, engine, trustData, afterStep 
     if (fs.existsSync(path.join(resources, "evencord-install.json"))) {
         const existing = ownership(resources, loader, engine, trustData);
         if (path.resolve(existing.dataRoot) !== path.resolve(owner.dataRoot)) throw new Error("Target uses another EvenCord data root.");
+        if (!release.manifest.discordArchives.includes(existing.originalSHA256)) throw new Error("The owned target archive is not approved by this release.");
         return false;
     }
     if (fs.existsSync(backup) || fs.existsSync(path.join(resources, ".evencord-transaction.json"))) throw new Error("Modification or unfinished transaction detected.");
@@ -62,20 +63,53 @@ function persist(resources, source, trust, loader, engine, trustData, afterStep 
     if (!release.manifest.discordArchives.includes(original)) throw new Error("Discord archive is not approved by the signed release.");
     const lock = path.join(resources, ".evencord-operation.lock");
     const fd = fs.openSync(lock, "wx");
+    const stage = path.join(resources, ".evencord-loader");
+    const next = {...owner, originalSHA256: original};
+    const files = {"package.json": '{"name":"discord","main":"index.js"}', "index.js": loader, "runtime.cjs": engine, "trust.json": trustData, "evencord-owner.json": goJSON(next)};
+    let moved = false, activated = false, created = false;
     try {
-        const stage = path.join(resources, ".evencord-loader");
-        fs.mkdirSync(stage);
-        const next = {...owner, originalSHA256: original};
-        const files = {"package.json": '{"name":"discord","main":"index.js"}', "index.js": loader, "runtime.cjs": engine, "trust.json": trustData, "evencord-owner.json": goJSON(next)};
+        fs.mkdirSync(stage); created = true;
         for (const [name, value] of Object.entries(files)) runtime.atomic(path.join(stage, name), value);
         runtime.atomic(path.join(resources, ".evencord-transaction.json"), goJSON({operation: "install", owner: next}));
-        fs.renameSync(app, backup);
+        fs.renameSync(app, backup); moved = true;
         afterStep("original-preserved");
-        fs.renameSync(stage, app);
+        fs.renameSync(stage, app); activated = true;
         afterStep("loader-activated");
         runtime.atomic(path.join(resources, "evencord-install.json"), goJSON(next));
         fs.unlinkSync(path.join(resources, ".evencord-transaction.json"));
         return true;
+    } catch (error) {
+        if (!created) throw error;
+        try {
+            if (activated) {
+                runtime.safePath(app);
+                const names = fs.readdirSync(app);
+                if (names.length !== Object.keys(files).length || names.some(name => !Object.hasOwn(files, name) || !fs.readFileSync(path.join(app, name)).equals(Buffer.from(files[name])))) throw Error("Loader changed during recovery.");
+                fs.renameSync(app, stage);
+            }
+            if (moved) {
+                if (runtime.sha(fs.readFileSync(backup)) !== original || fs.existsSync(app)) throw Error("Original recovery archive changed.");
+                fs.renameSync(backup, app);
+            }
+            if (created && fs.existsSync(stage)) {
+                runtime.safePath(stage);
+                const names = fs.readdirSync(stage);
+                if (names.some(name => !Object.hasOwn(files, name) || !fs.readFileSync(path.join(stage, name)).equals(Buffer.from(files[name])))) throw Error("Staged loader changed during recovery.");
+                for (const name of names) fs.unlinkSync(path.join(stage, name));
+                fs.rmdirSync(stage);
+            }
+            const record = path.join(resources, "evencord-install.json");
+            if (fs.existsSync(record)) {
+                if (fs.readFileSync(record, "utf8") !== goJSON(next)) throw Error("Ownership changed during recovery.");
+                fs.unlinkSync(record);
+            }
+            const journal = path.join(resources, ".evencord-transaction.json");
+            if (fs.existsSync(journal)) {
+                if (fs.readFileSync(journal, "utf8") !== goJSON({operation:"install", owner:next})) throw Error("Transaction changed during recovery.");
+                fs.unlinkSync(journal);
+            }
+        } catch (recovery) { throw Error(error.message + " Recovery requires the verified installer: " + recovery.message); }
+        throw error;
     } finally { fs.closeSync(fd); fs.unlinkSync(lock); }
 }
 module.exports = {validate, ownership, persist};

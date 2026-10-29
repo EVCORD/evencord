@@ -122,8 +122,12 @@ test("host persistence shares directory loader contract and refuses foreign host
     fs.writeFileSync(path.join(dataRoot,"current.json"),f.sign());
     const interrupted = target("1.0.4");
     assert.throws(() => host.persist(interrupted,source,f.trust,loader,engine,trustData,()=>{throw Error("interrupted")}));
-    assert.equal(fs.readFileSync(path.join(interrupted,"_app.asar"),"utf8"),original.toString());
-    assert.equal(JSON.parse(fs.readFileSync(path.join(interrupted,".evencord-transaction.json"))).operation,"install");
+    assert.equal(fs.readFileSync(path.join(interrupted,"app.asar"),"utf8"),original.toString());
+    assert.equal(fs.existsSync(path.join(interrupted,".evencord-transaction.json")),false);
+    const activated = target("1.0.6");
+    assert.throws(() => host.persist(activated,source,f.trust,loader,engine,trustData,step=>{if(step==="loader-activated")throw Error("interrupted");}));
+    assert.equal(fs.readFileSync(path.join(activated,"app.asar"),"utf8"),original.toString());
+    assert.equal(fs.existsSync(path.join(activated,"_app.asar")),false);
 });
 
 test("shared Go and Node signature vector", () => {
