@@ -31,6 +31,8 @@ Browse the [plugin library](https://alrimii.github.io/evencord/plugins/) for des
 
 Reclip's speaker audio may include other applications, and microphone capture is independent of Discord mute. [Recording controls and privacy](https://alrimii.github.io/evencord/faq/#recording)
 
+For volunteer testing and transferring compatible plugin preferences, see the [beta testing guide](docs/BETA-TESTING.md). Custom plugin code is not installed by settings import.
+
 ## Building from source
 
 Use Node.js 22 and the pnpm version declared in `package.json`.
