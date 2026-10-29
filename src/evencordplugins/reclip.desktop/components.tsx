@@ -77,7 +77,7 @@ export function Controls({ capture, toggle, save, openFolder, showLastClip }: Co
         <details className="vc-reclip-details">
             <summary>Audio and saving details</summary>
             <Paragraph>Speaker audio can include other apps. Use the Windows default output for Discord. Your microphone records independently of Discord mute and push to talk; choose Microphone off to exclude it.</Paragraph>
-            <Paragraph>Choose a save folder in settings. The default remains Videos/bossclip. WebM saves directly. MP4 converts to H.264 and AAC; MKV repackages the original streams without quality loss. Conversion failures preserve the WebM and show a warning.</Paragraph>
+            <Paragraph>Choose a save folder in settings. The default remains Videos/Reclip. WebM saves directly. MP4 converts to H.264 and AAC; MKV repackages the original streams without quality loss. Conversion failures preserve the WebM and show a warning.</Paragraph>
             <Paragraph>Early clips are shorter, and exports start at the nearest usable video keyframe. Stopping discards unsaved footage. The buffer limit covers encoded video; total process memory is higher, especially during saves.</Paragraph>
         </details>
     </section>;

@@ -20,7 +20,7 @@ function SaveFolderPicker() {
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
     return <div role="group" aria-label="Clip save folder">
-        <Paragraph>Save folder: {saveFolder || "Videos/bossclip (default)"}</Paragraph>
+        <Paragraph>Save folder: {saveFolder || "Videos/Reclip (default)"}</Paragraph>
         <Button disabled={busy} onClick={async () => {
             setBusy(true);
             setError("");
@@ -60,7 +60,7 @@ function MicrophonePicker() {
 }
 
 export const settings = definePluginSettings({
-    saveFolder: { type: OptionType.STRING, default: "", hidden: true, description: "Folder selected with the native folder picker. Empty uses Videos/bossclip." },
+    saveFolder: { type: OptionType.STRING, default: "", hidden: true, description: "Folder selected with the native folder picker. Empty uses Videos/Reclip." },
     saveFolderPicker: { type: OptionType.COMPONENT, component: SaveFolderPicker },
     clipLength: {
         displayName: "Clip length",

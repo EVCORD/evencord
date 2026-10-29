@@ -1,6 +1,6 @@
 # Reclip
 
-Keep the moment. Formerly bossclip; existing settings migrate automatically. EvenCord maintains the source in `src/evencordplugins/reclip.desktop` and existing recordings stay in `Videos/bossclip`.
+Keep the moment. Formerly bossclip; existing settings migrate automatically. EvenCord maintains the source in `src/evencordplugins/reclip.desktop` and existing recordings stay in their original folders.
 
 A local Windows replay recorder for EvenCord. Capture the main Discord window, audible call audio, and your microphone, then save recent footage with a button or global shortcut. No game or Discord screen share is required.
 
@@ -12,7 +12,7 @@ A local Windows replay recorder for EvenCord. Capture the main Discord window, a
 - Right click the replay button to save, stop, open clips, or reveal the last saved clip. Controls are also in plugin settings and Toolbox.
 - Disable **Show replay button** to hide the icon. The keyboard shortcuts, settings controls, and Toolbox remain available.
 - The settings panel shows available duration, the target duration, actual output dimensions, frame-rate limit, microphone, and encoded buffer size.
-- Clips are saved under your Windows **Videos\bossclip** folder. Choose WebM, MP4, or MKV in **Save format**.
+- Clips are saved under your Windows **Videos\Reclip** folder. Choose WebM, MP4, or MKV in **Save format**.
 - Enable **Auto Start** only if you want the buffer to begin whenever Discord starts. Otherwise, recording starts manually.
 - Shortcut changes apply after disabling and enabling the plugin. A shortcut already used by another program produces a warning; buttons remain available.
 
@@ -78,4 +78,4 @@ Read [Vencord's contribution rules](https://github.com/Vendicated/Vencord/blob/m
 
 ### Save folder
 
-Use **Choose folder** in Reclip settings to open the Windows folder picker. The default remains `Videos/bossclip`; **Use default folder** restores it. The choice applies to future clips and persists in EvenCord plugin settings. Existing clips are not moved. A disconnected or inaccessible folder produces an error instead of silently redirecting the recording.
+Use **Choose folder** in Reclip settings to open the Windows folder picker. The default is `Videos/Reclip`; **Use default folder** restores it. The choice applies to future clips and persists in EvenCord plugin settings. Existing clips are not moved. A disconnected or inaccessible folder produces an error instead of silently redirecting the recording.

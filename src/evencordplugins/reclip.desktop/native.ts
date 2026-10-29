@@ -78,7 +78,7 @@ function fire(action: ShortcutAction) {
 
 async function folder(selected = "") {
     if (typeof selected !== "string" || selected.includes("\0") || (selected && !isAbsolute(selected))) throw new Error("Invalid clip folder.");
-    const path = selected ? resolve(selected) : join(app.getPath("videos"), "bossclip");
+    const path = selected ? resolve(selected) : join(app.getPath("videos"), "Reclip");
     if (!selected) await mkdir(path, { recursive: true });
     for (let parent = path; ; parent = dirname(parent)) {
         if ((await lstat(parent)).isSymbolicLink()) throw new Error("Linked clip folders are unsupported.");
