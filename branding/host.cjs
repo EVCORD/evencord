@@ -14,12 +14,14 @@ function validate(resources) {
     runtime.safePath(resources);
     if (path.basename(resources) !== "resources" || !/^app-\d+\.\d+\.\d+$/.test(path.basename(path.dirname(resources)))) throw new Error("Unsupported Discord layout.");
     const info = JSON.parse(fs.readFileSync(path.join(resources, "build_info.json"), "utf8"));
-    if (info.releaseChannel !== "stable") throw new Error("Only Discord Stable is supported.");
-    const exe = fs.readFileSync(path.join(resources, "..", "Discord.exe"));
+    const executable = {stable: "Discord.exe", ptb: "DiscordPTB.exe", canary: "DiscordCanary.exe"}[info.releaseChannel];
+    if (!executable) throw new Error("Unsupported Discord channel.");
+    const exe = fs.readFileSync(path.join(resources, "..", executable));
     if (exe.length < 64 || exe.toString("ascii", 0, 2) !== "MZ") throw new Error("Invalid Discord executable.");
     const offset = exe.readUInt32LE(60);
     if (offset < 64 || offset > exe.length - 6 || exe.toString("ascii", offset, offset + 4) !== "PE\0\0" || exe.readUInt16LE(offset + 4) !== 0x8664) throw new Error("Windows x64 Discord is required.");
     if (fs.existsSync(path.join(resources, "app"))) throw new Error("Another app loader is present.");
+    return info.releaseChannel;
 }
 function ownership(resources, loader, engine, trustData) {
     validate(resources);

@@ -7,7 +7,9 @@
 import project from "../../branding/project.json";
 
 export const Project = project;
-export const storageNamespace = Project.storage.namespace + ":" + (IS_REPORTER ? "reporter" : IS_DEV ? "dev" : Project.release.channel);
+const hostChannel = !IS_WEB && typeof VencordNative !== "undefined" ? VencordNative.settings.getHostChannel() : undefined;
+const hostSuffix = hostChannel && hostChannel !== "stable" ? ":" + hostChannel : "";
+export const storageNamespace = Project.storage.namespace + ":" + (IS_REPORTER ? "reporter" : IS_DEV ? "dev" : Project.release.channel) + hostSuffix;
 export const storageName = (name: string) => storageNamespace + ":" + name;
 export const DISTRIBUTION_DISABLED = Project.displayName + " distribution is disabled until installer and updater safety work is complete.";
 

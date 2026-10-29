@@ -34,6 +34,7 @@ export const enum IpcEvents {
     OPEN_EXTERNAL = "VencordOpenExternal",
 
     UPDATER_LIST_UPDATES = "VencordListUpdates",
+    GET_HOST_CHANNEL = "EvenCordHostChannel",
     UPDATER_GET_STATUS = "EvenCordUpdateStatus",
     UPDATER_GET_REPO = "VencordGetRepo",
     UPDATER_FETCH_UPDATE = "VencordFetchUpdate",

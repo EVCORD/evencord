@@ -56,6 +56,7 @@ export default {
     },
 
     settings: {
+        getHostChannel: () => sendSync<string | undefined>(IpcEvents.GET_HOST_CHANNEL),
         get: () => sendSync<Settings>(IpcEvents.GET_SETTINGS),
         set: (settings: Settings, pathToNotify?: string) => invoke<void>(IpcEvents.SET_SETTINGS, settings, pathToNotify),
         getSettingsDir: () => invoke<string>(IpcEvents.GET_SETTINGS_DIR),

@@ -123,6 +123,7 @@ window.VencordNative = {
     },
 
     settings: {
+        getHostChannel: () => "stable",
         get: () => {
             try {
                 const settings = JSON.parse(localStorage.getItem(storageName("settings")) || "{}");

@@ -12,7 +12,7 @@ Windows Authenticode is separate. EvenCord beta executables are **not Authentico
 
 ## Compatibility and recovery
 
-See [discord-compatibility.json](../branding/discord-compatibility.json) for the independently downloaded, Authenticode-verified Discord package used to approve the initial archive. Only that exact original archive is accepted. This is not universal permission for all Discord versions or a machine-specific bypass. Official Discord binaries are not redistributed with EvenCord.
+See [discord-compatibility.json](../branding/discord-compatibility.json) for the independently downloaded, Authenticode-verified Discord package used to approve the initial archive. Only the reviewed channel archive hashes in the catalog are accepted. This is not universal permission for all Discord versions or a machine-specific bypass. Official Discord binaries are not redistributed with EvenCord.
 
 The installer refuses foreign or unknown loaders. It stages a verified payload, preserves the original `_app.asar`, writes an EvenCord ownership record and transaction journal, and uses a directory loader at `app.asar`. Uninstall restores the verified original; recovery retains user settings. Private preview trust is not automatically migrated. Do not delete recovery data manually.
 
@@ -31,3 +31,7 @@ The core-only `branding/managed-updater.cjs` adds progress and coordination with
 7. Only then update `branding/beta-status.json`, regenerate the site and announce Public Beta. Publish checksums, license notices and exact source information with each component.
 
 The audited manual Pages workflow and read-only Equicord upstream review are activated in the core repository. The review runs every 12 hours and can be dispatched manually; it creates a report without merging or publishing. Other workflow sources are archived; installer Actions remains disabled. No signing credentials are accessible to pull requests. The site is static and does not execute plugin code. Its catalog is generated from source metadata, filtered to the Windows desktop target.
+
+## Desktop channel compatibility
+
+The signed protocol-1 envelope retains its Stable baseline identifier to preserve existing loaders. Actual Windows host support is the intersection of the signed archive digests and the reviewed channel-to-archive catalog embedded in both signed artifacts. The catalog verifies Stable, PTB and Canary metadata and executable names. Neither a channel name alone nor a renamed executable authorizes an archive. The immutable runtime, loader and trust files are unchanged. Channel roots and browser namespaces are isolated; Stable data remains in its existing location.

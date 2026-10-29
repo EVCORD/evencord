@@ -9,5 +9,42 @@
   "setupSHA256": "972c5ff1a4778c9c231dcb6b80c2dc5aa50db30060192338d5c82c4ebb3261a6",
   "setupSize": 161063864,
   "verification": "Downloaded from the official Discord Windows x64 Stable endpoint without execution. Windows Authenticode returned Valid for Discord Inc. on both setup and extracted Discord.exe. Extracted Discord-1.0.9266-full.nupkg resources/app.asar and build_info.json. Only this archive digest is approved.",
-  "verifiedOn": "2026-10-29"
+  "verifiedOn": "2026-10-29",
+  "channels": [
+    {
+      "platform": "win32",
+      "architecture": "x64",
+      "discordChannel": "stable",
+      "version": "1.0.9266",
+      "archiveSHA256": "16c8ab2ee3721e509c5fc0cac44bb3632f3c50042a82a7df7e8191d53fc71d40",
+      "archiveSize": 3474622,
+      "sourceURL": "https://stable.dl2.discordapp.net/distro/app/stable/win/x64/1.0.9266/DiscordSetup.exe",
+      "setupSHA256": "972c5ff1a4778c9c231dcb6b80c2dc5aa50db30060192338d5c82c4ebb3261a6",
+      "setupSize": 161063864,
+      "verification": "Downloaded from the official Discord Windows x64 Stable endpoint without execution. Windows Authenticode returned Valid for Discord Inc. on both setup and extracted Discord.exe. Extracted Discord-1.0.9266-full.nupkg resources/app.asar and build_info.json. Only this archive digest is approved.",
+      "verifiedOn": "2026-10-29"
+    },
+    {
+      "discordChannel": "ptb",
+      "version": "1.0.1229",
+      "archiveSHA256": "16c8ab2ee3721e509c5fc0cac44bb3632f3c50042a82a7df7e8191d53fc71d40",
+      "archiveSize": 3474622,
+      "sourceURL": "https://ptb.dl2.discordapp.net/distro/app/ptb/win/x64/1.0.1229/DiscordPTBSetup.exe",
+      "setupSHA256": "c7bdf59206675f49f5ce13998cd64aaf410639e4831df608cd52d4886a66b1d9",
+      "setupSize": 161064376,
+      "verification": "Official Discord setup and extracted channel executable Authenticode verified as Discord Inc. Files extracted without executing setup.",
+      "verifiedOn": "2026-10-29"
+    },
+    {
+      "discordChannel": "canary",
+      "version": "1.0.1285",
+      "archiveSHA256": "279124b34a496be340497b01aaa28c9f4fb41050af2be1dad59eed0d9f3bf8f7",
+      "archiveSize": 3476700,
+      "sourceURL": "https://canary.dl2.discordapp.net/distro/app/canary/win/x64/1.0.1285/DiscordCanarySetup.exe",
+      "setupSHA256": "7ab85cd41e46a78039add6cb53bfb3384b4ca73543a088557fa2feb2258e3401",
+      "setupSize": 160561592,
+      "verification": "Official Discord setup and extracted channel executable Authenticode verified as Discord Inc. Files extracted without executing setup.",
+      "verifiedOn": "2026-10-29"
+    }
+  ]
 }

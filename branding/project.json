@@ -33,7 +33,12 @@
         "discordChannel": "stable",
         "coreAsset": "desktop.asar",
         "installerGuiAsset": "EvenCordInstaller-x64.exe",
-        "installerCliAsset": "EvenCordInstallerCli-x64.exe"
+        "installerCliAsset": "EvenCordInstallerCli-x64.exe",
+        "discordChannels": [
+            "stable",
+            "ptb",
+            "canary"
+        ]
     },
     "capabilities": {
         "distribution": true,

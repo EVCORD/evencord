@@ -13,6 +13,7 @@ import { dirname, join, resolve } from "path";
 
 import gitHash from "~git-hash";
 
+import compatibility from "../../../branding/discord-compatibility.json";
 import host from "../../../branding/host.cjs";
 import { createUpdater } from "../../../branding/managed-updater.cjs";
 import runtime from "../../../branding/runtime.cjs";
@@ -29,7 +30,9 @@ const managed = createUpdater({
         const encoded = process.env.EVENCORD_RUNNING_RELEASE;
         if (!root || !encoded) throw new Error("This is not a managed signed EvenCord installation. Source checkouts must be updated manually.");
         const resources = join(dirname(process.execPath), "resources");
+        const channel = host.validate(resources);
         const owner = host.ownership(resources, loaderSource.replaceAll("\r\n", "\n"), engineSource.replaceAll("\r\n", "\n"), trustSource.replaceAll("\r\n", "\n"));
+        if (!compatibility.channels.some(entry => entry.discordChannel === channel && entry.archiveSHA256 === owner.originalSHA256)) throw new Error("This Discord channel archive is not approved by the running EvenCord build.");
         if (resolve(root) !== resolve(owner.dataRoot)) throw new Error("The running data root does not match the EvenCord loader.");
         return { root: runtime.safePath(root), envelope: Buffer.from(encoded, "base64"), payload: __dirname, sourceCommit: gitHash, originalHash: owner.originalSHA256 };
     }

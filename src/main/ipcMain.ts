@@ -27,13 +27,21 @@ import monacoHtml from "file://monacoWin.html?minify&base64";
 import { FSWatcher, mkdirSync, readFileSync, watch, writeFileSync } from "fs";
 import { open, readdir, readFile, unlink } from "fs/promises";
 import { release } from "os";
-import { join } from "path";
+import { dirname, join } from "path";
 
 import { registerCspIpcHandlers } from "./csp/manager";
 import { getThemeInfo, stripBOM, UserThemeHeader } from "./themes";
 import { ALLOWED_PROTOCOLS, QUICK_CSS_PATH, SETTINGS_DIR, THEMES_DIR } from "./utils/constants";
 import { ensureSafePath } from "./utils/ensureSafePath";
 import { makeLinksOpenExternally } from "./utils/externalLinks";
+
+ipcMain.on(IpcEvents.GET_HOST_CHANNEL, event => {
+    try {
+        const info: unknown = JSON.parse(readFileSync(join(dirname(process.execPath), "resources", "build_info.json"), "utf8"));
+        const channel = info && typeof info === "object" && "releaseChannel" in info ? info.releaseChannel : undefined;
+        event.returnValue = typeof channel === "string" && ["stable", "ptb", "canary"].includes(channel) ? channel : undefined;
+    } catch { event.returnValue = undefined; }
+});
 
 const RENDERER_CSS_PATH = join(__dirname, "renderer.css");
 
