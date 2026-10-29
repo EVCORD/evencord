@@ -1,5 +1,7 @@
 # EvenCord
 
+Phase 3 signed-release and recovery infrastructure is implemented. Live distribution remains disabled. See [PHASE3.md](PHASE3.md) for validated behavior, protocol details and remaining activation requirements.
+
 ![EvenCord](branding/assets/banner.svg)
 
 An open-source Discord client modification based on Equicord.

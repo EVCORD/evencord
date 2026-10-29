@@ -5,12 +5,10 @@
  */
 
 import { IpcEvents } from "@shared/IpcEvents";
-import { Project } from "@shared/project";
 import { ipcMain } from "electron";
 
-import gitRemote from "~git-remote";
-
 import { serializeErrors } from "./common";
+import secureUpdater from "./secure";
 
 export type UpdateData = Record<"hash" | "message" | "author", string>;
 
@@ -21,14 +19,7 @@ export interface Updater {
     applyUpdate(): Promise<boolean>;
 }
 
-const updater: Updater = IS_UPDATER_DISABLED || !Project.capabilities.distribution || !Project.capabilities.updates
-    ? {
-        getRepo: async () => `https://github.com/${gitRemote}`,
-        listUpdates: async () => [],
-        fetchUpdate: async () => false,
-        applyUpdate: async () => false,
-    }
-    : require(IS_STANDALONE ? "./http" : "./git").default;
+const updater: Updater = secureUpdater;
 
 ipcMain.handle(IpcEvents.UPDATER_GET_REPO, serializeErrors(updater.getRepo));
 ipcMain.handle(IpcEvents.UPDATER_LIST_UPDATES, serializeErrors(updater.listUpdates));

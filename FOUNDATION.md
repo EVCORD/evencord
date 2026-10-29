@@ -1,5 +1,7 @@
 # EvenCord foundation status
 
+Phase 3 implementation and current limitations are recorded in [PHASE3.md](PHASE3.md). Actions and production distribution remain disabled.
+
 Phase 2 branding and identity are implemented. See [PHASE2.md](PHASE2.md). The following Phase 1 record is historical; its references to unchanged runtime branding describe the initial foundation, not the current source.
 
 # Phase 1 foundation

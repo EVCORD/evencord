@@ -130,11 +130,11 @@ export function Updatable(props: CommonProps) {
                     </Button>
                 )}
             </Flex>
-            {!updates && updateError ? (
+            {updateError ? (
                 <>
                     <Span size="md" weight="medium" color="text-strong">Error checking for updates</Span>
                     <ErrorCard className={Margins.top8} style={{ padding: "1em" }}>
-                        <p>{updateError.stderr || updateError.stdout || "An unknown error occurred"}</p>
+                        <p>{updateError.message || updateError.stderr || updateError.stdout || "An unknown error occurred"}</p>
                     </ErrorCard>
                 </>
             ) : isOutdated ? (
@@ -146,7 +146,7 @@ export function Updatable(props: CommonProps) {
                 </>
             ) : (
                 <Paragraph>
-                    You're running the latest version of EvenCord.
+                    {updates ? "No newer approved release is available." : "Check for an approved EvenCord release."}
                 </Paragraph>
             )}
         </>

@@ -21,6 +21,8 @@ import { Project } from "@shared/project";
 import electron, { app, BrowserWindowConstructorOptions, Menu } from "electron";
 import { dirname, join } from "path";
 
+import releaseRuntime from "../../branding/runtime.cjs";
+import releaseTrust from "../../branding/trust.json";
 import { RendererSettings } from "./settings";
 import { patchTrayMenu } from "./trayMenu";
 import { DATA_DIR, IS_VANILLA } from "./utils/constants";
@@ -158,3 +160,10 @@ if (!IS_VANILLA) {
 
 console.log("[EvenCord] Loading original Discord app.asar");
 require(require.main!.filename);
+
+if (process.env.EVENCORD_MANAGED_ROOT && process.env.EVENCORD_RUNNING_RELEASE) {
+    const root = process.env.EVENCORD_MANAGED_ROOT;
+    const release = releaseRuntime.verify(Buffer.from(process.env.EVENCORD_RUNNING_RELEASE, "base64"), releaseTrust, "core", false);
+    app.whenReady().then(() => releaseRuntime.completeBoot(root, release.artifact.sha256))
+        .catch(error => console.error("[EvenCord] Startup confirmation failed", error));
+}

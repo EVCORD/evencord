@@ -5,69 +5,29 @@
  */
 
 import { Project } from "@shared/project";
-import { existsSync, lstatSync, mkdirSync, readdirSync, renameSync, rmdirSync, statSync, unlinkSync, writeFileSync } from "original-fs";
+import loaderSource from "file://../../branding/loader.cjs?trim=false";
+import engineSource from "file://../../branding/runtime.cjs?trim=false";
+import trustSource from "file://../../branding/trust.json?trim=false";
+import { readdirSync, statSync } from "original-fs";
 import { basename, dirname, join } from "path";
 
-const STUB_PACKAGE = JSON.stringify({ name: "discord", main: "index.js" });
+import host from "../../branding/host.cjs";
+import trust from "../../branding/trust.json";
+
 const VERSION_PREFIX = "app-";
-
-const makeStubIndex = (patcherPath: string) =>
-    `require(${JSON.stringify(patcherPath)});`;
-
-/** `_app.asar` next to `app.asar` marks any patched install. */
-export const isAlreadyPatched = (resources: string) =>
-    existsSync(join(resources, "_app.asar"));
-
-/**
- * apply the folder-shim patch to a discord `resources/` directory.
- *
- * renames vanilla `app.asar` to `_app.asar`, creates an `app/` folder
- * whose `index.js` requires the given patcher script. electron prefers
- * the folder over the asar of the same name and loads it first.
- *
- * idempotent. returns `false` if the directory is already patched or
- * has no vanilla `app.asar`. throws on partial failure after rolling
- * back any disk changes already made.
- */
-export const patchResourcesDir = (resources: string, patcherJsPath: string): boolean => {
-    if (!Project.capabilities.distribution || !Project.capabilities.hostRepatch) return false;
-    const app = join(resources, "app.asar");
-    const _app = join(resources, "_app.asar");
-
-    if (isAlreadyPatched(resources) || !existsSync(app) || existsSync(_app)) return false;
+export const isAlreadyPatched = (resources: string) => {
     try {
-        if (lstatSync(app).isDirectory()) return false;
+        host.ownership(resources, loaderSource.replaceAll("\r\n", "\n"), engineSource.replaceAll("\r\n", "\n"), trustSource.replaceAll("\r\n", "\n"));
+        return true;
     } catch {
         return false;
     }
-
-    const undo: Array<() => void> = [];
-    try {
-        renameSync(app, _app);
-        undo.push(() => renameSync(_app, app));
-
-        mkdirSync(app);
-        undo.push(() => {
-            const indexPath = join(app, "index.js");
-            const pkgPath = join(app, "package.json");
-            if (existsSync(indexPath)) unlinkSync(indexPath);
-            if (existsSync(pkgPath)) unlinkSync(pkgPath);
-            rmdirSync(app);
-        });
-
-        writeFileSync(join(app, "package.json"), STUB_PACKAGE);
-        writeFileSync(join(app, "index.js"), makeStubIndex(patcherJsPath));
-        return true;
-    } catch (err) {
-        for (let i = undo.length - 1; i >= 0; i--) {
-            try {
-                undo[i]();
-            } catch (cleanupErr) {
-                console.error("[EvenCord] Rollback step failed", cleanupErr);
-            }
-        }
-        throw err;
-    }
+};
+export const patchResourcesDir = (resources: string, _patcherJsPath: string): boolean => {
+    if (!Project.capabilities.distribution || !Project.capabilities.hostRepatch) return false;
+    if (process.platform !== "win32" || process.arch !== "x64") throw new Error("Host persistence supports Windows x64 only.");
+    return host.persist(resources, join(dirname(process.execPath), "resources"), trust,
+        loaderSource.replaceAll("\r\n", "\n"), engineSource.replaceAll("\r\n", "\n"), trustSource.replaceAll("\r\n", "\n"));
 };
 
 const parsePart = (s: string) => parseInt(s, 10) || 0;

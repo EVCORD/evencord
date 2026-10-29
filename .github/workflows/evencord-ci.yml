@@ -1,0 +1,50 @@
+name: EvenCord validation
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+      - name: Install isolated build dependencies
+        shell: pwsh
+        run: |
+          npm install --prefix .tools/pnpm pnpm@10.34.9 --ignore-scripts
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+          $env:npm_config_manage_package_manager_versions='false'
+          .tools/pnpm/node_modules/.bin/pnpm.cmd install --frozen-lockfile --ignore-scripts --store-dir .cache/pnpm-store
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+      - name: Validate source and security fixtures
+        shell: pwsh
+        run: |
+          node scripts/check-release.cjs
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+          node --test tests/release.test.cjs
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+          node node_modules/typescript/bin/tsc --noEmit
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+          node node_modules/eslint/bin/eslint.js src/main/updater src/main/applyHostPatch.ts src/main/patcher.ts src/utils/updater.ts src/components/settings/tabs/updater/Components.tsx
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+      - name: Build candidate
+        run: |
+          node scripts/build/build.mjs --desktop-only
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+          node scripts/release-tools.cjs candidate core dist
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          name: evencord-unsigned-candidate
+          path: |
+            dist/desktop.asar
+            dist/core.candidate.json
+          retention-days: 7

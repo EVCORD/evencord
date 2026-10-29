@@ -19,3 +19,7 @@ Core branding/generate_assets.py regenerates exports with Pillow and Windows Seg
 ## Review after upstream merges
 
 Classify upstream references as attribution, compatibility identifiers, optional service provenance, or product/distribution identity. Audit new download URLs, fallback hosts, database names, env vars and support text. Keep the Phase 1 job guards and repository-level Actions disablement. Preserve merge ancestry and review conflicts explicitly.
+
+## Release and loader protocol
+
+See [PHASE3.md](../PHASE3.md). runtime.cjs, host.cjs, loader.cjs and trust.json are identical reviewed copies across repositories, in addition to project.json. Run scripts/check-release.cjs with the peer checkout path after changing them. No production public keys are enrolled yet.

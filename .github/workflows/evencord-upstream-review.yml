@@ -1,0 +1,28 @@
+name: Prepare upstream review
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  proposal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Record upstream changes without merging or pushing
+        shell: bash
+        run: |
+          mkdir -p review
+          git fetch https://github.com/Equicord/Equicord.git main
+          git rev-parse HEAD FETCH_HEAD > review/revisions.txt
+          git log --oneline HEAD..FETCH_HEAD > review/commits.txt
+          git diff --name-status HEAD...FETCH_HEAD > review/files.txt
+          git merge-tree --write-tree HEAD FETCH_HEAD > review/merge-analysis.txt || status=$$
+          if [ "${status:-0}" -gt 1 ]; then exit "$status"; fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: upstream-review
+          path: review
+          retention-days: 7

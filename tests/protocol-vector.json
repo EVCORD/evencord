@@ -1,0 +1,13 @@
+{
+  "trust": {
+    "keys": {
+      "fixture-only": "tyv1DKauPoSO7sGKaVE8lMV3KgZw9EIOCsirGfNmWbw="
+    },
+    "revoked": []
+  },
+  "envelope": {
+    "keyId": "fixture-only",
+    "signed": "eyJzY2hlbWFWZXJzaW9uIjoxLCJwcm9kdWN0IjoiZXZlbmNvcmQiLCJjb21wb25lbnQiOiJjb3JlIiwicmVwb3NpdG9yeSI6ImFscmltaWkvZXZlbmNvcmQiLCJyZXBvc2l0b3J5SWQiOjE0Mzg0ODk1MTYsImNoYW5uZWwiOiJzdGFibGUiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJzZXF1ZW5jZSI6MSwic291cmNlQ29tbWl0IjoiYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsInVwc3RyZWFtQ29tbWl0IjoiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYiIsInBsYXRmb3JtIjoid2luMzIiLCJhcmNoaXRlY3R1cmUiOiJ4NjQiLCJkaXNjb3JkQ2hhbm5lbCI6InN0YWJsZSIsImxvYWRlclByb3RvY29sIjoxLCJwdWJsaXNoZWRBdCI6IjIwMjYtMTAtMjlUMDA6MDA6MDBaIiwiZXhwaXJlc0F0IjoiMjAyNi0xMC0zMFQwMDowMDowMFoiLCJub3RlcyI6IlB1YmxpYyB0ZXN0IHZlY3RvciwgbmV2ZXIgYSBwcm9kdWN0aW9uIHRydXN0IGFuY2hvci4iLCJkaXNjb3JkQXJjaGl2ZXMiOlsiY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjYyJdLCJhcnRpZmFjdCI6eyJuYW1lIjoiZGVza3RvcC5hc2FyIiwic2l6ZSI6Mywic2hhMjU2IjoiYmE3ODE2YmY4ZjAxY2ZlYTQxNDE0MGRlNWRhZTIyMjNiMDAzNjFhMzk2MTc3YTljYjQxMGZmNjFmMjAwMTVhZCJ9fQ==",
+    "signature": "uyVY1Snii6tKWjM4y+IXQqhX6Q5M9sS2A9azvj6La/dfEzqfLfo0hkZbwKGhm55HTkjMY8KG5bBdyLbmX7J6AA=="
+  }
+}

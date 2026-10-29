@@ -1,0 +1,51 @@
+name: Publish approved signed draft
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing reviewed draft release tag
+        type: string
+        required: true
+permissions:
+  contents: read
+jobs:
+  publish:
+    if: github.repository == 'alrimii/evencord' && github.ref == 'refs/heads/main' && vars.EVENCORD_RELEASE_ENABLED == 'true'
+    environment: evencord-production
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+      - name: Verify signed draft without executing its artifacts
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          if ($env:TAG -notmatch '^core-v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') {throw 'Invalid tag'}
+          $draft = gh release view $env:TAG --repo alrimii/evencord --json isDraft,assets | ConvertFrom-Json
+          if ($LASTEXITCODE -or !$draft.isDraft) {throw 'An existing unpublished draft is required'}
+          $expected=@('desktop.asar','core.release.json')
+          $actual=@($draft.assets | ForEach-Object {$_.name})
+          if ($actual.Count -ne $expected.Count -or (Compare-Object ($actual | Sort-Object) ($expected | Sort-Object))) {throw 'Unexpected or missing draft assets'}
+          $tagCommit = git rev-list -n 1 $env:TAG
+          if ($LASTEXITCODE -or $tagCommit -ne $env:GITHUB_SHA) {throw 'Tag does not match reviewed main commit'}
+          New-Item -ItemType Directory -Force candidate | Out-Null
+          gh release download $env:TAG --repo alrimii/evencord --pattern desktop.asar --dir candidate
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+          gh release download $env:TAG --repo alrimii/evencord --pattern core.release.json --dir candidate
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+          node scripts/release-tools.cjs verify core candidate
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
+          $envelope = Get-Content candidate/core.release.json -Raw | ConvertFrom-Json
+          $manifest = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($envelope.signed)) | ConvertFrom-Json
+          if ($env:TAG -ne ('core-v'+$manifest.version)) {throw 'Tag and signed version differ'}
+          gh release edit $env:TAG --repo alrimii/evencord --draft=false --latest
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
