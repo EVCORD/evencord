@@ -2,7 +2,7 @@
 
 The beta is suitable for volunteer testing on Windows x64 with the exact Stable, PTB or Canary archive approved in branding/discord-compatibility.json. Other archives are rejected. It is not a stable release or a promise that every inherited plugin works.
 
-Download the installer from the official EvenCord installer releases. Fully close Discord before installation. If another client modification owns Discord's loader, first export its settings, then remove that modification using its own supported installer. Two modifications cannot own the same loader. EvenCord preserves its separate settings root.
+Download the installer from the official EvenCord installer releases. Save unsaved clips or work first. The installer closes the selected Discord installation before changing its loader. Other channels stay open. If another client modification owns Discord's loader, first export its settings, then remove that modification using its own supported installer. Two modifications cannot own the same loader. EvenCord preserves its separate settings root.
 
 ## Importing plugin preferences
 
