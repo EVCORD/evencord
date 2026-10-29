@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { createReplayMuxer } from "./mux";
 import type { CaptureOptions } from "./types";
 
-export async function capture(config: CaptureOptions) {
+export async function capture(config: CaptureOptions, createMuxer: typeof createReplayMuxer) {
     type Packet = { time: number; video: boolean; key: boolean; data: Uint8Array<ArrayBuffer>; timingOffset: number; id: number; };
     const streams: MediaStream[] = [];
     let context: AudioContext | undefined;
@@ -25,7 +26,7 @@ export async function capture(config: CaptureOptions) {
     let bytes = 0;
     let lastTime = 0;
     let chain = Promise.resolve();
-    let snapshot: { packets: Packet[]; base: number; duration: number; } | undefined;
+    let snapshot: ReturnType<typeof createReplayMuxer> | undefined;
     let flush: (() => void) | undefined;
     let microphone = "";
     let redraw: ReturnType<typeof setInterval> | undefined;
@@ -193,29 +194,6 @@ export async function capture(config: CaptureOptions) {
         prune();
     }
 
-    function concat(parts: Uint8Array[]) {
-        const result = new Uint8Array(parts.reduce((length, part) => length + part.length, 0));
-        let offset = 0;
-        for (const part of parts) { result.set(part, offset); offset += part.length; }
-        return result;
-    }
-
-    function unsigned(value: number) {
-        const result: number[] = [];
-        do { result.unshift(value % 256); value = Math.floor(value / 256); } while (value);
-        return new Uint8Array(result);
-    }
-
-    function encode(id: number, body: Uint8Array) {
-        let length = 1;
-        while (body.length >= 2 ** (7 * length) - 1) length++;
-        const size = new Uint8Array(length);
-        let value = body.length;
-        for (let i = length - 1; i >= 0; i--) { size[i] = value % 256; value = Math.floor(value / 256); }
-        size[0] |= 1 << (8 - length);
-        return concat([unsigned(id), size, body]);
-    }
-
     Object.assign(globalThis, {
         bossclipCapture: {
             status: () => ({
@@ -224,7 +202,7 @@ export async function capture(config: CaptureOptions) {
                 targetSeconds: config.seconds, memoryMiB: bytes / 1024 / 1024, memoryLimitMiB: config.memoryMiB, fps: config.fps,
                 seconds: packets.length ? Math.min(config.seconds, Math.max(0, (lastTime - packets[0].time) / 1000)) : 0
             }),
-            async beginSave() {
+            async beginSave(format: "webm" | "mkv" = "webm") {
                 if (snapshot) throw new Error("A clip is already being saved.");
                 if (!recorder || recorder.state !== "recording") throw new Error(error || "Start recording first.");
                 const current = recorder;
@@ -239,29 +217,12 @@ export async function capture(config: CaptureOptions) {
                 if (!first || !ebml || !tracks || videoTrack < 0) throw new Error("The video is still warming up. Wait a few seconds.");
                 const selected = packets.filter(packet => packet.time >= first.time).sort((a, b) => a.time - b.time);
                 const duration = Math.min(keepMs, lastTime - first.time + 20);
-                snapshot = { packets: selected, base: first.time, duration };
-                return { pieces: Math.ceil(selected.length / 128) + 1, seconds: duration / 1000 };
+                snapshot = createMuxer(selected, tracks, videoTrack, first.time, duration, scale, format);
+                return { pieces: snapshot.pieces, seconds: duration / 1000 };
             },
             piece(index: number) {
                 if (!snapshot || !ebml || !tracks) throw new Error("The saved clip buffer is no longer available.");
-                if (index === 0) {
-                    const duration = new Uint8Array(8);
-                    new DataView(duration.buffer).setFloat64(0, snapshot.duration / scale);
-                    const app = new TextEncoder().encode("Reclip");
-                    const info = encode(0x1549a966, concat([
-                        encode(0x2ad7b1, unsigned(Math.round(scale * 1_000_000))), encode(0x4489, duration),
-                        encode(0x4d80, app), encode(0x5741, app)
-                    ]));
-                    return concat([ebml, new Uint8Array([0x18, 0x53, 0x80, 0x67, 1, 255, 255, 255, 255, 255, 255, 255]), info, tracks]);
-                }
-                const { base } = snapshot;
-                return concat(snapshot.packets.slice((index - 1) * 128, index * 128).map(packet => {
-                    const block = packet.data.slice();
-                    block[packet.timingOffset] = block[packet.timingOffset + 1] = 0;
-                    return encode(0x1f43b675, concat([
-                        encode(0xe7, unsigned(Math.max(0, Math.round((packet.time - base) / scale)))), encode(packet.id, block)
-                    ]));
-                }));
+                return snapshot.piece(index);
             },
             endSave() { snapshot = undefined; },
             stop

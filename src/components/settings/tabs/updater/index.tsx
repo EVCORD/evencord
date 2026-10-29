@@ -90,7 +90,7 @@ function Updater() {
             <EquibopSection />
             <Heading className={Margins.top16}>Update Preferences</Heading>
             <Paragraph className={Margins.bottom20}>
-                EvenCord checks its signed beta channel after startup and every 30 minutes. Equicord changes reach you only after review and publication in an EvenCord release.
+                EvenCord checks its signed beta channel after startup and every 15 minutes, when returning after a while, and after reconnecting. Failed checks retry automatically. Equicord changes reach you only after review and publication in an EvenCord release.
             </Paragraph>
 
             <div className="vc-settings-switches">

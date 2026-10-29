@@ -112,7 +112,8 @@ async function save() {
         if (result.error) notify(result.error, true);
         else {
             update({ lastSaved: result.path });
-            notify(`Saved ${duration(result.seconds ?? 0)} to your selected clips folder. Recording continues.`);
+            const actualFormat = result.path?.split(".").pop()?.toUpperCase() || format.toUpperCase();
+            notify(`Saved ${actualFormat} clip (${duration(result.seconds ?? 0)}) to your selected clips folder. Recording continues.`);
             if (result.warning) notify(result.warning, true);
         }
     } catch (error) {

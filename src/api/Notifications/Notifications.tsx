@@ -71,6 +71,7 @@ export interface NotificationData {
     color?: string;
     /** Whether this notification should not have a timeout */
     permanent?: boolean;
+    useNative?: boolean;
     /** Whether this notification should not be persisted in the Notification Log */
     noPersist?: boolean;
     /** Whether this notification should be dismissed when clicked (defaults to true) */
@@ -109,7 +110,7 @@ export async function requestPermission() {
 export async function showNotification(data: NotificationData) {
     persistNotification(data);
 
-    if (shouldBeNative() && await requestPermission()) {
+    if (data.useNative !== false && shouldBeNative() && await requestPermission()) {
         const { title, body, icon, image, onClick = null, onClose = null } = data;
         const n = new Notification(title, {
             body,

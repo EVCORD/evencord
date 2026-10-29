@@ -39,7 +39,7 @@ import { StartAt } from "@utils/types";
 import { SettingsRouter } from "@webpack/common";
 
 import { get as dsGet } from "./api/DataStore";
-import { showNotification } from "./api/Notifications";
+import { type NotificationData, showNotification } from "./api/Notifications";
 import { initPluginManager, PMLogger, startAllPlugins } from "./api/PluginManager";
 import { PlainSettings, Settings, SettingsStore } from "./api/Settings";
 import { areLocalSettingsDirty, getCloudSettings, getCloudSyncDirection, markLocalSettingsDirty, putCloudSettings, shouldCloudSync } from "./api/SettingsSync/cloudSync";
@@ -121,44 +121,62 @@ async function syncSettings() {
 }
 
 let notifiedUpdate = "";
+let pendingUpdateNotification: NotificationData | undefined;
+function flushUpdateNotification() {
+    if (!document.hasFocus() || !pendingUpdateNotification) return;
+    const data = pendingUpdateNotification;
+    pendingUpdateNotification = undefined;
+    void showNotification({ ...data, useNative: false, noPersist: true });
+}
+function notifyUpdate(data: NotificationData) {
+    pendingUpdateNotification = data;
+    flushUpdateNotification();
+}
 let updateCheckRunning = false;
+let lastAutomaticCheck = 0;
+let updateFailures = 0;
+let updateRetry: ReturnType<typeof setTimeout> | undefined;
 
 async function runUpdateCheck() {
     if (IS_UPDATER_DISABLED || updateCheckRunning) return;
     updateCheckRunning = true;
+    lastAutomaticCheck = Date.now();
+    clearTimeout(updateRetry);
     try {
         const outdated = await checkForUpdates();
-        if (!outdated) return;
+        if (!outdated) { updateFailures = 0; return; }
         if (Settings.autoUpdate) await update();
         const status = await getUpdateStatus();
+        updateFailures = 0;
         const identity = status.phase + status.availableVersion;
         if (notifiedUpdate === identity) return;
         if (status.phase === "ready") {
             if (Settings.autoUpdateNotification) {
                 notifiedUpdate = identity;
-                void showNotification({ title: "EvenCord has been updated!", body: "Update ready. Click here to restart Discord.", permanent: true, noPersist: true,
+                notifyUpdate({ title: "EvenCord has been updated!", body: "Update ready. Click here to restart Discord.", permanent: true, noPersist: true, useNative: false,
                     onClick: () => { void update().then(ready => { if (ready) relaunch(); }).catch(error => UpdateLogger.error(error)); }
                 });
             }
         } else if (status.phase === "available" && UpdaterTab) {
             const tab = UpdaterTab;
             notifiedUpdate = identity;
-            void showNotification({
+            notifyUpdate({
                 title: "An EvenCord update is available!",
                 body: `Version ${status.availableVersion}. Click here to view the update.`,
-                permanent: true, noPersist: true,
+                noPersist: true, useNative: false,
                 onClick: () => openSettingsTabModal(tab)
             });
         }
     } catch (error) {
         UpdateLogger.error("Failed to check for updates", error);
+        updateRetry = setTimeout(runUpdateCheck, Math.min(15 * 60_000, 60_000 * 2 ** Math.min(updateFailures++, 4)));
         if (UpdaterTab && notifiedUpdate !== "error") {
             const tab = UpdaterTab;
             notifiedUpdate = "error";
-            void showNotification({
+            notifyUpdate({
                 title: "EvenCord update needs attention",
                 body: "Your current build is preserved. Click here for details.",
-                noPersist: true, onClick: () => openSettingsTabModal(tab)
+                noPersist: true, useNative: false, onClick: () => openSettingsTabModal(tab)
             });
         }
     } finally { updateCheckRunning = false; }
@@ -171,8 +189,10 @@ async function init() {
     syncSettings();
 
     if (!IS_DEV && !IS_WEB && !IS_UPDATER_DISABLED) {
-        setTimeout(runUpdateCheck, 20_000);
-        setInterval(runUpdateCheck, 30 * 60_000);
+        setTimeout(runUpdateCheck, 5_000);
+        setInterval(runUpdateCheck, 15 * 60_000);
+        window.addEventListener("focus", () => { setTimeout(flushUpdateNotification, 0); if (Date.now() - lastAutomaticCheck > 10 * 60_000) void runUpdateCheck(); });
+        window.addEventListener("online", () => { if (Date.now() - lastAutomaticCheck > 60_000) void runUpdateCheck(); });
     }
 
     if (IS_DEV) {

@@ -8,7 +8,7 @@ import { definePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import { Paragraph } from "@components/Paragraph";
 import { OptionType, type PluginNative } from "@utils/types";
-import { MediaEngineStore, Select, useState, useStateFromStores } from "@webpack/common";
+import { MediaEngineStore, Select, useEffect, useState, useStateFromStores } from "@webpack/common";
 
 import type { CaptureOptions } from "./types";
 
@@ -33,6 +33,32 @@ function SaveFolderPicker() {
         }}>Choose folder</Button>
         <Button variant="secondary" disabled={busy || !saveFolder} onClick={() => { settings.store.saveFolder = ""; setError(""); }}>Use default folder</Button>
         <Paragraph>Applies to the next saved clip. Existing recordings stay in their current folders.</Paragraph>
+        {error && <Paragraph role="alert">{error}</Paragraph>}
+    </div>;
+}
+
+function EncoderPicker() {
+    const [path, setPath] = useState("");
+    const [error, setError] = useState("");
+    const [busy, setBusy] = useState(false);
+    useEffect(() => {
+        let active = true;
+        const native = VencordNative.pluginHelpers.Reclip as PluginNative<typeof import("./native")>;
+        void native.encoderInfo().then(path => { if (active) setPath(path); }).catch(() => { if (active) setError("Could not check FFmpeg."); });
+        return () => { active = false; };
+    }, []);
+    return <div role="group" aria-label="MP4 converter">
+        <Paragraph>{path ? "MP4 converter: " + path : "MP4 requires FFmpeg. WebM and MKV work without it."}</Paragraph>
+        <Button disabled={busy} onClick={async () => {
+            setBusy(true); setError("");
+            try {
+                const native = VencordNative.pluginHelpers.Reclip as PluginNative<typeof import("./native")>;
+                const selected = await native.chooseEncoder();
+                if (selected) setPath(selected);
+            } catch { setError("Choose an available local ffmpeg.exe file."); }
+            finally { setBusy(false); }
+        }}>Choose ffmpeg.exe</Button>
+        <Paragraph>Applied immediately. The tool path is saved locally for this Discord channel and is excluded from plugin settings imports.</Paragraph>
         {error && <Paragraph role="alert">{error}</Paragraph>}
     </div>;
 }
@@ -137,13 +163,14 @@ export const settings = definePluginSettings({
     },
     exportFormat: {
         displayName: "Save format",
-        type: OptionType.SELECT, description: "WebM saves directly. MP4 and MKV use an installed FFmpeg. If conversion fails, the WebM is kept and a warning is shown.",
+        type: OptionType.SELECT, description: "Seekable WebM and MKV save directly. MP4 requires FFmpeg; select its executable below if it is not detected. Failed MP4 conversion preserves WebM with a warning.",
         options: [
             { label: "WebM: fastest, no conversion", value: "webm", default: true },
             { label: "MP4: H.264 video and AAC audio", value: "mp4" },
             { label: "MKV: original quality, no re-encoding", value: "mkv" }
         ]
     },
+    encoder: { type: OptionType.COMPONENT, component: EncoderPicker },
     showIcon: {
         displayName: "Show replay button",
         type: OptionType.BOOLEAN, default: true,

@@ -49,12 +49,12 @@ Save settings, then stop and start the buffer to apply duration, quality, or aud
 | Format | Behavior | Requirement |
 | --- | --- | --- |
 | WebM, default | Saves the original VP8/VP9 video and Opus audio directly | No external software |
-| MP4 | Converts to H.264 video and AAC audio, with fast-start metadata | FFmpeg with libx264 and AAC available in Discord's PATH |
-| MKV | Repackages the original streams without re-encoding | FFmpeg available in Discord's PATH |
+| MP4 | Converts to H.264 video and AAC audio, with fast-start metadata | FFmpeg with libx264 and AAC, detected automatically or selected in settings |
+| MKV | Writes Matroska with the original streams and a seek index | No external converter |
 
-Save format applies to the next save without restarting the buffer. FFmpeg is optional and is never downloaded or installed by the plugin. It runs hidden, without a command shell, only when converting a saved clip. MP4 conversion uses a two-thread video encoder and takes extra CPU and time; it is not a total CPU limit. MKV conversion does not re-encode. The frozen buffer snapshot is released before conversion so it does not remain pinned in memory throughout a long export.
+Save format applies to the next save without restarting the buffer. FFmpeg is optional and is never downloaded or installed by the plugin. It runs hidden, without a command shell, only when converting a saved clip. MP4 conversion uses a two-thread video encoder and takes extra CPU and time; it is not a total CPU limit. MKV saves directly without re-encoding. The frozen buffer snapshot is released before conversion so it does not remain pinned in memory throughout a long export.
 
-The WebM is saved first. The selected format is finalized only after conversion succeeds; then that newly created intermediate WebM is removed. If conversion fails, is cancelled, or exceeds twenty minutes, the original WebM is retained and a warning is shown. Disabling the plugin cancels its active converter. No earlier saved recording is deleted. A full Discord relaunch may be needed after installing FFmpeg so its PATH is refreshed. Recording continues during export, but only one save can run at a time.
+For MP4, the WebM is saved first. MP4 is finalized only after conversion succeeds; then that newly created intermediate WebM is removed. If conversion fails, is cancelled, or exceeds twenty minutes, the original WebM is retained and a warning is shown. Disabling the plugin cancels its active converter. No earlier saved recording is deleted. Choose ffmpeg.exe in settings if automatic discovery cannot find a newly installed tool; no relaunch is needed. Recording continues during export, but only one save can run at a time.
 
 ## Resource controls
 
@@ -79,3 +79,7 @@ Read [Vencord's contribution rules](https://github.com/Vendicated/Vencord/blob/m
 ### Save folder
 
 Use **Choose folder** in Reclip settings to open the Windows folder picker. The default is `Videos/Reclip`; **Use default folder** restores it. The choice applies to future clips and persists in EvenCord plugin settings. Existing clips are not moved. A disconnected or inaccessible folder produces an error instead of silently redirecting the recording.
+
+### Export compatibility
+
+New WebM and MKV files contain a seek head, duration and keyframe index. Both save without an external converter. MP4 requires FFmpeg with H.264/AAC support. Reclip checks PATH, standard Windows locations and WinGet packages, and the settings page lets you choose ffmpeg.exe directly without restarting Discord. The converter path is saved in native settings for this Discord channel and excluded from plugin-settings imports. On conversion failure the original WebM is preserved. Old recordings are not automatically rewritten.

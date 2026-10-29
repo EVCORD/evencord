@@ -73,11 +73,11 @@ export function Controls({ capture, toggle, save, openFolder, showLastClip }: Co
         <Paragraph>Keep the last {duration(target)} of Discord ready to save. No game or screen share required. Recording changes apply when you next start the buffer; the save format applies to your next clip.</Paragraph>
         {!settings.store.showIcon ? <Paragraph>The replay button is hidden. Use these controls or your global shortcuts to record and save.</Paragraph> : null}
         {profile.fps === 60 ? <Paragraph>60 fps is a maximum, not a guarantee. Smooth motion uses more processing power; Balanced is better for mostly static conversations.</Paragraph> : null}
-        {settings.store.exportFormat === "mp4" ? <Paragraph>MP4 converts locally after saving. This takes extra time and CPU while the recording buffer continues. FFmpeg must be installed and available in PATH.</Paragraph> : null}
+        {settings.store.exportFormat === "mp4" ? <Paragraph>MP4 converts locally after saving. This takes extra time and CPU while the recording buffer continues. Choose ffmpeg.exe in Reclip settings if it is not detected automatically.</Paragraph> : null}
         <details className="vc-reclip-details">
             <summary>Audio and saving details</summary>
             <Paragraph>Speaker audio can include other apps. Use the Windows default output for Discord. Your microphone records independently of Discord mute and push to talk; choose Microphone off to exclude it.</Paragraph>
-            <Paragraph>Choose a save folder in settings. The default remains Videos/Reclip. WebM saves directly. MP4 converts to H.264 and AAC; MKV repackages the original streams without quality loss. Conversion failures preserve the WebM and show a warning.</Paragraph>
+            <Paragraph>Choose a save folder in settings. The default remains Videos/Reclip. WebM and MKV include seek indexes and save directly without conversion. MP4 converts to H.264 and AAC using FFmpeg. Conversion failures preserve the WebM and show a warning.</Paragraph>
             <Paragraph>Early clips are shorter, and exports start at the nearest usable video keyframe. Stopping discards unsaved footage. The buffer limit covers encoded video; total process memory is higher, especially during saves.</Paragraph>
         </details>
     </section>;

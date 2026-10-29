@@ -11,7 +11,8 @@ import { dirname, isAbsolute, join, resolve } from "node:path";
 import { app, BrowserWindow, dialog, globalShortcut, type IpcMainInvokeEvent, session, shell, type WebContents } from "electron";
 
 import { capture } from "./capture";
-import { convertClip } from "./encode";
+import { convertClip, findFFmpeg, selectFFmpeg } from "./encode";
+import { createReplayMuxer } from "./mux";
 import type { CaptureOptions, CaptureStatus, ExportFormat, ShortcutAction } from "./types";
 
 let owner: WebContents | undefined;
@@ -96,6 +97,16 @@ export async function chooseFolder(event: IpcMainInvokeEvent, selected: string) 
     const result = await dialog.showOpenDialog(window, { title: "Choose Reclip save folder", defaultPath, properties: ["openDirectory", "createDirectory"] });
     if (result.canceled || !result.filePaths[0]) return null;
     return folder(result.filePaths[0]);
+}
+
+export async function encoderInfo(event: IpcMainInvokeEvent) {
+    if (event.senderFrame !== event.sender.mainFrame || !BrowserWindow.fromWebContents(event.sender)) throw new Error("Open Reclip settings in Discord.");
+    return (await findFFmpeg()) || "";
+}
+export async function chooseEncoder(event: IpcMainInvokeEvent) {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (!window || event.senderFrame !== event.sender.mainFrame) throw new Error("Open Reclip settings in Discord.");
+    return selectFFmpeg(window);
 }
 
 export function initialize(event: IpcMainInvokeEvent, saveKey: string, toggleKey: string) {
@@ -203,7 +214,7 @@ export async function startRecording(event: IpcMainInvokeEvent, options: Capture
                 window.show();
                 window.focus();
                 const result = await evaluate<{ error: string }>(contents,
-                    `(${capture.toString()})(${JSON.stringify(options)}).then(() => ({error: ""}), e => ({error: String(e.message || "Could not start capture.").slice(0, 400)}))`, true
+                    `(${capture.toString()})(${JSON.stringify(options)},${createReplayMuxer.toString()}).then(() => ({error: ""}), e => ({error: String(e.message || "Could not start capture.").slice(0, 400)}))`, true
                 );
                 return result;
             })(),
@@ -251,13 +262,13 @@ export async function saveClip(event: IpcMainInvokeEvent, format: ExportFormat, 
     let stage = "buffer";
     try {
         const snapshot = await evaluate<{ error?: string; pieces: number; seconds: number }>(window.webContents,
-            "bossclipCapture.beginSave().catch(e => ({error: String(e.message).slice(0, 400)}))"
+            `bossclipCapture.beginSave(${JSON.stringify(format === "mkv" ? "mkv" : "webm")}).catch(e => ({error: String(e.message).slice(0, 400)}))`
         );
         if (snapshot.error) return { error: snapshot.error };
         if (!Number.isInteger(snapshot.pieces) || snapshot.pieces < 2 || snapshot.pieces > 2000) return { error: "The clip buffer is invalid." };
         stage = "disk";
         const directory = await folder(selectedFolder);
-        const filename = `reclip-${new Date().toISOString().replace(/[:.]/g, "-")}-${randomUUID().slice(0, 8)}.webm`;
+        const filename = `reclip-${new Date().toISOString().replace(/[:.]/g, "-")}-${randomUUID().slice(0, 8)}.${format === "mkv" ? "mkv" : "webm"}`;
         const destination = join(directory, filename);
         const temporary = `${destination}.part`;
         const file = await open(temporary, "wx");
@@ -282,7 +293,7 @@ export async function saveClip(event: IpcMainInvokeEvent, format: ExportFormat, 
         partial = undefined;
         lastSavedPath = destination;
         if (!window.isDestroyed()) await evaluate(window.webContents, "bossclipCapture.endSave()").catch(() => undefined);
-        if (format === "webm") return { error: "", path: destination, seconds: snapshot.seconds };
+        if (format !== "mp4") return { error: "", path: destination, seconds: snapshot.seconds };
         if (!authorized(event) || helper !== window) return {
             error: "", path: destination, seconds: snapshot.seconds,
             warning: "Recording stopped during saving. Your clip was preserved as WebM."

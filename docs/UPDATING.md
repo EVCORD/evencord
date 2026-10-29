@@ -12,7 +12,7 @@ For each core release:
 4. Sign the manifest using the protected beta signing identity through scripts/sign-release.cjs. Keep the private key outside Git, logs and uploaded assets. Verify with node scripts/release-tools.cjs verify core DIRECTORY.
 5. Publish immutable artifacts, signed metadata, source identity, checksums and notices as a GitHub prerelease tagged core-vVERSION in alrimii/evencord. Verify the public download before announcing it or updating the website.
 
-Managed beta.3 or newer clients check after startup and every 30 minutes. Users can also choose Check for Updates. Automatic downloads follow the user's existing preference. The client verifies identity, Ed25519 signature, artifact size, SHA-256 and Discord compatibility before staging. Restart is offered only after successful staging.
+Managed beta.3 or newer clients check after startup and every 15 minutes. Users can also choose Check for Updates. Automatic downloads follow the user's existing preference. The client verifies identity, Ed25519 signature, artifact size, SHA-256 and Discord compatibility before staging. Restart is offered only after successful staging.
 
 A core-only plugin change normally needs no installer rebuild: the current installer discovers the newest approved signed core release. Rebuild and independently version the installer when its own code or embedded trust/loader contract changes. Beta.1/beta.2 clients need the one-time manual installer upgrade.
 
