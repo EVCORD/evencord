@@ -12,6 +12,7 @@ permissions:
 
 jobs:
     Build:
+        if: ${{ false }}
         name: Build Equicord
         runs-on: ubuntu-latest
 

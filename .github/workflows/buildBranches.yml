@@ -33,7 +33,7 @@ jobs:
     Build:
         name: Build Equicord
         runs-on: ubuntu-latest
-        if: github.repository == 'Equicord/Equicord'
+        if: ${{ false && github.repository == 'Equicord/Equicord' }}
 
         steps:
             - uses: actions/checkout@v6

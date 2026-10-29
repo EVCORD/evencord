@@ -10,7 +10,7 @@ on:
 
 jobs:
     codeberg:
-        if: github.repository == 'Equicord/Equicord'
+        if: ${{ false && github.repository == 'Equicord/Equicord' }}
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v7

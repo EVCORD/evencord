@@ -1,5 +1,7 @@
 # [<img src="./browser/icon.png" width="40" align="left" alt="Equicord">](https://github.com/Equicord/Equicord) Equicord
 
+> **Foundation fork, not a release.** This is `alrimii/discord-mod-core`, a history-preserving fork of Equicord. The project name is temporary. Application source, branding, and download/update destinations are still upstream. GitHub Actions is disabled, and no fork binaries are published. The instructions and download links below describe upstream Equicord, not a release of this fork. Read [FOUNDATION.md](FOUNDATION.md) before development or distribution.
+
 [![Equibop](https://img.shields.io/badge/Equibop-grey?style=flat)](https://github.com/Equicord/Equibop)
 [![Tests](https://github.com/Equicord/Equicord/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Equicord/Equicord/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/discord/1173279886065029291.svg?color=768AD4&label=Discord&logo=discord&logoColor=white)](https://equicord.org/discord)
