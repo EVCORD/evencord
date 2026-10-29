@@ -17,6 +17,7 @@
 */
 
 import { fetchBuffer, fetchJson } from "@main/utils/http";
+import { Project } from "@shared/project";
 import { VENCORD_USER_AGENT } from "@shared/vencordUserAgent";
 import { writeFileSync } from "original-fs";
 
@@ -41,6 +42,7 @@ async function githubGet<T = any>(endpoint: string) {
 }
 
 async function listUpdates() {
+    if (!Project.capabilities.distribution || !Project.capabilities.updates) return [];
     const isOutdated = await fetchUpdate();
     if (!isOutdated) return [];
 
@@ -54,6 +56,7 @@ async function listUpdates() {
 }
 
 async function fetchUpdate() {
+    if (!Project.capabilities.distribution || !Project.capabilities.updates) return false;
     const data = await githubGet("/releases/latest");
 
     const hash = data.name.slice(data.name.lastIndexOf(" ") + 1);
@@ -67,6 +70,7 @@ async function fetchUpdate() {
 }
 
 async function applyUpdate() {
+    if (!Project.capabilities.distribution || !Project.capabilities.updates) return false;
     if (!PendingUpdate) return true;
 
     const data = await fetchBuffer(PendingUpdate);

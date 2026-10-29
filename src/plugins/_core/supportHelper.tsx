@@ -28,6 +28,7 @@ import { Paragraph } from "@components/Paragraph";
 import { openSettingsTabModal, UpdaterTab } from "@components/settings";
 import { platformName } from "@equicordplugins/equicordHelper/utils";
 import customIdle from "@plugins/customIdle";
+import { Project } from "@shared/project";
 import { gitHash, gitHashShort } from "@shared/vencordUserAgent";
 import { CONTRIB_ROLE_ID, Devs, DONOR_ROLE_ID, EQUICORD_TEAM, GUILD_ID, SUPPORT_CHANNEL_ID, SUPPORT_CHANNEL_IDS, VC_CONTRIB_ROLE_ID, VC_DONOR_ROLE_ID, VC_GUILD_ID, VC_REGULAR_ROLE_ID, VENCORD_CONTRIB_ROLE_ID } from "@utils/constants";
 import { sendMessage } from "@utils/discord";
@@ -140,8 +141,8 @@ async function generateDebugInfoMessage() {
         : platformName();
 
     const info = {
-        Equicord:
-            `v${VERSION} • [${gitHashShort}](<https://github.com/Equicord/Equicord/commit/${gitHash}>)` +
+        EvenCord:
+            `v${VERSION} • [${gitHashShort}](<https://github.com/alrimii/evencord/commit/${gitHash}>)` +
             `${IS_EQUIBOP ? "" : SettingsPlugin.getVersionInfo()} - ${Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(BUILD_TIMESTAMP)}`,
         Client: `${RELEASE_CHANNEL} ~ ${clientString}`,
         Platform: platformDisplay
@@ -166,7 +167,7 @@ async function generateDebugInfoMessage() {
     const commonIssues = {
         "Activity Sharing Disabled": tryOrElse(() => !ShowCurrentGame.getSetting(), false),
         "Link Embeds Disabled": tryOrElse(() => !ShowEmbeds.getSetting(), false),
-        "Equicord DevBuild": !IS_STANDALONE,
+        "EvenCord DevBuild": !IS_STANDALONE,
         "Equibop DevBuild": IS_EQUIBOP && tryOrElse(() => VesktopNative.app.isDevBuild?.(), false),
         "Platform Spoofed": spoofInfo?.spoofed ?? false,
         "Has UserPlugins": Object.values(PluginMeta).some(m => m.userPlugin),
@@ -295,14 +296,14 @@ function DevBuildConfirmModal(props: RenderModalProps) {
             }}
         >
             <div>
-                <Paragraph>You are using a custom build of Equicord, which we do not provide support for!</Paragraph>
+                <Paragraph>You are using EvenCord, an independent fork. Equicord does not provide support for this build.</Paragraph>
 
                 <Paragraph className={Margins.top8}>
-                    We only provide support for <Link href="https://equicord.org/download">official builds</Link>.
-                    Either <Link href="https://equicord.org/download">switch to an official build</Link> or figure your issue out yourself.
+                    This experimental fork has its own <Link href={Project.links.support}>development support information</Link>.
+                    Please read the <Link href={Project.links.support}>EvenCord support information</Link>.
                 </Paragraph>
 
-                <Text variant="text-md/bold" className={Margins.top8}>You will be banned from receiving support if you ignore this rule.</Text>
+                <Text variant="text-md/bold" className={Margins.top8}>Please do not ask upstream maintainers to support EvenCord-specific changes.</Text>
             </div>
         </ConfirmModal>
     );
@@ -329,14 +330,14 @@ export default definePlugin({
     commands: [
         {
             name: "equicord-debug",
-            description: "Send Equicord debug info",
+            description: "Send EvenCord debug info",
             // @ts-ignore
             predicate: ctx => isAnyPluginDev(UserStore.getCurrentUser()?.id) || isEquicordGuild(ctx?.guild?.id, true),
             execute: async () => ({ content: await generateDebugInfoMessage() })
         },
         {
             name: "equicord-plugins",
-            description: "Send Equicord plugin list",
+            description: "Send EvenCord plugin list",
             // @ts-ignore
             predicate: ctx => isAnyPluginDev(UserStore.getCurrentUser()?.id) || isEquicordGuild(ctx?.guild?.id, true),
             execute: async () => {
@@ -382,7 +383,7 @@ export default definePlugin({
                             onCancel={() => openSettingsTabModal(UpdaterTab!)}
                         >
                             <div>
-                                <Paragraph>You are using an outdated version of Equicord! Chances are, your issue is already fixed.</Paragraph>
+                                <Paragraph>You are using an outdated version of EvenCord! Chances are, your issue is already fixed.</Paragraph>
                                 <Paragraph className={Margins.top8}>
                                     Please first update before asking for support!
                                 </Paragraph>
@@ -408,9 +409,9 @@ export default definePlugin({
                         variant="primary"
                     >
                         <div>
-                            <Paragraph>You are using an externally updated Equicord version, which we do not provide support for!</Paragraph>
+                            <Paragraph>EvenCord updates are disabled during development. This build is not supported by upstream.</Paragraph>
                             <Paragraph className={Margins.top8}>
-                                Please either switch to an <Link href="https://equicord.org/download">officially supported version of Equicord</Link>, or
+                                Please either switch to an <Link href={Project.links.support}>documented EvenCord development configuration</Link>, or
                                 contact your package maintainer for support instead.
                             </Paragraph>
                         </div>

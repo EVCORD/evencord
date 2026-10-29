@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { Project } from "@shared/project";
 import { existsSync, lstatSync, mkdirSync, readdirSync, renameSync, rmdirSync, statSync, unlinkSync, writeFileSync } from "original-fs";
 import { basename, dirname, join } from "path";
 
@@ -29,6 +30,7 @@ export const isAlreadyPatched = (resources: string) =>
  * back any disk changes already made.
  */
 export const patchResourcesDir = (resources: string, patcherJsPath: string): boolean => {
+    if (!Project.capabilities.distribution || !Project.capabilities.hostRepatch) return false;
     const app = join(resources, "app.asar");
     const _app = join(resources, "_app.asar");
 
@@ -61,7 +63,7 @@ export const patchResourcesDir = (resources: string, patcherJsPath: string): boo
             try {
                 undo[i]();
             } catch (cleanupErr) {
-                console.error("[Equicord] Rollback step failed", cleanupErr);
+                console.error("[EvenCord] Rollback step failed", cleanupErr);
             }
         }
         throw err;
@@ -103,14 +105,14 @@ export const findStaleSibling = (currentExeDir: string): string | null => {
             try {
                 isDir = statSync(join(discordPath, name)).isDirectory();
             } catch (statErr) {
-                console.error("[Equicord] Skipping unreadable sibling", name, statErr);
+                console.error("[EvenCord] Skipping unreadable sibling", name, statErr);
                 continue;
             }
             if (!isDir) continue;
             if (isNewer(name, latest)) latest = name;
         }
     } catch (err) {
-        console.error("[Equicord] Failed to scan for sibling versions", err);
+        console.error("[EvenCord] Failed to scan for sibling versions", err);
         return null;
     }
 

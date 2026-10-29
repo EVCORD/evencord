@@ -26,6 +26,7 @@ import { Heading, HeadingSecondary } from "@components/Heading";
 import { Link } from "@components/Link";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
+import { Project } from "@shared/project";
 import { Margins } from "@utils/margins";
 import { useAwaiter } from "@utils/react";
 import { getRepo, isNewer, UpdateLogger } from "@utils/updater";
@@ -48,8 +49,8 @@ function EquibopSection() {
     return (
         <Flex className={Margins.bottom20} flexDirection="column" gap="1em">
             <Card variant="brand">
-                <HeadingSecondary>Equibop & Equicord</HeadingSecondary>
-                <Paragraph>Equibop and Equicord are two separate things. This updater is for Equicord.</Paragraph>
+                <HeadingSecondary>Equibop & EvenCord</HeadingSecondary>
+                <Paragraph>Equibop and EvenCord are two separate things. This updater is for EvenCord.</Paragraph>
                 <Paragraph className={Margins.top8}>
                     You receive separate popups for Equibop updates. You can also manually update by installing the <Link href="https://equibop.org/install">latest version</Link>.
                 </Paragraph>
@@ -69,6 +70,7 @@ function EquibopSection() {
 }
 
 function Updater() {
+    if (!Project.capabilities.distribution || !Project.capabilities.updates) return <SettingsTab><Heading>Updates unavailable</Heading><Paragraph>EvenCord updates are disabled until installer and updater safety work is complete. This development build has no public update channel.</Paragraph></SettingsTab>;
     const settings = useSettings(["autoUpdate", "autoUpdateNotification"]);
 
     const [repo, err, repoPending] = useAwaiter(getRepo, { fallbackValue: "Loading..." });
@@ -88,20 +90,20 @@ function Updater() {
             <EquibopSection />
             <Heading className={Margins.top16}>Update Preferences</Heading>
             <Paragraph className={Margins.bottom20}>
-                Control how Equicord keeps itself up to date. You can choose to update automatically in the background or be notified when new updates are available.
+                Control how EvenCord keeps itself up to date. You can choose to update automatically in the background or be notified when new updates are available.
             </Paragraph>
 
             <div className="vc-settings-switches">
                 <FormSwitch
                     title="Automatically update"
-                    description="When enabled, Equicord will automatically download and install updates in the background without asking for confirmation. You'll need to restart Discord to apply the changes."
+                    description="When enabled, EvenCord will automatically download and install updates in the background without asking for confirmation. You'll need to restart Discord to apply the changes."
                     value={settings.autoUpdate}
                     onChange={(v: boolean) => settings.autoUpdate = v}
                     hideBorder
                 />
                 <FormSwitch
                     title="Get notified when an automatic update completes"
-                    description="Receive a notification when Equicord finishes downloading an update in the background, so you know when to restart Discord."
+                    description="Receive a notification when EvenCord finishes downloading an update in the background, so you know when to restart Discord."
                     value={settings.autoUpdateNotification}
                     onChange={(v: boolean) => settings.autoUpdateNotification = v}
                     disabled={!settings.autoUpdate}
@@ -113,7 +115,7 @@ function Updater() {
 
             <Heading className={Margins.top20}>Repository</Heading>
             <Paragraph className={Margins.bottom8}>
-                This is the GitHub repository where Equicord fetches updates from.
+                This is the GitHub repository where EvenCord fetches updates from.
             </Paragraph>
             <Paragraph color="text-subtle">
                 {repoPending

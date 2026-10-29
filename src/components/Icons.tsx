@@ -26,7 +26,7 @@ interface BaseIconProps extends IconProps {
     viewBox: string;
 }
 
-type IconProps = JSX.IntrinsicElements["svg"];
+export type IconProps = JSX.IntrinsicElements["svg"];
 
 export const DiscordIconSizes = {
     xxs: 12,
@@ -37,7 +37,7 @@ export const DiscordIconSizes = {
     refresh_sm: 20
 } as const;
 
-function Icon({ height = 24, width = 24, className, children, viewBox, ...svgProps }: PropsWithChildren<BaseIconProps>) {
+export function Icon({ height = 24, width = 24, className, children, viewBox, ...svgProps }: PropsWithChildren<BaseIconProps>) {
     return (
         <svg
             className={classes(className, "vc-icon")}

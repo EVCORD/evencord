@@ -5,7 +5,8 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { BackupRestoreIcon, CloudIcon, LogIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PluginsIcon, UpdaterIcon } from "@components/Icons";
+import { EvenCordIcon } from "@components/EvenCordIcon";
+import { BackupRestoreIcon, CloudIcon, LogIcon, PaintbrushIcon, PatchHelperIcon, PluginsIcon, UpdaterIcon } from "@components/Icons";
 import {
     BackupAndRestoreTab,
     ChangelogTab,
@@ -16,6 +17,7 @@ import {
     UpdaterTab,
     VencordTab,
 } from "@components/settings";
+import { Project } from "@shared/project";
 import { gitHashShort } from "@shared/vencordUserAgent";
 import { Devs } from "@utils/constants";
 import { isTruthy } from "@utils/guards";
@@ -98,7 +100,7 @@ interface SettingsLayoutBuilder {
 const settings = definePluginSettings({
     settingsLocation: {
         type: OptionType.SELECT,
-        description: "Where to put the Equicord settings section",
+        description: "Where to put the EvenCord settings section",
         options: [
             { label: "At the very top", value: "top" },
             { label: "Above Billing section", value: "aboveNitro", default: true },
@@ -110,7 +112,7 @@ const settings = definePluginSettings({
     },
     includeVencordInfoWhenCopying: {
         type: OptionType.BOOLEAN,
-        description: "Also copy Equicord info (Equicord, Electron, Chromium) when clicking the version info in the bottom left area of the Settings page",
+        description: "Also copy EvenCord info (EvenCord, Electron, Chromium) when clicking the version info in the bottom left area of the Settings page",
         default: true
     }
 });
@@ -192,10 +194,10 @@ export default definePlugin({
         const equicordEntries: SettingsLayoutNode[] = [
             buildEntry({
                 key: "equicord_main",
-                title: "Equicord",
-                panelTitle: "Equicord Settings",
+                title: Project.displayName,
+                panelTitle: Project.displayName + " Settings",
                 Component: VencordTab,
-                Icon: MainSettingsIcon
+                Icon: EvenCordIcon
             }),
             buildEntry({
                 key: "equicord_plugins",
@@ -212,7 +214,7 @@ export default definePlugin({
             !IS_UPDATER_DISABLED && UpdaterTab && buildEntry({
                 key: "equicord_updater",
                 title: "Updater",
-                panelTitle: "Equicord Updater",
+                panelTitle: "EvenCord Updater",
                 Component: UpdaterTab,
                 Icon: UpdaterIcon
             }),
@@ -222,10 +224,10 @@ export default definePlugin({
                 Component: ChangelogTab,
                 Icon: LogIcon,
             }),
-            buildEntry({
+            Project.capabilities.cloud && buildEntry({
                 key: "equicord_cloud",
                 title: "Cloud",
-                panelTitle: "Equicord Cloud",
+                panelTitle: "EvenCord Cloud",
                 Component: CloudTab,
                 Icon: CloudIcon
             }),
@@ -247,7 +249,7 @@ export default definePlugin({
         const equicordSection: SettingsLayoutNode = {
             key: "equicord_section",
             type: LayoutTypes.SECTION,
-            useTitle: () => "Equicord Settings",
+            useTitle: () => Project.displayName + " Settings",
             buildLayout: () => equicordEntries
         };
 
@@ -313,7 +315,7 @@ export default definePlugin({
     getInfoRows() {
         const { electronVersion, chromiumVersion, getVersionInfo } = this;
 
-        const rows = [`Equicord ${gitHashShort}${getVersionInfo()}`];
+        const rows = [`EvenCord ${gitHashShort}${getVersionInfo()}`];
 
         if (electronVersion) rows.push(`Electron ${electronVersion}`);
         if (chromiumVersion) rows.push(`Chromium ${chromiumVersion}`);

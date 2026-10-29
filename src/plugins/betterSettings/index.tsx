@@ -6,7 +6,8 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { disableStyle, enableStyle } from "@api/Styles";
-import { AchievementsIcon, AppsIcon, CreditCardIcon, EquicordIcon, GameControllerIcon, HammerAndChiselIcon, MainSettingsIcon, PencilSparkleIcon, UserIcon } from "@components/Icons";
+import { EvenCordIcon } from "@components/EvenCordIcon";
+import { AchievementsIcon, AppsIcon, CreditCardIcon, GameControllerIcon, HammerAndChiselIcon, MainSettingsIcon, PencilSparkleIcon, UserIcon } from "@components/Icons";
 import { buildPluginMenuEntries, buildThemeMenuEntries } from "@equicordplugins/equicordToolbox/menu";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
@@ -26,7 +27,7 @@ const Classes = findCssClassesLazy("animating", "baseLayer", "bg", "layer", "lay
 const SECTION_ICONS: Record<string, Icon> = {
     profile_section: PencilSparkleIcon,
     user_section: UserIcon,
-    equicord_section: EquicordIcon,
+    equicord_section: EvenCordIcon,
     billing_section: CreditCardIcon,
     app_section: AppsIcon,
     games_and_apps_section: GameControllerIcon,

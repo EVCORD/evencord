@@ -16,7 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-export const ASAR_FILE = IS_VESKTOP ? "vesktop.asar" : IS_EQUIBOP ? "equibop.asar" : "desktop.asar";
+import { Project } from "@shared/project";
+
+export const ASAR_FILE = IS_VESKTOP ? "vesktop.asar" : IS_EQUIBOP ? "equibop.asar" : Project.release.coreAsset;
 
 export function serializeErrors(func: (...args: any[]) => any) {
     return async function () {

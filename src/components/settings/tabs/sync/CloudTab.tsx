@@ -30,6 +30,7 @@ import { Link } from "@components/Link";
 import { Notice } from "@components/Notice";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
+import { cloudStorageKeys, Project } from "@shared/project";
 import { localStorage } from "@utils/localStorage";
 import { Margins } from "@utils/margins";
 import { useForceUpdater } from "@utils/react";
@@ -185,9 +186,9 @@ function CloudTab() {
 
             <Select
                 options={syncDirectionOptions}
-                isSelected={v => v === (localStorage.Vencord_cloudSyncDirection ?? "both")}
+                isSelected={v => v === (localStorage[cloudStorageKeys.direction] ?? "both")}
                 select={v => {
-                    localStorage.Vencord_cloudSyncDirection = v;
+                    localStorage[cloudStorageKeys.direction] = v;
                     forceUpdate();
                 }}
                 serialize={v => v}
@@ -265,4 +266,9 @@ function CloudTab() {
     );
 }
 
-export default wrapTab(CloudTab, "Cloud");
+function EvenCordCloudTab() {
+    if (!Project.capabilities.cloud) return <SettingsTab><Paragraph>Cloud synchronization is unavailable in EvenCord. Use Backup &amp; Restore to transfer your settings locally.</Paragraph></SettingsTab>;
+    return <CloudTab />;
+}
+
+export default wrapTab(EvenCordCloudTab, "Cloud");

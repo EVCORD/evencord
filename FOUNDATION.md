@@ -1,3 +1,7 @@
+# EvenCord foundation status
+
+Phase 2 branding and identity are implemented. See [PHASE2.md](PHASE2.md). The following Phase 1 record is historical; its references to unchanged runtime branding describe the initial foundation, not the current source.
+
 # Phase 1 foundation
 
 This repository is an independent, open-source fork of [Equicord](https://github.com/Equicord/Equicord), which derives from [Vencord](https://github.com/Vendicated/Vencord). It is not an official release of either project. The repository name is temporary; final branding has not been selected.
@@ -6,8 +10,8 @@ This repository is an independent, open-source fork of [Equicord](https://github
 
 | Component | Repository | Upstream | Local checkout |
 | --- | --- | --- | --- |
-| Core | [alrimii/discord-mod-core](https://github.com/alrimii/discord-mod-core) | Equicord/Equicord | `C:\Users\MainRec\Desktop\DiscordModFoundation\core` |
-| Installer | [alrimii/discord-mod-installer](https://github.com/alrimii/discord-mod-installer) | Equicord/Equilotl | `C:\Users\MainRec\Desktop\DiscordModFoundation\installer` |
+| Core | [alrimii/evencord](https://github.com/alrimii/evencord) | Equicord/Equicord | `C:\Users\MainRec\Desktop\DiscordModFoundation\core` |
+| Installer | [alrimii/evencord-installer](https://github.com/alrimii/evencord-installer) | Equicord/Equilotl | `C:\Users\MainRec\Desktop\DiscordModFoundation\installer` |
 
 Each checkout has its own `.git` directory. `origin` points to the corresponding alrimii fork, and `upstream` points to the official repository above. `main` tracks `origin/main`. Local pulls are configured as fast-forward only, with pushes defaulting to `origin`.
 

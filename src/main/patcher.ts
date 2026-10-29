@@ -17,14 +17,15 @@
 */
 
 import { onceDefined } from "@shared/onceDefined";
+import { Project } from "@shared/project";
 import electron, { app, BrowserWindowConstructorOptions, Menu } from "electron";
 import { dirname, join } from "path";
 
 import { RendererSettings } from "./settings";
 import { patchTrayMenu } from "./trayMenu";
-import { IS_VANILLA } from "./utils/constants";
+import { DATA_DIR, IS_VANILLA } from "./utils/constants";
 
-console.log("[Equicord] Starting up...");
+console.log("[EvenCord] Starting up...");
 
 // Our injector file at app/index.js
 const injectorPath = require.main!.filename;
@@ -48,11 +49,11 @@ if (!IS_VANILLA) {
      * re-apply the patch when discord ships a new host version. skipped
      * on vesktop and equibop because they manage their own updates.
      */
-    if (!IS_VESKTOP && !IS_EQUIBOP) {
+    if (Project.capabilities.hostRepatch && !IS_VESKTOP && !IS_EQUIBOP) {
         try {
             require("./hostUpdateHook").installHostUpdateHook();
         } catch (err) {
-            console.error("[Equicord] Failed to install host update hook", err);
+            console.error("[EvenCord] Failed to install host update hook", err);
         }
     }
 
@@ -149,11 +150,11 @@ if (!IS_VANILLA) {
         s.set("DANGEROUS_ENABLE_DEVTOOLS_ONLY_ENABLE_IF_YOU_KNOW_WHAT_YOURE_DOING", true);
     });
 
-    process.env.DATA_DIR = join(app.getPath("userData"), "..", "Equicord");
+    process.env.DATA_DIR = DATA_DIR;
     if (settings.plugins?.NoTrack?.disableStackDumping !== false) process.env.ELECTRON_ENABLE_STACK_DUMPING = "true";
 } else {
-    console.log("[Equicord] Running in vanilla mode. Not loading Equicord");
+    console.log("[EvenCord] Running in vanilla mode. Not loading EvenCord");
 }
 
-console.log("[Equicord] Loading original Discord app.asar");
+console.log("[EvenCord] Loading original Discord app.asar");
 require(require.main!.filename);

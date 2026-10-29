@@ -1,0 +1,58 @@
+{
+    "schemaVersion": 1,
+    "id": "evencord",
+    "displayName": "EvenCord",
+    "installerName": "EvenCord Installer",
+    "description": "An open-source Discord client modification based on Equicord.",
+    "repositories": {
+        "core": {
+            "slug": "alrimii/evencord",
+            "id": 1438489516
+        },
+        "installer": {
+            "slug": "alrimii/evencord-installer",
+            "id": 1438489594
+        }
+    },
+    "links": {
+        "source": "https://github.com/alrimii/evencord",
+        "documentation": "https://github.com/alrimii/evencord#readme",
+        "support": "https://github.com/alrimii/evencord#support"
+    },
+    "storage": {
+        "directory": "EvenCord",
+        "portableDirectory": "EvenCordData",
+        "payload": "evencord.asar",
+        "namespace": "evencord",
+        "environmentPrefix": "EVENCORD"
+    },
+    "release": {
+        "channel": "stable",
+        "platform": "win32",
+        "architecture": "x64",
+        "discordChannel": "stable",
+        "coreAsset": "desktop.asar",
+        "installerGuiAsset": "EvenCordInstaller-x64.exe",
+        "installerCliAsset": "EvenCordInstallerCli-x64.exe"
+    },
+    "capabilities": {
+        "distribution": false,
+        "updates": false,
+        "installation": false,
+        "repair": false,
+        "selfUpdate": false,
+        "hostRepatch": false,
+        "cloud": false
+    },
+    "artwork": {
+        "mark": "branding/assets/mark.svg",
+        "icon": "branding/assets/icon-256.png",
+        "banner": "branding/assets/banner.svg"
+    },
+    "colors": {
+        "dark": "#101820",
+        "primary": "#36D6B0",
+        "accent": "#F2B56B",
+        "text": "#F4F7F8"
+    }
+}

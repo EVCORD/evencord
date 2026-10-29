@@ -7,6 +7,7 @@
 import * as DataStore from "@api/DataStore";
 import { showNotification } from "@api/Notifications";
 import { PlainSettings, Settings } from "@api/Settings";
+import { cloudStorageKeys, Project } from "@shared/project";
 import { localStorage } from "@utils/localStorage";
 import { Logger } from "@utils/Logger";
 import { relaunch } from "@utils/native";
@@ -24,8 +25,8 @@ const API_VERSION_STORE_KEY = "Vencord_cloudApiVersions";
 
 type ApiVersion = "v2" | "v1";
 
-const SYNC_DIRECTION_KEY = "Vencord_cloudSyncDirection";
-const SETTINGS_DIRTY_KEY = "Vencord_settingsDirty";
+const SYNC_DIRECTION_KEY = cloudStorageKeys.direction;
+const SETTINGS_DIRTY_KEY = cloudStorageKeys.dirty;
 export const getCloudSyncDirection = () => localStorage.getItem(SYNC_DIRECTION_KEY) || "both";
 export const setCloudSyncDirection = (direction: "push" | "pull" | "both" | "manual") => localStorage.setItem(SYNC_DIRECTION_KEY, direction);
 export const areLocalSettingsDirty = () => localStorage.getItem(SETTINGS_DIRTY_KEY) === "true";
@@ -222,7 +223,7 @@ async function putV2(manual?: boolean) {
 
     if (uploads.length === 0 && !manual) {
         logger.info("No changes to push");
-        delete localStorage.Vencord_settingsDirty;
+        delete localStorage[cloudStorageKeys.dirty];
         return;
     }
 
@@ -252,7 +253,7 @@ async function putV2(manual?: boolean) {
         });
     }
 
-    delete localStorage.Vencord_settingsDirty;
+    delete localStorage[cloudStorageKeys.dirty];
 }
 
 async function getV2(shouldNotify: boolean, force: boolean) {
@@ -294,7 +295,7 @@ async function getV2(shouldNotify: boolean, force: boolean) {
             noPersist: true,
         });
 
-    delete localStorage.Vencord_settingsDirty;
+    delete localStorage[cloudStorageKeys.dirty];
     return true;
 }
 
@@ -374,7 +375,7 @@ async function putV1(manual?: boolean) {
         });
     }
 
-    delete localStorage.Vencord_settingsDirty;
+    delete localStorage[cloudStorageKeys.dirty];
 }
 
 async function getV1(shouldNotify: boolean, force: boolean) {
@@ -454,7 +455,7 @@ async function getV1(shouldNotify: boolean, force: boolean) {
             noPersist: true,
         });
 
-    delete localStorage.Vencord_settingsDirty;
+    delete localStorage[cloudStorageKeys.dirty];
     return true;
 }
 
@@ -483,11 +484,13 @@ async function deleteV1() {
 }
 
 export function shouldCloudSync(direction: "push" | "pull") {
-    const localDirection = localStorage.Vencord_cloudSyncDirection;
+    if (!Project.capabilities.cloud) return false;
+    const localDirection = localStorage[cloudStorageKeys.direction];
     return localDirection === direction || localDirection === "both";
 }
 
 export async function putCloudSettings(manual?: boolean) {
+    if (!Project.capabilities.cloud) return;
     try {
         const version = await getApiVersion();
         if (version === "v2") {
@@ -508,6 +511,7 @@ export async function putCloudSettings(manual?: boolean) {
 }
 
 export async function getCloudSettings(shouldNotify = true, force = false) {
+    if (!Project.capabilities.cloud) return false;
     try {
         const version = await getApiVersion();
         if (version === "v2") {
@@ -529,6 +533,7 @@ export async function getCloudSettings(shouldNotify = true, force = false) {
 }
 
 export async function deleteCloudSettings() {
+    if (!Project.capabilities.cloud) throw new Error("Cloud synchronization is unavailable in EvenCord.");
     try {
         const version = await getApiVersion();
         if (version === "v2")
@@ -546,6 +551,7 @@ export async function deleteCloudSettings() {
 }
 
 export async function eraseAllCloudData() {
+    if (!Project.capabilities.cloud) throw new Error("Cloud synchronization is unavailable in EvenCord.");
     const res = await fetch(new URL("/v1/", getCloudUrl()), {
         method: "DELETE",
         headers: { Authorization: await getCloudAuth() },

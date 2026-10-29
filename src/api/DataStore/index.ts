@@ -18,6 +18,8 @@
  * limitations under the License.
  */
 
+import { storageName } from "@shared/project";
+
 export function promisifyRequest<T = undefined>(
     request: IDBRequest<T> | IDBTransaction,
 ): Promise<T> {
@@ -30,7 +32,7 @@ export function promisifyRequest<T = undefined>(
 }
 
 export function createStore(dbName: string, storeName: string): UseStore {
-    const request = indexedDB.open(dbName);
+    const request = indexedDB.open(storageName(dbName));
     request.onupgradeneeded = () => request.result.createObjectStore(storeName);
     const dbp = promisifyRequest(request);
 

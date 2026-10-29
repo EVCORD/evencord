@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Project } from "@shared/project";
 import { execFile as cpExecFile } from "child_process";
 import { join } from "path";
 import { promisify } from "util";
@@ -46,6 +47,7 @@ async function getRepo() {
 }
 
 async function calculateGitChanges() {
+    if (!Project.capabilities.distribution || !Project.capabilities.updates) return [];
     await git("fetch");
 
     const branch = (await git("branch", "--show-current")).stdout.trim();
@@ -66,11 +68,13 @@ async function calculateGitChanges() {
 }
 
 async function pull() {
+    if (!Project.capabilities.distribution || !Project.capabilities.updates) return false;
     const res = await git("pull");
     return res.stdout.includes("Fast-forward");
 }
 
 async function build() {
+    if (!Project.capabilities.distribution || !Project.capabilities.updates) return false;
     const opts = { cwd: EQUICORD_DIR };
 
     const command = isFlatpak ? "flatpak-spawn" : "node";

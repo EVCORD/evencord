@@ -1,20 +1,20 @@
 {
-    "name": "equicord",
+    "name": "evencord",
     "private": "true",
-    "version": "1.15.13.0",
-    "description": "The other cutest Discord client mod",
-    "homepage": "https://github.com/Equicord/Equicord#readme",
+    "version": "0.1.0-dev.0",
+    "description": "An open-source Discord client modification based on Equicord.",
+    "homepage": "https://github.com/alrimii/evencord#readme",
     "bugs": {
-        "url": "https://github.com/Equicord/Equicord/issues"
+        "url": "https://github.com/alrimii/evencord#support"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Equicord/Equicord.git"
+        "url": "git+https://github.com/alrimii/evencord.git"
     },
     "license": "GPL-3.0-or-later",
-    "author": "Equicord",
+    "author": "EvenCord contributors",
     "scripts": {
-        "build": "node --require=./scripts/suppressExperimentalWarnings.js scripts/build/build.mjs",
+        "build": "node --require=./scripts/suppressExperimentalWarnings.js scripts/build/build.mjs --desktop-only",
         "buildStandalone": "pnpm build --standalone",
         "buildWeb": "node --require=./scripts/suppressExperimentalWarnings.js scripts/build/buildWeb.mjs",
         "buildWebStandalone": "pnpm buildWeb --standalone",
@@ -99,5 +99,9 @@
     "packageManager": "pnpm@12.15.0",
     "engines": {
         "node": ">=22"
-    }
+    },
+    "contributors": [
+        "Equicord contributors",
+        "Vendicated and Vencord contributors"
+    ]
 }

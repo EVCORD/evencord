@@ -11,6 +11,10 @@
 
 /* eslint-disable */
 
+import { storageName } from "@shared/project";
+
+const positionStorageKey = storageName("oneko");
+
 export default function oneko(options = {}) {
     const {
         speed = 10,
@@ -160,7 +164,7 @@ export default function oneko(options = {}) {
         const nekoFile = image; // Use passed-in image URL
 
         if (persistPosition) {
-            let storedNeko = JSON.parse(window.localStorage.getItem("oneko"));
+            let storedNeko = JSON.parse(window.localStorage.getItem(positionStorageKey));
             if (storedNeko !== null) {
                 nekoPosX = storedNeko.nekoPosX;
                 nekoPosY = storedNeko.nekoPosY;
@@ -212,7 +216,7 @@ export default function oneko(options = {}) {
 
     function handleBeforeUnload(event) {
         window.localStorage.setItem(
-            "oneko",
+            positionStorageKey,
             JSON.stringify({
                 nekoPosX: nekoPosX,
                 nekoPosY: nekoPosY,

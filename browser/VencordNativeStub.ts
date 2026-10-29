@@ -26,6 +26,7 @@ import * as DataStore from "@api/DataStore";
 import type { Settings } from "@api/Settings";
 import { getThemeInfo } from "@main/themes";
 import { debounce } from "@shared/debounce";
+import { Project, storageName } from "@shared/project";
 import { localStorage } from "@utils/localStorage";
 import { getStylusWebStoreUrl } from "@utils/web";
 import { EXTENSION_BASE_URL, metaReady, RENDERER_CSS_URL } from "@utils/web-metadata";
@@ -71,10 +72,10 @@ window.VencordNative = {
     },
 
     updater: {
-        getRepo: async () => ({ ok: true, value: "https://github.com/Equicord/Equicord" }),
+        getRepo: async () => ({ ok: true, value: Project.links.source }),
         getUpdates: async () => ({ ok: true, value: [] }),
         fetchUpdate: async () => ({ ok: true, value: false }),
-        applyUpdate: async () => ({ ok: true, value: true }),
+        applyUpdate: async () => ({ ok: true, value: false }),
     },
 
     quickCss: {
@@ -123,14 +124,14 @@ window.VencordNative = {
     settings: {
         get: () => {
             try {
-                const settings = JSON.parse(localStorage.getItem("EquicordSettings") || "{}");
+                const settings = JSON.parse(localStorage.getItem(storageName("settings")) || "{}");
                 return typeof settings === "string" ? JSON.parse(settings) : settings;
             } catch (e) {
                 console.error("Failed to parse settings from localStorage: ", e);
                 return {};
             }
         },
-        set: async (s: Settings) => localStorage.setItem("EquicordSettings", JSON.stringify(s)),
+        set: async (s: Settings) => localStorage.setItem(storageName("settings"), JSON.stringify(s)),
         getSettingsDir: async () => "LocalStorage",
         openFolder: async () => Promise.reject("settings:openFolder is not supported on web"),
     },

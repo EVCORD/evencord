@@ -5,6 +5,7 @@
  */
 
 import { IpcEvents } from "@shared/IpcEvents";
+import { Project } from "@shared/project";
 import { ipcMain } from "electron";
 
 import gitRemote from "~git-remote";
@@ -20,7 +21,7 @@ export interface Updater {
     applyUpdate(): Promise<boolean>;
 }
 
-const updater: Updater = IS_UPDATER_DISABLED
+const updater: Updater = IS_UPDATER_DISABLED || !Project.capabilities.distribution || !Project.capabilities.updates
     ? {
         getRepo: async () => `https://github.com/${gitRemote}`,
         listUpdates: async () => [],

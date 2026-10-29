@@ -34,6 +34,7 @@ export { PlainSettings, Settings };
 import { enableStyle, initStyles } from "@api/Styles";
 import { openSettingsTabModal, UpdaterTab } from "@components/settings";
 import { debounce } from "@shared/debounce";
+import { Project } from "@shared/project";
 import { StartAt } from "@utils/types";
 import { SettingsRouter } from "@webpack/common";
 
@@ -53,6 +54,7 @@ if (IS_REPORTER) {
 }
 
 async function syncSettings() {
+    if (!Project.capabilities.cloud) return;
     const hasCloudAuth = await dsGet("Vencord_cloudSecret");
     if (!hasCloudAuth) {
         if (Settings.cloud.authenticated) {
@@ -146,7 +148,7 @@ async function runUpdateCheck() {
                 notifiedForUpdatesThisSession = true;
 
                 showNotice(
-                    "Equicord has been updated!",
+                    "EvenCord has been updated!",
                     "Restart",
                     relaunch
                 );
@@ -158,7 +160,7 @@ async function runUpdateCheck() {
         notifiedForUpdatesThisSession = true;
 
         showNotice(
-            "A new version of Equicord is available!",
+            "A new version of EvenCord is available!",
             "View Update",
             () => openSettingsTabModal(UpdaterTab!)
         );
@@ -189,7 +191,7 @@ async function init() {
                 "Webpack has finished initialising, but some patches haven't been applied yet.",
                 "This might be expected since some Modules are lazy loaded, but please verify",
                 "that all plugins are working as intended.",
-                "You are seeing this warning because this is a Development build of Equicord.",
+                "You are seeing this warning because this is a Development build of EvenCord.",
                 "\nThe following patches have not been applied:",
                 "\n\n" + pendingPatches.map(p => `${p.plugin}: ${p.find}`).join("\n")
             );

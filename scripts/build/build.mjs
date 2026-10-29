@@ -19,6 +19,8 @@
 
 // @ts-check
 
+import { project } from "../project.mjs";
+
 import { createPackage } from "@electron/asar";
 import { readdir, writeFile } from "fs/promises";
 import { dirname, join, resolve } from "path";
@@ -226,20 +228,21 @@ const buildConfigs = ([
     }
 ]);
 
-await buildOrWatchAll(buildConfigs);
+const desktopOnly = !process.argv.includes("--all-targets");
+await buildOrWatchAll(desktopOnly ? buildConfigs.slice(0, 3) : buildConfigs);
 
 await Promise.all([
     writeFile("dist/desktop/package.json", JSON.stringify({
-        name: "equicord",
+        name: project.id,
         main: "patcher.js"
     })),
-    writeFile("dist/equibop/package.json", JSON.stringify({
-        name: "equicord",
+    ...desktopOnly ? [] : [writeFile("dist/equibop/package.json", JSON.stringify({
+        name: project.id,
         main: "main.js"
-    }))
+    }))]
 ]);
 
 await Promise.all([
     createPackage("dist/desktop", "dist/desktop.asar"),
-    createPackage("dist/equibop", "dist/equibop.asar"),
+    ...desktopOnly ? [] : [createPackage("dist/equibop", "dist/equibop.asar")],
 ]);

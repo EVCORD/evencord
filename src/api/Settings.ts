@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Project } from "@shared/project";
 import { SettingsStore as SettingsStoreClass } from "@shared/SettingsStore";
 import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/mergeDefaults";
@@ -103,7 +104,7 @@ export interface Settings {
 }
 
 const DefaultSettings: Settings = {
-    autoUpdate: true,
+    autoUpdate: Project.capabilities.distribution && Project.capabilities.updates,
     autoUpdateNotification: true,
     useQuickCss: true,
     themeLinks: [],
@@ -140,7 +141,7 @@ const DefaultSettings: Settings = {
 
     cloud: {
         authenticated: false,
-        url: "https://cloud.equicord.org/",
+        url: "",
         settingsSync: false,
         settingsSyncVersion: 0
     },
@@ -148,6 +149,11 @@ const DefaultSettings: Settings = {
 
 const settings = !IS_REPORTER ? VencordNative.settings.get() : {} as Settings;
 mergeDefaults(settings, DefaultSettings);
+if (!Project.capabilities.cloud) {
+    settings.cloud.authenticated = false;
+    settings.cloud.settingsSync = false;
+}
+if (!Project.capabilities.updates || !Project.capabilities.distribution) settings.autoUpdate = false;
 
 export const SettingsStore = new SettingsStoreClass(settings, {
     readOnly: true,

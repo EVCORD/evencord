@@ -4,8 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { DISTRIBUTION_DISABLED,Project } from "@shared/project";
 import { gitHash } from "@shared/vencordUserAgent";
 import { app, BaseWindow, BrowserWindow, dialog, Menu, MenuItemConstructorOptions, shell } from "electron";
+import iconBase64 from "file://../../branding/assets/icon-256.png?base64";
 import aboutHtml from "file://about.html?minify";
 
 import updater from "./updater";
@@ -65,6 +67,12 @@ function openAboutWindow() {
     });
 
     const aboutParams = aboutHtml
+        .replaceAll("{{PROJECT_NAME}}", Project.displayName)
+        .replaceAll("{{DESCRIPTION}}", Project.description)
+        .replaceAll("{{SOURCE}}", Project.links.source)
+        .replaceAll("{{DOCUMENTATION}}", Project.links.documentation)
+        .replaceAll("{{SUPPORT}}", Project.links.support)
+        .replaceAll("{{ICON}}", "data:image/png;base64," + iconBase64)
         .replaceAll("{{VERSION}}", VERSION)
         .replaceAll("{{GIT_HASH}}", gitHash); // change to gitHashShort if/when its added
     const base64Html = Buffer.from(aboutParams).toString("base64");
@@ -82,31 +90,33 @@ const notify = (window: BaseWindow | undefined, title: string, message: string) 
 function createVencordMenuItems(): MenuItemConstructorOptions[] {
     return [
         {
-            label: "Equicord",
+            label: Project.displayName,
             submenu: [
                 {
-                    label: "About Equicord",
+                    label: "About " + Project.displayName,
                     click: () => openAboutWindow()
                 },
                 {
-                    label: "Update Equicord",
+                    label: Project.capabilities.updates ? "Update " + Project.displayName : "Updates unavailable (development preview)",
+                    enabled: Project.capabilities.distribution && Project.capabilities.updates,
                     async click(_item, window) {
+                        if (!Project.capabilities.distribution || !Project.capabilities.updates) return notify(window, "Updates unavailable", DISTRIBUTION_DISABLED);
                         try {
                             const updateAvailable = await updater.fetchUpdate();
                             if (!updateAvailable) {
-                                return notify(window, "No Update Available", "You are already using the latest version of Equicord.");
+                                return notify(window, "No Update Available", "You are already using the latest version of EvenCord.");
                             }
 
                             const result = await updater.applyUpdate();
                             if (!result) {
-                                return notify(window, "Update Failed", "Failed to apply the update for Equicord.");
+                                return notify(window, "Update Failed", "Failed to apply the update for EvenCord.");
                             }
 
-                            await notify(window, "Update Successful", "Now relaunching Equicord to apply the update.");
+                            await notify(window, "Update Successful", "Now relaunching EvenCord to apply the update.");
                             app.relaunch();
                             app.exit();
                         } catch (e) {
-                            notify(window, "Update Error", `An error occurred while updating Equicord.\n\n${String(e)}`);
+                            notify(window, "Update Error", `An error occurred while updating EvenCord.\n\n${String(e)}`);
                         }
                     }
                 },
@@ -128,7 +138,7 @@ export function patchTrayMenu(): void {
     const originalBuildFromTemplate = Menu.buildFromTemplate;
 
     Menu.buildFromTemplate = function (template: MenuItemConstructorOptions[]) {
-        const alreadyPatched = template.some(item => item.label === "Equicord");
+        const alreadyPatched = template.some(item => item.label === Project.displayName);
         if (isTrayMenu(template) && !alreadyPatched) {
             const insertIndex = findInsertIndex(template);
             const vencordItems = createVencordMenuItems();

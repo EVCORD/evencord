@@ -7,12 +7,16 @@
 import * as DataStore from "@api/DataStore";
 import { showNotification } from "@api/Notifications";
 import { Settings } from "@api/Settings";
+import { Project } from "@shared/project";
 import { Logger } from "@utils/Logger";
 import { OAuth2AuthorizeModal, openModal, UserStore } from "@webpack/common";
 
 export const logger = new Logger("SettingsSync:CloudSetup", "#39b7e0");
 
-export const getCloudUrl = () => new URL(Settings.cloud.url);
+export const getCloudUrl = () => {
+    if (!Project.capabilities.cloud) throw new Error("Cloud synchronization is unavailable in EvenCord.");
+    return new URL(Settings.cloud.url);
+};
 const getCloudUrlOrigin = () => getCloudUrl().origin;
 
 const getUserId = () => {
@@ -60,6 +64,7 @@ export async function deauthorizeCloud() {
 }
 
 export async function authorizeCloud() {
+    if (!Project.capabilities.cloud) throw new Error("Cloud synchronization is unavailable in EvenCord.");
     if (await getAuthorization() !== undefined) {
         Settings.cloud.authenticated = true;
         return;

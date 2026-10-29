@@ -1,3 +1,7 @@
+# EvenCord contributions
+
+EvenCord is independently maintained. Upstream guidance below remains useful, but upstream maintainers do not support this fork. See [branding/README.md](branding/README.md) for identity rules and [PHASE2.md](PHASE2.md) for disabled capabilities.
+
 # Introduction
 
 Equicord is a community project and welcomes any kind of contribution from anyone!

@@ -25,37 +25,19 @@ import { Readable } from "stream";
 import { finished } from "stream/promises";
 import { fileURLToPath } from "url";
 
-const BASE_URL = "https://github.com/Equicord/Equilotl/releases/latest/download/";
+import { project, requireDistribution } from "./project.mjs";
+
+requireDistribution();
+const BASE_URL = "https://github.com/" + project.repositories.installer.slug + "/releases/latest/download/";
 
 const BASE_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FILE_DIR = join(BASE_DIR, "dist", "Installer");
 const ETAG_FILE = join(FILE_DIR, "etag.txt");
 
-function byArch(files) {
-    return files[process.arch] ?? files.default;
-}
-
 function getFilename() {
-    switch (process.platform) {
-        case "win32":
-            return byArch({
-                arm64: "EquilotlCli-arm64.exe",
-                default: "EquilotlCli.exe"
-            });
-        case "darwin":
-            return byArch({
-                x64: "EquilotlCli-x64",
-                arm64: "EquilotlCli-arm64",
-                default: "EquilotlCli-universal"
-            });
-        case "linux":
-            return byArch({
-                arm64: "EquilotlCli-linux-arm64",
-                default: "EquilotlCli-Linux"
-            });
-        default:
-            throw new Error("Unsupported platform: " + process.platform);
-    }
+    if (process.platform !== project.release.platform || process.arch !== project.release.architecture)
+        throw new Error(project.displayName + " supports Windows x64 only.");
+    return project.release.installerCliAsset;
 }
 
 async function ensureBinary() {
@@ -71,7 +53,7 @@ async function ensureBinary() {
 
     const res = await fetch(BASE_URL + filename, {
         headers: {
-            "User-Agent": "Equicord (https://github.com/Equicord/Equicord)",
+            "User-Agent": project.displayName + " (" + project.links.source + ")",
             "If-None-Match": etag
         }
     });
@@ -110,11 +92,12 @@ try {
         stdio: "inherit",
         env: {
             ...process.env,
-            EQUICORD_USER_DATA_DIR: BASE_DIR,
-            EQUICORD_DIRECTORY: join(BASE_DIR, "dist/desktop"),
-            EQUICORD_DEV_INSTALL: "1"
+            EVENCORD_USER_DATA_DIR: BASE_DIR,
+            EVENCORD_DIRECTORY: join(BASE_DIR, "dist/desktop"),
+            EVENCORD_DEV_INSTALL: "1"
         }
     });
 } catch {
-    console.error("Something went wrong. Please check the logs above.");
+    console.error("Installer failed. Please check the logs above.");
+    process.exitCode = 1;
 }

@@ -1,10 +1,10 @@
 {
     "manifest_version": 2,
     "minimum_chrome_version": "91",
-    "name": "Equicord Web",
+    "name": "EvenCord Web (unsupported development build)",
     "description": "The other cutest Discord mod now in your browser",
-    "author": "Equicord",
-    "homepage_url": "https://github.com/Equicord/Equicord",
+    "author": "EvenCord contributors",
+    "homepage_url": "https://github.com/alrimii/evencord",
     "icons": {
         "128": "icon.png"
     },

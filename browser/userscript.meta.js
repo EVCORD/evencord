@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name            Equicord
+// @name            EvenCord (unsupported development build)
 // @description     A Discord client mod - Web version
 // @version         %version%
-// @author          Equicord (https://github.com/Equicord)
-// @namespace       https://github.com/Equicord/Equicord
-// @supportURL      https://github.com/Equicord/Equicord
-// @icon            https://raw.githubusercontent.com/Equicord/Equicord/refs/heads/main/browser/icon.png
+// @author          EvenCord contributors (https://github.com/alrimii)
+// @namespace       https://github.com/alrimii/evencord
+// @supportURL      https://github.com/alrimii/evencord
+// @icon            https://raw.githubusercontent.com/alrimii/evencord/refs/heads/main/browser/icon.png
 // @license         GPL-3.0
 // @match           *://*.discord.com/*
 // @grant           GM_xmlhttpRequest

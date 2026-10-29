@@ -81,7 +81,7 @@ ipcMain.handle(IpcEvents.OPEN_EXTERNAL, (_, url) => {
         throw "Disallowed protocol.";
 
     shell.openExternal(url)
-        .catch(err => console.error("[Vencord] Failed to open external link", url, err));
+        .catch(err => console.error("[EvenCord] Failed to open external link", url, err));
 });
 
 ipcMain.handle(IpcEvents.GET_QUICK_CSS, () => readCss());
@@ -160,7 +160,7 @@ ipcMain.handle(IpcEvents.OPEN_MONACO_EDITOR, async () => {
     }
 
     monacoWin = new BrowserWindow({
-        title: "Equicord QuickCSS Editor",
+        title: "EvenCord QuickCSS Editor",
         autoHideMenuBar: true,
         darkTheme: true,
         backgroundColor: nativeTheme.shouldUseDarkColors ? "#1e1e1e" : "white",

@@ -52,3 +52,15 @@
     color: var(--text-link);
     display: inline-block;
 }
+
+.vc-vencord-tab-identity {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 24px 0;
+}
+
+.vc-vencord-tab-identity > svg {
+    color: #36d6b0;
+    flex-shrink: 0;
+}
