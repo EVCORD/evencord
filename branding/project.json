@@ -17,7 +17,7 @@
     "links": {
         "source": "https://github.com/alrimii/evencord",
         "documentation": "https://github.com/alrimii/evencord#readme",
-        "support": "https://github.com/alrimii/evencord#support"
+        "support": "https://github.com/alrimii/evencord/issues"
     },
     "storage": {
         "directory": "EvenCord",
@@ -27,7 +27,7 @@
         "environmentPrefix": "EVENCORD"
     },
     "release": {
-        "channel": "stable",
+        "channel": "beta",
         "platform": "win32",
         "architecture": "x64",
         "discordChannel": "stable",
@@ -36,10 +36,10 @@
         "installerCliAsset": "EvenCordInstallerCli-x64.exe"
     },
     "capabilities": {
-        "distribution": false,
+        "distribution": true,
         "updates": false,
-        "installation": false,
-        "repair": false,
+        "installation": true,
+        "repair": true,
         "selfUpdate": false,
         "hostRepatch": false,
         "cloud": false

@@ -15,7 +15,7 @@ import type { Updater } from ".";
 let pending: Buffer | undefined;
 function requireChannel() {
     if (!Project.capabilities.distribution || !Project.capabilities.updates || Object.keys(trust.keys).length === 0)
-        throw new Error("EvenCord releases are unavailable. Production signing and release activation are not configured.");
+        throw new Error("Automatic beta updates are disabled. Download the latest verified installer from the EvenCord release page.");
     if (process.platform !== "win32" || process.arch !== "x64")
         throw new Error("EvenCord updates support Windows x64 only.");
     const root = process.env.EVENCORD_MANAGED_ROOT;
@@ -33,7 +33,7 @@ function running(root: string) {
 async function check() {
     const root = requireChannel();
     const installed = running(root);
-    const bytes = await runtime.download("https://github.com/" + Project.repositories.core.slug + "/releases/latest/download/core.release.json", 131072);
+    const bytes = await runtime.latest(trust, "core");
     const data = Buffer.from(bytes as Uint8Array);
     const next = runtime.verify(data, trust);
     runtime.advance(next, installed);

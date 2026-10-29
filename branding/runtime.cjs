@@ -27,14 +27,14 @@ function base64(value) {
 }
 function compare(a, b) {
     const parts = value => {
-        if (typeof value !== "string" || !/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/.test(value))
-            throw new Error("Stable versions must use major.minor.patch.");
-        const result = value.split(".").map(Number);
-        if (result.some(n => n > 4294967295)) throw new Error("Version exceeds supported range.");
+        const match = typeof value === "string" && /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-beta\.(0|[1-9][0-9]*))?$/.exec(value);
+        if (!match) throw new Error("Versions must use major.minor.patch or major.minor.patch-beta.N.");
+        const result = match.slice(1).map((n, i) => n === undefined && i === 3 ? Infinity : Number(n));
+        if (result.some(n => n !== Infinity && n > 4294967295)) throw new Error("Version exceeds supported range.");
         return result;
     };
     const aa = parts(a), bb = parts(b);
-    for (let i = 0; i < 3; i++) if (aa[i] !== bb[i]) return aa[i] > bb[i] ? 1 : -1;
+    for (let i = 0; i < 4; i++) if (aa[i] !== bb[i]) return aa[i] > bb[i] ? 1 : -1;
     return 0;
 }
 function verify(data, trust, component = "core", freshness = true, now = Date.now()) {
@@ -50,7 +50,7 @@ function verify(data, trust, component = "core", freshness = true, now = Date.no
     exact(m, ["schemaVersion", "product", "component", "repository", "repositoryId", "channel", "version", "sequence", "sourceCommit", "upstreamCommit", "platform", "architecture", "discordChannel", "loaderProtocol", "publishedAt", "expiresAt", "notes", "artifact", "discordArchives"]);
     exact(m.artifact, ["name", "size", "sha256"]);
     const id = identities[component];
-    if (!id || m.schemaVersion !== 1 || m.product !== "evencord" || m.component !== component || m.repository !== id[0] || m.repositoryId !== id[1] || m.channel !== "stable" || m.platform !== "win32" || m.architecture !== "x64" || m.discordChannel !== "stable" || m.loaderProtocol !== 1 || m.artifact.name !== id[2])
+    if (!id || m.schemaVersion !== 1 || m.product !== "evencord" || m.component !== component || m.repository !== id[0] || m.repositoryId !== id[1] || !(trust.channels || ["stable"]).includes(m.channel) || (m.channel !== "stable" && m.channel !== "beta") || (m.channel === "beta") !== m.version.includes("-beta.") || m.platform !== "win32" || m.architecture !== "x64" || m.discordChannel !== "stable" || m.loaderProtocol !== 1 || m.artifact.name !== id[2])
         throw new Error("Release identity or compatibility mismatch.");
     compare(m.version, m.version);
     if (!Number.isSafeInteger(m.sequence) || m.sequence < 1 || !/^[a-f0-9]{40}$/.test(m.sourceCommit) || !/^[a-f0-9]{40}$/.test(m.upstreamCommit) || !/^[a-f0-9]{64}$/.test(m.artifact.sha256) || !Number.isSafeInteger(m.artifact.size) || m.artifact.size < 1 || m.artifact.size > 268435456 || typeof m.notes !== "string" || Buffer.byteLength(m.notes) > 16384)
@@ -62,11 +62,31 @@ function verify(data, trust, component = "core", freshness = true, now = Date.no
     return m;
 }
 function advance(next, old) {
-    if (next.component !== old.component || next.sequence < old.sequence || compare(next.version, old.version) < 0) throw new Error("Release rollback rejected.");
+    if (next.component !== old.component || next.channel !== old.channel || next.sequence < old.sequence || compare(next.version, old.version) < 0) throw new Error("Release rollback rejected.");
     if (compare(next.version, old.version) === 0 && next.artifact.sha256 !== old.artifact.sha256) throw new Error("Release version reused for different artifact.");
     if (next.sequence === old.sequence && (next.artifact.sha256 !== old.artifact.sha256 || next.version !== old.version || next.sourceCommit !== old.sourceCommit))
         throw new Error("Release sequence reused.");
     if (compare(next.version, old.version) > 0 && next.sequence <= old.sequence) throw new Error("New release requires higher sequence.");
+}
+async function latest(trust, component = "core") {
+    const id = identities[component];
+    if (!id) throw new Error("Unsupported release component.");
+    const channel = (trust.channels || ["stable"])[0];
+    const prefix = component === "core" ? "core-v" : "installer-v";
+    const releases = JSON.parse((await download("https://api.github.com/repos/" + id[0] + "/releases?per_page=100", 2097152)).toString());
+    let version;
+    for (const release of releases) {
+        if (release.draft || release.prerelease !== (channel === "beta") || !release.tag_name.startsWith(prefix)) continue;
+        const candidate = release.tag_name.slice(prefix.length);
+        try { compare(candidate, candidate); } catch { continue; }
+        if ((channel === "beta") !== candidate.includes("-beta.")) continue;
+        if (!version || compare(candidate, version) > 0) version = candidate;
+    }
+    if (!version) throw new Error("No approved " + channel + " release is available.");
+    const data = await download("https://github.com/" + id[0] + "/releases/download/" + prefix + version + "/" + component + ".release.json", 131072);
+    const manifest = verify(data, trust, component);
+    if (manifest.version !== version || manifest.channel !== channel) throw new Error("Release tag and signed identity differ.");
+    return data;
 }
 function safePath(file) {
     let current = path.resolve(file);
@@ -192,4 +212,4 @@ function completeBoot(root, hash) {
     const marker = path.join(root, "booting.json");
     if (fs.existsSync(marker) && JSON.parse(fs.readFileSync(marker, "utf8")).sha256 === hash) fs.unlinkSync(marker);
 }
-module.exports = {accepted, beginBoot, completeBoot, verify, compare, advance, sha, safeURL, download, checkedFile, atomic, safePath, payloadPath, current, activate};
+module.exports = {latest, accepted, beginBoot, completeBoot, verify, compare, advance, sha, safeURL, download, checkedFile, atomic, safePath, payloadPath, current, activate};

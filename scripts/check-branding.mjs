@@ -23,7 +23,7 @@ assert.equal(project.release.platform, "win32");
 assert.equal(project.release.architecture, "x64");
 assert.equal(project.release.discordChannel, "stable");
 for (const [name, enabled] of Object.entries(project.capabilities))
-    assert.equal(enabled, false, "Phase 2 capability must remain disabled: " + name);
+    assert.equal(enabled, ["distribution", "installation", "repair"].includes(name), "Unexpected beta capability: " + name);
 for (const asset of Object.values(project.artwork))
     assert.ok(existsSync(resolve(root, asset)), "Missing branding asset: " + asset);
 const pkg = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8"));
@@ -46,4 +46,4 @@ if (installer) {
     const resources = JSON.parse(readFileSync(resolve(installer, "winres/winres.json"), "utf8"));
     assert.equal(resources.RT_VERSION["#1"]["0000"].info["0409"].ProductName, project.installerName);
 }
-console.log("EvenCord identity, disabled capabilities, storage boundary and assets are consistent.");
+console.log("EvenCord identity, manual beta capabilities, storage boundary and assets are consistent.");

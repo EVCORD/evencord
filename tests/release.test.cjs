@@ -130,3 +130,16 @@ test("shared Go and Node signature vector", () => {
     const vector = require("./protocol-vector.json");
     assert.equal(runtime.verify(Buffer.from(JSON.stringify(vector.envelope)),vector.trust,"core",false).artifact.size,3);
 });
+
+test("beta versions and channel trust stay isolated", t => {
+    const f = fixture(t);
+    const beta = {...f.manifest, channel: "beta", version: "0.1.0-beta.1"};
+    const trust = {...f.trust, channels: ["beta"]};
+    assert.equal(runtime.verify(f.sign(beta), trust).version, beta.version);
+    assert.throws(() => runtime.verify(f.sign(beta), f.trust));
+    assert.throws(() => runtime.verify(f.sign(), trust));
+    assert.ok(runtime.compare("0.1.0-beta.10", "0.1.0-beta.2") > 0);
+    assert.ok(runtime.compare("0.1.0", "0.1.0-beta.10") > 0);
+    assert.throws(() => runtime.compare("0.1.0-beta.01", "0.1.0-beta.1"));
+    assert.throws(() => runtime.advance({...beta, channel: "stable", version: "0.1.0"}, beta));
+});

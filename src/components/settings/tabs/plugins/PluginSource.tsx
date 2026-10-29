@@ -31,6 +31,6 @@ export function pluginSource(plugin: Plugin) {
 export function PluginSourceIcon({ plugin, className }: { plugin: Plugin; className?: string; }) {
     const source = pluginSource(plugin);
     return source.id === "evencord"
-        ? <span className={className} title={source.label} role="img" aria-label={source.label} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 4, background: Project.colors.primary, color: Project.colors.text }}><EvenCordIcon width="100%" height="100%" /></span>
+        ? <span className={className} title={source.label} role="img" aria-label={source.label} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--text-normal)" }}><EvenCordIcon width="100%" height="100%" /></span>
         : <img className={className} src={source.icon} alt={source.label} />;
 }

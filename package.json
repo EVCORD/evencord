@@ -1,11 +1,11 @@
 {
     "name": "evencord",
     "private": "true",
-    "version": "0.1.0-dev.0",
+    "version": "0.1.0-beta.1",
     "description": "An open-source Discord client modification based on Equicord.",
     "homepage": "https://github.com/alrimii/evencord#readme",
     "bugs": {
-        "url": "https://github.com/alrimii/evencord#support"
+        "url": "https://github.com/alrimii/evencord/issues"
     },
     "repository": {
         "type": "git",

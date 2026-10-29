@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import mark from "../../branding/mark.json";
 import { Icon, IconProps } from "./Icons";
 
 export function EvenCordIcon(props: IconProps) {
     return (
         <Icon {...props} viewBox="0 0 24 24">
-            <path fill={props.fill || "currentColor"} d="M4 4H20L17 8H8V10H17L14 14H8V16H20L17 20H4Z" />
+            {mark.paths.map(d => <path key={d} fill={props.fill || "currentColor"} d={d} />)}
         </Icon>
     );
 }

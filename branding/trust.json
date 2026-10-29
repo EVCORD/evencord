@@ -1,7 +1,12 @@
 {
-    "schemaVersion": 1,
-    "keys": {},
-    "revoked": [],
-    "maxArtifactBytes": 268435456,
-    "manifestMaxAgeDays": 90
+    "revoked":  [
+
+                ],
+    "schemaVersion":  1,
+    "keys":  {
+                 "evencord-beta-2026-01":  "Rs/VpUh88X82iLKGfWAtA7ND7e2SDVaU98DwWY0Agrw="
+             },
+    "channels":  [
+                     "beta"
+                 ]
 }
