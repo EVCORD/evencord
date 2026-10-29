@@ -51,7 +51,7 @@ export function Changes({ updates, repo, repoPending }: CommonProps & { updates:
                             {message}
                         </Span>
                         <Span size="sm" color="text-subtle">
-                            â€” {author}
+                            by {author}
                         </Span>
                     </Flex>
                 </div>
@@ -103,7 +103,7 @@ export function Updatable(props: CommonProps) {
                                 : "Check for an approved EvenCord beta release.";
     return <>
         {status?.installedVersion && <Paragraph>Running {status.installedVersion} · Verified key: {status.keyId}</Paragraph>}
-        <Flex className={Margins.bottom8} gap="8px">
+        <Flex className={Margins.bottom8} gap="8px" flexWrap="wrap">
             <Button disabled={pending || phase === "ready"} onClick={runWithDispatch(setBusy, async () => {
                 setError("");
                 await checkForUpdates();

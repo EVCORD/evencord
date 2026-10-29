@@ -39,7 +39,6 @@ import { StartAt } from "@utils/types";
 import { SettingsRouter } from "@webpack/common";
 
 import { get as dsGet } from "./api/DataStore";
-import { showNotice } from "./api/Notices";
 import { showNotification } from "./api/Notifications";
 import { initPluginManager, PMLogger, startAllPlugins } from "./api/PluginManager";
 import { PlainSettings, Settings, SettingsStore } from "./api/Settings";
@@ -137,19 +136,30 @@ async function runUpdateCheck() {
         if (status.phase === "ready") {
             if (Settings.autoUpdateNotification) {
                 notifiedUpdate = identity;
-                showNotice("Update ready — Restart Discord", "Restart Discord", () => { void update().then(ready => { if (ready) relaunch(); }).catch(error => UpdateLogger.error(error)); });
+                void showNotification({ title: "EvenCord has been updated!", body: "Update ready. Click here to restart Discord.", permanent: true, noPersist: true,
+                    onClick: () => { void update().then(ready => { if (ready) relaunch(); }).catch(error => UpdateLogger.error(error)); }
+                });
             }
         } else if (status.phase === "available" && UpdaterTab) {
             const tab = UpdaterTab;
             notifiedUpdate = identity;
-            showNotice(`EvenCord ${status.availableVersion} is available`, "View Update", () => openSettingsTabModal(tab));
+            void showNotification({
+                title: "An EvenCord update is available!",
+                body: `Version ${status.availableVersion}. Click here to view the update.`,
+                permanent: true, noPersist: true,
+                onClick: () => openSettingsTabModal(tab)
+            });
         }
     } catch (error) {
         UpdateLogger.error("Failed to check for updates", error);
         if (UpdaterTab && notifiedUpdate !== "error") {
             const tab = UpdaterTab;
             notifiedUpdate = "error";
-            showNotice("EvenCord could not complete its update check. Your current build is preserved.", "Details", () => openSettingsTabModal(tab));
+            void showNotification({
+                title: "EvenCord update needs attention",
+                body: "Your current build is preserved. Click here for details.",
+                noPersist: true, onClick: () => openSettingsTabModal(tab)
+            });
         }
     } finally { updateCheckRunning = false; }
 }

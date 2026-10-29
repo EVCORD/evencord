@@ -50,7 +50,7 @@ function BackupAndRestoreTab() {
 
             <Heading>Import Settings</Heading>
             <Paragraph className={Margins.bottom16}>
-                Select a previously exported settings file to restore your configuration. This will replace all your current settings with the ones from the backup.
+                Select a compatible JSON settings backup from EvenCord, Vencord or Equicord. Import Plugins merges plugin settings only. It does not install plugin code; custom plugins must already be included in EvenCord. Restart Discord after importing.
             </Paragraph>
 
             <Flex gap="8px" className={Margins.bottom20} style={{ flexWrap: "wrap" }}>

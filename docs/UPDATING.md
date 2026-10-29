@@ -17,3 +17,5 @@ Managed beta.3 or newer clients check after startup and every 30 minutes. Users 
 A core-only plugin change normally needs no installer rebuild: the current installer discovers the newest approved signed core release. Rebuild and independently version the installer when its own code or embedded trust/loader contract changes. Beta.1/beta.2 clients need the one-time manual installer upgrade.
 
 Equicord upstream synchronization is a separate source-review step. Review and integrate upstream changes, then publish an EvenCord release through the same process. An upstream commit never directly updates users.
+
+The read-only Review Equicord upstream workflow checks every 12 hours and supports manual dispatch. Its artifact lists upstream commits, plugin changes and merge conflicts. Review and integrate these changes before building a signed EvenCord release. It has no write permissions or signing credentials.

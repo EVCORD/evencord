@@ -77,9 +77,10 @@ export async function importSettings(data: string, type: BackupType = "all", clo
             break;
         }
         case "plugins": {
-            if (!parsed.settings) throw new Error("Plugin settings missing");
+            const plugins = parsed?.settings?.plugins;
+            if (!plugins || typeof plugins !== "object" || Array.isArray(plugins)) throw new Error("Plugin settings missing");
 
-            deepMerge(PlainSettings, parsed.settings);
+            deepMerge(PlainSettings.plugins, plugins);
             await VencordNative.settings.set(PlainSettings);
             break;
         }

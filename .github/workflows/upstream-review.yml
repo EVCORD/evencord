@@ -1,0 +1,47 @@
+name: Review Equicord upstream
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */12 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: evencord-upstream-review
+  cancel-in-progress: false
+jobs:
+  review:
+    if: github.repository == 'alrimii/evencord' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Compare upstream without changing source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir review
+          git fetch --no-tags https://github.com/Equicord/Equicord.git main
+          base=$(git merge-base HEAD FETCH_HEAD)
+          git rev-parse HEAD FETCH_HEAD "$base" > review/revisions.txt
+          git log --format='%h %s' HEAD..FETCH_HEAD > review/commits.txt
+          git diff --name-status "$base" FETCH_HEAD > review/upstream-files.txt
+          git diff --name-status "$base" FETCH_HEAD -- src/plugins src/equicordplugins > review/plugin-changes.txt
+          status=0
+          git merge-tree --write-tree HEAD FETCH_HEAD > review/merge-analysis.txt || status=$?
+          if [ "$status" -gt 1 ]; then exit "$status"; fi
+          {
+            echo '## Equicord upstream review'
+            echo "New upstream commits: $(wc -l < review/commits.txt)"
+            if [ "$status" -eq 1 ]; then echo 'Conflicts detected. Review merge-analysis.txt.'; else echo 'Git found no merge conflicts. Source still requires review and validation.'; fi
+            echo 'Download the review artifact for commits, plugin changes and merge analysis.'
+            echo 'This workflow does not merge, push, sign or publish. Vencord changes are inherited through Equicord.'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: equicord-upstream-review
+          path: review
+          retention-days: 14
+          if-no-files-found: error
