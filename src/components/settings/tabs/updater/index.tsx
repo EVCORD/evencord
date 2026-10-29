@@ -70,7 +70,7 @@ function EquibopSection() {
 }
 
 function Updater() {
-    if (!Project.capabilities.distribution || !Project.capabilities.updates) return <SettingsTab><Heading>Updates unavailable</Heading><Paragraph>This development build has no active public update channel. Signed release verification is implemented; production signing keys and approved releases are not configured. Install a reviewed local build manually. Your current build remains installed.</Paragraph></SettingsTab>;
+    if (!Project.capabilities.distribution || !Project.capabilities.updates) return <SettingsTab><Heading>Manual beta updates</Heading><Paragraph>Automatic updates are disabled for this beta. Use the verified EvenCord installer to upgrade manually. It checks signed release metadata, artifact integrity and Discord compatibility before installation. Your current build remains installed until you choose to upgrade.</Paragraph><Link href="https://github.com/alrimii/evencord-installer/releases">Open EvenCord installer releases</Link></SettingsTab>;
     const settings = useSettings(["autoUpdate", "autoUpdateNotification"]);
 
     const [repo, err, repoPending] = useAwaiter(getRepo, { fallbackValue: "Loading..." });
