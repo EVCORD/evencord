@@ -10,8 +10,8 @@ A Discord client modification based on [Equicord](https://github.com/Equicord/Eq
 
 | Installer | Download |
 | --- | --- |
-| Windows GUI | [Download EvenCord Installer](https://github.com/alrimii/evencord-installer/releases/download/installer-v0.1.0-beta.4/EvenCordInstaller-x64.exe) |
-| Windows CLI | [Download CLI](https://github.com/alrimii/evencord-installer/releases/download/installer-v0.1.0-beta.4/EvenCordInstallerCli-x64.exe) |
+| Windows GUI | [Download EvenCord Installer](https://github.com/alrimii/evencord-installer/releases/download/installer-v0.1.0-beta.5/EvenCordInstaller-x64.exe) |
+| Windows CLI | [Download CLI](https://github.com/alrimii/evencord-installer/releases/download/installer-v0.1.0-beta.5/EvenCordInstallerCli-x64.exe) |
 
 1. Download and open the installer.
 2. Fully close Discord, including its tray icon.
