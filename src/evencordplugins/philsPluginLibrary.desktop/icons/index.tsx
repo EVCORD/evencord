@@ -20,8 +20,8 @@ export const ScreenshareSettingsIcon =
     (props: React.ComponentProps<"svg">) =>
         <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="1000"
-            height="1000"
+            width="20"
+            height="20"
             viewBox="0 0 1000 1000"
             {...props}
         >
@@ -60,8 +60,8 @@ export const CameraSettingsIcon =
     (props: React.ComponentProps<"svg">) =>
         <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="1000"
-            height="1000"
+            width="20"
+            height="20"
             viewBox="0 0 1000 1000"
             {...props}
         >
@@ -100,8 +100,8 @@ export const MicrophoneSettingsIcon =
     (props: React.ComponentProps<"svg">) =>
         <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="1000"
-            height="1000"
+            width="20"
+            height="20"
             viewBox="0 0 1000 1000"
             {...props}
         >

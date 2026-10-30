@@ -55,7 +55,7 @@ export default definePlugin({
     </>,
     userAreaButton: {
         icon: MicrophoneSettingsIcon,
-        render: () => <UserAreaButton icon={<MicrophoneSettingsIcon />} tooltipText="Microphone settings" aria-label="Open BetterMicrophone settings" onClick={openMicrophoneSettingsModal} />
+        render: () => <UserAreaButton icon={<MicrophoneSettingsIcon width={20} height={20} style={{ width: 20, height: 20, maxWidth: 20, maxHeight: 20, flexShrink: 0 }} />} tooltipText="Microphone settings" aria-label="Open BetterMicrophone settings" onClick={openMicrophoneSettingsModal} />
     },
 
     start(): void {
