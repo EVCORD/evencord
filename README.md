@@ -6,12 +6,12 @@ A Discord client modification based on [Equicord](https://github.com/Equicord/Eq
 
 ## Download
 
-**Windows x64 · Stable, PTB and Canary · Public beta**
+**Windows x64 · Stable, PTB and Canary · Stable release**
 
 | Installer | Download |
 | --- | --- |
-| Windows GUI | [Download EvenCord Installer](https://github.com/alrimii/evencord-installer/releases/download/installer-v0.1.0-beta.8/EvenCordInstaller-x64.exe) |
-| Windows CLI | [Download CLI](https://github.com/alrimii/evencord-installer/releases/download/installer-v0.1.0-beta.8/EvenCordInstallerCli-x64.exe) |
+| Windows GUI | [Download EvenCord Installer](https://github.com/alrimii/evencord-installer/releases/download/installer-v1.0.0/EvenCordInstaller-x64.exe) |
+| Windows CLI | [Download CLI](https://github.com/alrimii/evencord-installer/releases/download/installer-v1.0.0/EvenCordInstallerCli-x64.exe) |
 
 1. Download and open the installer.
 2. Save any unsaved clips or work. The installer closes the selected Discord channel.
@@ -19,7 +19,7 @@ A Discord client modification based on [Equicord](https://github.com/Equicord/Eq
 
 To remove EvenCord, open the installer and select **Uninstall**. Your settings are kept. Remove other client modifications using their own installer first.
 
-The beta supports reviewed Stable **1.0.9266**, PTB **1.0.1229** and Canary **1.0.1285/1.0.1286** archives. Channel profiles are separate. Beta.1 and beta.2 require a one-time upgrade with the new installer. From beta.3, EvenCord checks for signed updates automatically; control background downloads in EvenCord > Updater. Restart only after a verified update is ready. Windows executables are unsigned and may show a SmartScreen warning. [Release notes and checksums](https://github.com/alrimii/evencord-installer/releases) · [Installation help](https://alrimii.github.io/evencord/faq/)
+Windows x64 supports reviewed Stable **1.0.9266**, PTB **1.0.1229** and Canary **1.0.1285/1.0.1286** archives. Channel profiles are separate. Managed installations check signed EvenCord releases automatically and preserve your update preferences. Existing update-enabled beta clients receive a transition update before stable. Very old update-disabled builds require the current installer. Restart only after a verified update is ready. Windows executables are unsigned and may show a SmartScreen warning. [Release notes and checksums](https://github.com/alrimii/evencord-installer/releases) ? [Installation help](https://alrimii.github.io/evencord/faq/)
 
 ## Plugins
 
@@ -31,7 +31,7 @@ Browse the [plugin library](https://alrimii.github.io/evencord/plugins/) for des
 
 Reclip's speaker audio may include other applications, and microphone capture is independent of Discord mute. [Recording controls and privacy](https://alrimii.github.io/evencord/faq/#recording)
 
-For volunteer testing and transferring compatible plugin preferences, see the [beta testing guide](docs/BETA-TESTING.md). Custom plugin code is not installed by settings import.
+For volunteer testing and transferring compatible plugin preferences, see the [testing and settings-transfer guide](docs/BETA-TESTING.md). Custom plugin code is not installed by settings import.
 
 ## Building from source
 
