@@ -48,7 +48,7 @@ export function CleanupIcon(props: SVGProps<SVGSVGElement>) {
 
 function CleanupButton() {
     const state = React.useSyncExternalStore(cleaner.subscribe, cleaner.snapshot);
-    return <HeaderBarButton icon={CleanupIcon} tooltip={cleaner.busy() ? `EvenClean: ${state.phase}` : "EvenClean message cleanup"} onClick={openCleanup} />;
+    return <HeaderBarButton icon={CleanupIcon} iconSize={20} aria-label="Open EvenClean message cleanup" tooltip={cleaner.busy() ? `EvenClean: ${state.phase}` : "EvenClean message cleanup"} onClick={openCleanup} />;
 }
 
 function CleanupSettings() {
@@ -69,7 +69,7 @@ export default definePlugin({
     dependencies: ["HeaderBarAPI"],
     settings,
     settingsAboutComponent: CleanupSettings,
-    headerBarButton: { icon: CleanupIcon, render: CleanupButton, location: "channeltoolbar" },
+    headerBarButton: { icon: CleanupIcon, render: CleanupButton, location: "headerbar" },
     toolboxActions: { "Open message cleanup": openCleanup },
     flux: { LOGOUT: () => { cleaner.dispose(); closeCleanup(); } },
     stop: () => { cleaner.dispose(); closeCleanup(); }

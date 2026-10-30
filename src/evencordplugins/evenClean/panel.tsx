@@ -15,30 +15,27 @@ import { Notice } from "@components/Notice";
 import { Paragraph } from "@components/Paragraph";
 import { Project } from "@shared/project";
 import { saveFile } from "@utils/web";
-import type { Channel, RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, closeModal, GuildStore, Modal, openModal, React, Select, SelectedChannelStore, showToast, TextInput, useEffect, UserStore,useState, useStateFromStores } from "@webpack/common";
+import type { RenderModalProps } from "@vencord/discord-types";
+import { ChannelStore, closeModal, GuildStore, Modal, openModal, PermissionStore, React, SearchableSelect, Select, SelectedChannelStore, SelectedGuildStore, showToast, TextInput, useEffect, UserStore, useState, useStateFromStores } from "@webpack/common";
 
 import { canAccess, cleaner, settings } from ".";
+import { addCleanupChannels, channelLabel, channelTitle, CleanupScope, filterCleanupChannels, getCleanupChannels } from "./channels";
 import { CleanupFilters, CleanupTarget } from "./engine";
 
 const defaults: CleanupFilters = { contains: "", after: "", before: "", media: "all", includePinned: false, limit: 500 };
 let modalKey: string | undefined;
 
-function channelLabel(channel: Channel) {
-    if (channel.guild_id) return `${GuildStore.getGuild(channel.guild_id)?.name ?? "Server"} / #${channel.name || channel.id}`;
-    if (channel.type === 3) return `Group / ${channel.name || channel.recipients.map(id => UserStore.getUser(id)?.username ?? "User").join(", ")}`;
-    const user = UserStore.getUser(channel.recipients[0]);
-    return `DM / ${user?.globalName || user?.username || "User"}`;
-}
-
 function CleanupPanel(props: RenderModalProps) {
     const state = React.useSyncExternalStore(cleaner.subscribe, cleaner.snapshot);
-    const currentChannel = SelectedChannelStore.getChannelId();
-    const channels = useStateFromStores([ChannelStore, GuildStore, UserStore], () => ChannelStore.getChannelIds().filter(canAccess).map(id => ChannelStore.getChannel(id)).sort((a, b) => channelLabel(a).localeCompare(channelLabel(b))));
+    const [currentChannel] = useState(() => SelectedChannelStore.getChannelId());
+    const channels = useStateFromStores([ChannelStore, GuildStore, UserStore, PermissionStore], getCleanupChannels);
+    const guilds = useStateFromStores([GuildStore], () => Object.values(GuildStore.getGuilds()).sort((a, b) => a.name.localeCompare(b.name)));
     const [selected, setSelected] = useState(() => new Set(state.targets.length ? state.targets.map(t => t.id) : currentChannel && canAccess(currentChannel) ? [currentChannel] : []));
     const [filters, setFilters] = useState<CleanupFilters>(() => ({ ...(state.filters ?? defaults) }));
-    const [scope, setScope] = useState("all");
+    const [scope, setScope] = useState<CleanupScope>(() => state.targets.length ? state.targets.some(t => t.guildId) ? "server" : "dms" : currentChannel && canAccess(currentChannel) ? "current" : "dms");
+    const [guildId, setGuildId] = useState(() => state.targets.find(t => t.guildId)?.guildId || ChannelStore.getChannel(currentChannel)?.guild_id || SelectedGuildStore.getGuildId() || guilds[0]?.id || "");
     const [search, setSearch] = useState("");
+    const [shownCount, setShownCount] = useState(50);
     const [confirmation, setConfirmation] = useState("");
     const [acknowledged, setAcknowledged] = useState(false);
     const [reveal, setReveal] = useState(false);
@@ -50,11 +47,15 @@ function CleanupPanel(props: RenderModalProps) {
         const timer = setInterval(() => setClock(Date.now()), 1000);
         return () => clearInterval(timer);
     }, [busy, state.waitUntil]);
-    const guildIds = [...new Set(channels.map(c => c.guild_id).filter(Boolean))];
-    const scopes = [{ label: "All loaded channels", value: "all" }, { label: "Direct messages and groups", value: "dms" }, ...guildIds.map(id => ({ label: GuildStore.getGuild(id)?.name ?? id, value: id }))];
-    const visible = channels.filter(c => (scope === "all" || (scope === "dms" ? !c.guild_id : c.guild_id === scope)) && channelLabel(c).toLocaleLowerCase().includes(search.toLocaleLowerCase()));
-    const shown = visible.slice(0, 150);
+    const visible = filterCleanupChannels(channels, scope, guildId, currentChannel, search);
+    const shown = visible.slice(0, shownCount);
+    const selectedChannels = channels.filter(channel => selected.has(channel.id));
+    const unavailableCount = selected.size - selectedChannels.length;
     const invalidate = () => { cleaner.clear(); setConfirmation(""); setAcknowledged(false); };
+    const changeScope = (next: CleanupScope) => {
+        invalidate(); setScope(next); setSearch(""); setShownCount(50);
+        setSelected(new Set(next === "current" && currentChannel && canAccess(currentChannel) ? [currentChannel] : []));
+    };
     const edit = (values: Partial<CleanupFilters>) => { invalidate(); setFilters(previous => ({ ...previous, ...values })); };
     const toggle = (id: string, value: boolean) => {
         invalidate();
@@ -63,45 +64,58 @@ function CleanupPanel(props: RenderModalProps) {
     const notifyError = (error: unknown) => showToast({ text: error instanceof Error ? error.message : "Could not start cleanup.", variant: "critical" });
     const preview = () => {
         setConfirmation(""); setAcknowledged(false);
-        const targets: CleanupTarget[] = [...selected].map(id => { const channel = ChannelStore.getChannel(id); return { id, label: channel ? channelLabel(channel) : id, guildId: channel?.guild_id || undefined }; });
+        if (unavailableCount) { notifyError(new Error("Some selected channels are no longer accessible. Clear the selection and choose again.")); return; }
+        const targets: CleanupTarget[] = selectedChannels.map(channel => ({ id: channel.id, label: channelLabel(channel), guildId: channel.guild_id || undefined }));
         void cleaner.preview(targets, filters).catch(notifyError);
     };
     const count = state.messages.length;
     const ready = state.phase === "review" && count > 0 && !busy;
-    return <Modal {...props} title="EvenClean" subtitle="Review a batch of your own messages before removing it." size="xl">
+    return <Modal {...props} title="EvenClean" subtitle="Choose a conversation, preview your messages, then decide what to remove." size="xl">
         <div className="ec-clean" style={{ "--ec-clean-accent": Project.colors.primary } as React.CSSProperties}>
             <Notice.Warning>Deletion is permanent. Account automation can violate Discord's rules. Rate-limit handling does not guarantee account safety. <Link href="https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots">Discord's policy</Link></Notice.Warning>
             <div className="ec-clean-layout">
                 <section className="ec-clean-options" aria-label="Cleanup scope and filters">
-                    <Heading tag="h3">1. Choose channels</Heading>
-                    <Select options={scopes} isSelected={value => value === scope} select={setScope} serialize={String} isDisabled={busy} />
-                    <TextInput placeholder="Find a server, channel or DM" aria-label="Find channels" value={search} onChange={setSearch} disabled={busy} />
+                    <Heading tag="h3">Choose where to clean</Heading>
+                    <div className="ec-clean-scopes" role="group" aria-label="Conversation type">
+                        {([{ value: "current", label: "This chat" }, { value: "dms", label: "Direct messages" }, { value: "server", label: "Server channels" }] as const).map(option => <Button key={option.value} size="small" variant="secondary" aria-pressed={scope === option.value} disabled={busy || (option.value === "current" && !channels.some(channel => channel.id === currentChannel))} onClick={() => changeScope(option.value)}>{option.label}</Button>)}
+                    </div>
+                    {scope === "server" && <label className="ec-clean-field">Server<SearchableSelect placeholder="Choose a server" options={guilds.map(guild => ({ label: guild.name, value: guild.id }))} value={guildId} onChange={(id: string) => { invalidate(); setGuildId(id); setSelected(new Set()); setSearch(""); setShownCount(50); }} isDisabled={busy} /></label>}
+                    {scope === "current" ? <Paragraph>This chat is selected automatically. Choose another type above to clean other conversations.</Paragraph> : <TextInput placeholder={scope === "dms" ? "Find a person or group DM" : "Find a channel in this server"} aria-label="Find conversations" value={search} onChange={value => { setSearch(value); setShownCount(50); }} disabled={busy} />}
                     <div className="ec-clean-actions">
-                        <Button size="small" variant="secondary" disabled={busy || !shown.length} onClick={() => { invalidate(); setSelected(previous => new Set([...previous, ...shown.slice(0, Math.max(0, 100 - previous.size)).map(c => c.id)])); }}>Select shown</Button>
+                        <Button size="small" variant="secondary" disabled={busy || !visible.length || selected.size >= 100} onClick={() => { invalidate(); setSelected(previous => addCleanupChannels(previous, visible)); }}>Select matching{visible.length > 100 ? " (up to 100)" : ""}</Button>
                         <Button size="small" variant="secondary" disabled={busy || !selected.size} onClick={() => { invalidate(); setSelected(new Set()); }}>Clear selection</Button>
-                        <span>{selected.size}/100 selected</span>
+                        <span aria-live="polite">{selected.size}/100 selected</span>
                     </div>
-                    <div className="ec-clean-channel-list">
-                        {shown.map(channel => <FormSwitch key={channel.id} title={channelLabel(channel)} value={selected.has(channel.id)} disabled={busy || (!selected.has(channel.id) && selected.size >= 100)} onChange={checked => toggle(channel.id, checked)} hideBorder />)}
-                        {!shown.length && <Paragraph>No accessible channels match. Open the channel in Discord to load it.</Paragraph>}
+                    <div className="ec-clean-channel-list" role="group" aria-label="Choose conversations">
+                        {shown.map(channel => <Button key={channel.id} variant="none" className="ec-clean-channel" aria-pressed={selected.has(channel.id)} disabled={busy || (!selected.has(channel.id) && selected.size >= 100)} onClick={() => toggle(channel.id, !selected.has(channel.id))}>
+                            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><rect x="2" y="2" width="16" height="16" rx="4" />{selected.has(channel.id) && <path d="m6 10 3 3 5-6" strokeWidth="2" />}</svg>
+                            <span><strong>{channelTitle(channel)}</strong><span>{channel.guild_id ? GuildStore.getGuild(channel.guild_id)?.name : channel.type === 3 ? "Group direct message" : "Direct message"}{channel.isThread() ? " / Thread" : ""}</span></span>
+                        </Button>)}
+                        {!shown.length && <Paragraph>{scope === "server" && !guildId ? "Choose a server to see its channels." : search ? "No conversations match this search. Try a different name or clear the search." : "No accessible conversations are loaded here. Open the DM or server in Discord, then reopen EvenClean."}</Paragraph>}
                     </div>
-                    {visible.length > shown.length && <Paragraph>Showing 150 channels. Narrow the server or search filter to find more.</Paragraph>}
-                    <Heading tag="h3">2. Narrow the batch</Heading>
-                    <label>Message text contains<TextInput value={filters.contains} onChange={contains => edit({ contains })} placeholder="Optional, matched literally" maxLength={200} disabled={busy} /></label>
-                    <div className="ec-clean-dates">
-                        <label>After, local time<TextInput type="datetime-local" value={filters.after} onChange={after => edit({ after })} disabled={busy} /></label>
-                        <label>Before, local time<TextInput type="datetime-local" value={filters.before} onChange={before => edit({ before })} disabled={busy} /></label>
-                    </div>
-                    <label>Message kind<Select options={[{ label: "All ordinary messages and replies", value: "all" }, { label: "With attachments", value: "attachments" }, { label: "With links", value: "links" }]} isSelected={value => value === filters.media} select={media => edit({ media })} serialize={String} isDisabled={busy} /></label>
-                    <label>Maximum messages in this batch<Select options={[100, 500, 1000, 5000].map(value => ({ label: String(value), value }))} isSelected={value => value === filters.limit} select={limit => edit({ limit })} serialize={String} isDisabled={busy} /></label>
-                    <FormSwitch title="Include pinned messages" value={filters.includePinned} onChange={includePinned => edit({ includePinned })} disabled={busy} hideBorder />
-                    <Button disabled={busy || !selected.size} onClick={preview}>Preview my messages</Button>
-                    <Paragraph>Only loaded, accessible channels are listed. Preview never deletes. New messages sent after the preview starts are excluded.</Paragraph>
+                    {visible.length > shown.length && <Button size="small" variant="secondary" onClick={() => setShownCount(count => count + 50)}>Show more ({visible.length - shown.length} remaining)</Button>}
+                    {selected.size > 0 && <details className="ec-clean-selection"><summary>Selected conversations ({selected.size})</summary><ul>{selectedChannels.map(channel => <li key={channel.id}><span>{channelLabel(channel)}</span><Button size="xs" variant="secondary" disabled={busy} onClick={() => toggle(channel.id, false)} aria-label={`Remove ${channelLabel(channel)} from selection`}>Remove</Button></li>)}</ul></details>}
+                    {unavailableCount > 0 && <Notice.Warning>{unavailableCount} selected channel(s) are no longer accessible. Clear the selection and choose again.</Notice.Warning>}
+                    <details className="ec-clean-filters">
+                        <summary>Optional filters</summary>
+                        <div className="ec-clean-options">
+                            <label className="ec-clean-field">Message text contains<TextInput value={filters.contains} onChange={contains => edit({ contains })} placeholder="Optional, matched literally" maxLength={200} disabled={busy} /></label>
+                            <div className="ec-clean-dates">
+                                <label className="ec-clean-field">After, local time<TextInput type="datetime-local" value={filters.after} onChange={after => edit({ after })} disabled={busy} /></label>
+                                <label className="ec-clean-field">Before, local time<TextInput type="datetime-local" value={filters.before} onChange={before => edit({ before })} disabled={busy} /></label>
+                            </div>
+                            <label className="ec-clean-field">Message kind<Select options={[{ label: "All ordinary messages and replies", value: "all" }, { label: "With attachments", value: "attachments" }, { label: "With links", value: "links" }]} isSelected={value => value === filters.media} select={media => edit({ media })} serialize={String} isDisabled={busy} /></label>
+                            <FormSwitch title="Include pinned messages" value={filters.includePinned} onChange={includePinned => edit({ includePinned })} disabled={busy} hideBorder />
+                        </div>
+                    </details>
+                    <label className="ec-clean-field">Maximum messages in this batch<Select options={[100, 500, 1000, 5000].map(value => ({ label: String(value), value }))} isSelected={value => value === filters.limit} select={limit => edit({ limit })} serialize={String} isDisabled={busy} /></label>
+                    <Button disabled={busy || !selected.size || unavailableCount > 0} onClick={preview}>Preview my messages in {selected.size} conversation{selected.size === 1 ? "" : "s"}</Button>
+                    <Paragraph>Preview only searches your own messages. Nothing is deleted until you review and confirm. Changing the conversation type or server resets the selection.</Paragraph>
                 </section>
                 <section className="ec-clean-review" aria-label="Preview and progress">
-                    <Heading tag="h3">3. Review and confirm</Heading>
+                    <Heading tag="h3">Review before deleting</Heading>
                     <div className="ec-clean-summary" aria-live="polite">
-                        <strong>{state.phase === "idle" ? "Ready for preview" : state.phase}</strong>
+                        <strong>{{ idle: "Choose conversations to begin", previewing: "Finding your messages", review: "Preview ready", deleting: "Deleting confirmed messages", paused: "Paused", done: "Batch complete", stopped: "Stopped", error: "Could not finish" }[state.phase]}</strong>
                         <p>{state.detail}</p>
                         {state.waitUntil > clock && <p>Next request in at least {Math.ceil((state.waitUntil - clock) / 1000)} seconds.</p>}
                         <span>{count} found · {state.deleted} deleted · {state.missing} already missing · {state.skipped} skipped</span>
@@ -136,7 +150,7 @@ function CleanupPanel(props: RenderModalProps) {
                     <Paragraph>Exported previews contain private message text and IDs. Nothing is uploaded. Previews expire after 15 minutes and are not resumed automatically after Discord restarts.</Paragraph>
                     {ready && <div className="ec-clean-confirm">
                         <FormSwitch title="I understand deletion is permanent and account automation may carry restrictions." value={acknowledged} onChange={setAcknowledged} hideBorder />
-                        <label>Type DELETE {count} to confirm this exact batch<TextInput value={confirmation} onChange={setConfirmation} placeholder={`DELETE ${count}`} autoComplete="off" /></label>
+                        <label className="ec-clean-field">Type DELETE {count} to confirm this exact batch<TextInput value={confirmation} onChange={setConfirmation} placeholder={`DELETE ${count}`} autoComplete="off" /></label>
                         <Button variant="dangerPrimary" disabled={!acknowledged || confirmation !== `DELETE ${count}`} onClick={() => { void cleaner.remove(confirmation, acknowledged, settings.store.deleteDelay).catch(notifyError); }}>Delete {count} own messages</Button>
                     </div>}
                 </section>

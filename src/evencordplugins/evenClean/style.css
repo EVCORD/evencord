@@ -24,7 +24,7 @@
     gap: 12px;
 }
 
-.ec-clean label {
+.ec-clean-field {
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -41,6 +41,80 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 10px;
+}
+
+.ec-clean-scopes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.ec-clean-scopes > [aria-pressed="true"] {
+    border-color: var(--ec-clean-accent);
+    box-shadow: inset 0 -2px var(--ec-clean-accent);
+}
+
+.ec-clean .ec-clean-channel {
+    display: flex;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+    height: auto;
+    min-height: 56px;
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    text-align: left;
+    white-space: normal;
+}
+
+.ec-clean-channel > svg {
+    flex-shrink: 0;
+}
+
+.ec-clean-channel > span {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+    overflow-wrap: anywhere;
+}
+
+.ec-clean-channel > span > span {
+    color: var(--text-subtle);
+    font-size: 12px;
+}
+
+.ec-clean-channel[aria-pressed="true"] {
+    border-color: var(--ec-clean-accent);
+    background: var(--background-base-lower, #34353b);
+}
+
+.ec-clean-selection summary,
+.ec-clean-filters summary {
+    padding-block: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.ec-clean-selection ul {
+    max-height: 150px;
+    overflow: auto;
+    padding: 0;
+    list-style: none;
+}
+
+.ec-clean-selection li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-block: 5px;
+    overflow-wrap: anywhere;
+}
+
+.ec-clean-selection li > span {
+    min-width: 0;
 }
 
 .ec-clean-channel-list,

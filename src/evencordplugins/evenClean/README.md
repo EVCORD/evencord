@@ -4,8 +4,8 @@ An EvenCord message-cleanup plugin for previewing and removing your own messages
 
 ## Use
 
-1. Enable EvenClean in the plugin manager. Open it from its settings, Toolbox or the channel-toolbar trash button.
-2. Select loaded channels you can currently view. Filter by server, DM/group, text, dates, attachments or links. Messages pinned at preview time are excluded by default. The approved batch is a snapshot; later edits or pin changes do not change its IDs.
+1. Enable EvenClean in the plugin manager. Open it from its settings, Toolbox or the top-header trash button near the Inbox actions.
+2. Choose This chat, Direct messages or Server channels. Select a server by name, search conversations, then click the conversations to include. Review the selected list before previewing. Changing the target type or server clears the selection. Optional filters cover text, dates, attachments and links. Messages pinned at preview time are excluded by default. The approved batch is a snapshot; later edits or pin changes do not change its IDs.
 3. Preview a batch of up to 5,000 messages. Preview only searches. Check the results, optionally reveal message text, or explicitly export the local preview JSON to inspect every ID.
 4. Acknowledge the permanent-deletion/account-automation warning and type the exact `DELETE <count>` phrase. Only the fixed list of your own message IDs in that preview can be removed.
 5. Pause, resume or stop from the panel. Closing the panel leaves an active job running; reopen it from the toolbar. An already-issued request cannot be recalled. Disabling the plugin or logging out stops new work and forgets the in-memory preview.
