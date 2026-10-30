@@ -1,0 +1,88 @@
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+.ec-clean {
+    color: var(--text-default);
+    line-height: 1.5;
+}
+
+.ec-clean-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.ec-clean-options,
+.ec-clean-review,
+.ec-clean-confirm {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ec-clean label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ec-clean-dates {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.ec-clean-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.ec-clean-channel-list,
+.ec-clean-messages {
+    overflow: auto;
+    max-height: 260px;
+    scrollbar-width: thin;
+}
+
+.ec-clean-summary {
+    border-left: 3px solid var(--ec-clean-accent);
+    padding: 4px 14px;
+    background: var(--background-base-lower, #34353b);
+}
+
+.ec-clean-summary p {
+    margin: 6px 0;
+}
+
+.ec-clean-messages article {
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 12px 0;
+    overflow-wrap: anywhere;
+}
+
+.ec-clean-messages article p {
+    margin: 6px 0;
+    white-space: pre-wrap;
+}
+
+.ec-clean-confirm {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 16px;
+}
+
+.ec-clean progress {
+    width: 100%;
+    accent-color: var(--ec-clean-accent);
+}
+
+@media (width <= 760px) {
+    .ec-clean-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

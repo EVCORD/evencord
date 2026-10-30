@@ -151,7 +151,7 @@ const settings = !IS_REPORTER ? VencordNative.settings.get() : {} as Settings;
 mergeDefaults(settings, DefaultSettings);
 let resetImportedPlugins = false;
 if (!IS_REPORTER) {
-    for (const name of ["BetterMicrophone", "PhilsPluginLibrary", "DontControlMe", "FollowUser", "PasscodeLock"]) {
+    for (const name of ["BetterMicrophone", "PhilsPluginLibrary", "DontControlMe", "FollowUser", "PasscodeLock", "EvenClean"]) {
         const entry = settings.plugins[name];
         if (entry?._evencordOptInReset === 1) continue;
         settings.plugins[name] = { ...entry, enabled: false, _evencordOptInReset: 1 };
