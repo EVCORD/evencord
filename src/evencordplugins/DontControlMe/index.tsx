@@ -170,6 +170,7 @@ const addPinChannelContextMenu: NavContextMenuPatchCallback = (children, { chann
 
 export default definePlugin({
     name: "DontControlMe",
+    enabledByDefault: false,
     description: "Return to a pinned voice channel, with optional permission-checked server mute and deafen requests.",
     authors: [EvenCordAuthors.Unknown],
     settings,

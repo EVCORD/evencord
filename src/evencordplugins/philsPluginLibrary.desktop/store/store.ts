@@ -38,7 +38,7 @@ function createObjectProxy<T extends object>(obj1: T, onUpdate: (updatedObject: 
             const success = Reflect.set(target, property, value, receiver);
             const nestedObj = target[property];
 
-            if (typeof nestedObj === "object") {
+            if (nestedObj !== null && typeof nestedObj === "object") {
                 target[property] = createObjectProxy(nestedObj, () => { onUpdate(obj1); }); // On update will call itself until the top level object
             }
 
@@ -68,9 +68,9 @@ export function createPluginStore<Z extends PluginSettings = {}>(pluginName: str
         if (!startupStates[key]) { // We do this so that we can load all the saved data without the proxy attempting to overwrite it
             const startupInfo = Settings.plugins[pluginName].stores[storeName];
 
-            storeSettings.simpleMode = startupInfo.simpleMode;
-            storeSettings.profiles = startupInfo.profiles || [];
-            storeSettings.currentProfile = startupInfo.currentProfile || { name: "" };
+            storeSettings.simpleMode = startupInfo.simpleMode ?? storeSettings.simpleMode;
+            storeSettings.profiles = Array.isArray(startupInfo.profiles) ? startupInfo.profiles : storeSettings.profiles ?? [];
+            storeSettings.currentProfile = startupInfo.currentProfile ?? storeSettings.currentProfile ?? { name: "Discord default" };
 
             startupStates[key] = true;
         }
@@ -78,8 +78,12 @@ export function createPluginStore<Z extends PluginSettings = {}>(pluginName: str
         return storeSettings;
     };
 
-    const set: PluginSet<Z> = (s: ((settings: Z) => Z | undefined) | Z) =>
-        (typeof s === "function" ? s(get()) : s) || get();
+    const set: PluginSet<Z> = value => {
+        const current = get();
+        const next = typeof value === "function" ? value(current) : value;
+        if (next && next !== current) Object.assign(current, next);
+        return current;
+    };
 
     const use: PluginUse<Z> = () => { useSettings().plugins[pluginName].stores[storeName]; return get(); }; // useSettings is called to update renderer (after settings change)
 
@@ -87,8 +91,8 @@ export function createPluginStore<Z extends PluginSettings = {}>(pluginName: str
     const settingData = Settings.plugins[pluginName].stores[storeName];
     const filteredInitialSettings: unknown = { // We make sure that everything we pass to the IPC is allowed
         profiles: settingData.profiles || [],
-        currentProfile: settingData.currentProfile || { name: "" },
-        simpleMode: settingData.simpleMode ?? false
+        currentProfile: settingData.currentProfile ?? initialSettings.currentProfile,
+        simpleMode: settingData.simpleMode ?? initialSettings.simpleMode ?? true
     };
 
     const proxiedSettings = createObjectProxy(initialSettings as unknown, updateCallback); // Setup our proxy that allows us connections to the datastore

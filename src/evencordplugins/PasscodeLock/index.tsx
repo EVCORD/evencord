@@ -438,7 +438,8 @@ function onWindowFocus(): void {
 
 export default definePlugin({
     name: "PasscodeLock",
-    description: "Protect Discord from casual access with a local passcode lock screen.",
+    enabledByDefault: false,
+    description: "Set a local passcode and lock shortcut in settings. This screen lock does not encrypt Discord data.",
     authors: [EvenCordAuthors.Yazan],
     settings,
 

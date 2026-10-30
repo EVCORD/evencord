@@ -149,6 +149,15 @@ const DefaultSettings: Settings = {
 
 const settings = !IS_REPORTER ? VencordNative.settings.get() : {} as Settings;
 mergeDefaults(settings, DefaultSettings);
+let resetImportedPlugins = false;
+if (!IS_REPORTER) {
+    for (const name of ["BetterMicrophone", "PhilsPluginLibrary", "DontControlMe", "FollowUser", "PasscodeLock"]) {
+        const entry = settings.plugins[name];
+        if (entry?._evencordOptInReset === 1) continue;
+        settings.plugins[name] = { ...entry, enabled: false, _evencordOptInReset: 1 };
+        resetImportedPlugins = true;
+    }
+}
 if (!Project.capabilities.cloud) {
     settings.cloud.authenticated = false;
     settings.cloud.settingsSync = false;
@@ -199,6 +208,7 @@ if (!IS_REPORTER) {
         SettingsStore.plain.cloud.settingsSyncVersion = Date.now();
         VencordNative.settings.set(SettingsStore.plain, path);
     });
+    if (resetImportedPlugins) SettingsStore.markAsChanged();
 }
 
 /**

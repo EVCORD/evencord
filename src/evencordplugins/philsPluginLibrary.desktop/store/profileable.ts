@@ -65,17 +65,16 @@ export function profileable<
         duplicateProfile: (profile, name) => {
             const foundProfile = get().profiles.find(p => typeof profile === "string" ? p.name === profile : p.name === profile.name);
             if (foundProfile) {
-                foundProfile.name = name;
-                get().profiles.push(foundProfile);
+                get().profiles.push({ ...foundProfile, name });
             }
         },
         setCurrentProfile: f => {
             const currProfile = get().currentProfile;
-            get().currentProfile = (typeof f === "function" ? f(currProfile) ?? currProfile : f ?? currProfile);
+            get().currentProfile = { ...(typeof f === "function" ? f(currProfile) ?? currProfile : f ?? currProfile) };
         },
         saveProfile: profile => {
             get().deleteProfile(profile.name);
-            get().profiles.push(profile);
+            get().profiles.push({ ...profile });
         },
         isCurrentProfileADefaultProfile: () => defaultProfiles.some(profile => get().currentProfile.name === profile.name),
         getDefaultProfiles: () => defaultProfiles,

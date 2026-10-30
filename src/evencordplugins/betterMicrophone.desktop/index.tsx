@@ -17,13 +17,15 @@
 */
 
 import { definePluginSettings } from "@api/Settings";
+import { UserAreaButton } from "@api/UserArea";
+import { Button } from "@components/Button";
 import { Paragraph } from "@components/Paragraph";
 import { EvenCordAuthors } from "@evencordplugins/_authors";
 import { PluginInfo } from "@evencordplugins/betterMicrophone.desktop/constants";
 import { openMicrophoneSettingsModal } from "@evencordplugins/betterMicrophone.desktop/modals";
 import { MicrophonePatcher } from "@evencordplugins/betterMicrophone.desktop/patchers";
 import { initMicrophoneStore } from "@evencordplugins/betterMicrophone.desktop/stores";
-import { addSettingsPanelButton, Emitter, MicrophoneSettingsIcon, removeSettingsPanelButton } from "@evencordplugins/philsPluginLibrary.desktop";
+import { Emitter, MicrophoneSettingsIcon } from "@evencordplugins/philsPluginLibrary.desktop";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
 import { React, showToast } from "@webpack/common";
 
@@ -40,23 +42,26 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "BetterMicrophone",
-    description: "This plugin allows you to further customize your microphone.",
+    enabledByDefault: false,
+    description: "Microphone bitrate and optional stereo profiles. Open controls from plugin settings or the voice-panel button.",
     authors: [EvenCordAuthors.viciouscal],
-    dependencies: ["PhilsPluginLibrary"],
+    dependencies: ["PhilsPluginLibrary", "UserAreaAPI"],
     requiresRestart: true,
     settings,
-    settingsAboutComponent: () => <Paragraph>Open Microphone Settings from the Toolbox or voice panel to edit profiles. Native stereo support is optional and downloads a pinned third-party addon only after you enable it. Compatibility depends on Discord's voice module.</Paragraph>,
+    settingsAboutComponent: () => <>
+        <Paragraph>Enable BetterMicrophone, restart if prompted, then open its controls below or with the microphone settings button beside your voice controls. Start with Discord default or choose a saved profile.</Paragraph>
+        <Button onClick={() => { initMicrophoneStore(); openMicrophoneSettingsModal(); }}>Open microphone settings</Button>
+        <Paragraph>Native stereo patches are optional and require a restart. Keep them off unless you need stereo. Compatibility depends on Discord's voice module.</Paragraph>
+    </>,
+    userAreaButton: {
+        icon: MicrophoneSettingsIcon,
+        render: () => <UserAreaButton icon={<MicrophoneSettingsIcon />} tooltipText="Microphone settings" aria-label="Open BetterMicrophone settings" onClick={openMicrophoneSettingsModal} />
+    },
 
     start(): void {
         try {
             initMicrophoneStore();
             this.microphonePatcher = new MicrophonePatcher().patch();
-            addSettingsPanelButton({
-            name: PluginInfo.PLUGIN_NAME,
-            icon: MicrophoneSettingsIcon,
-            tooltipText: "Microphone Settings",
-            onClick: openMicrophoneSettingsModal
-            });
             if (!settings.store.nativePatching) return;
             const nativeModules = globalThis.DiscordNative?.nativeModules;
             if (!nativeModules?.requireModule) throw new Error("DiscordNative.nativeModules is unavailable");
@@ -73,14 +78,12 @@ export default definePlugin({
             showToast({ text: "BetterMicrophone could not start on this Discord version.", variant: "critical" });
             this.microphonePatcher?.unpatch();
             Emitter.removeAllListeners(PluginInfo.PLUGIN_NAME);
-            removeSettingsPanelButton(PluginInfo.PLUGIN_NAME);
         }
     },
 
     stop(): void {
         this.microphonePatcher?.unpatch();
         Emitter.removeAllListeners(PluginInfo.PLUGIN_NAME);
-        removeSettingsPanelButton(PluginInfo.PLUGIN_NAME);
         Native.revertPatches().catch(error => console.error("[BetterMicrophone] Restart Discord to finish restoring native patches", error));
     },
 

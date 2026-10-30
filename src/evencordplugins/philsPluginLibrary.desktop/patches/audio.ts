@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Settings } from "@api/Settings";
 import { MicrophoneProfile, MicrophoneStore } from "@evencordplugins/betterMicrophone.desktop/stores";
 import { ProfilableStore, types } from "@evencordplugins/philsPluginLibrary.desktop";
 import { Logger } from "@utils/Logger";
@@ -23,8 +24,7 @@ import { lodash } from "@webpack/common";
 
 export function getDefaultAudioTransportationOptions(connection: types.Connection) {
     return {
-        audioEncoder: { ...connection.getCodecOptions("opus").audioEncoder },
-        encodingVoiceBitRate: 64000
+        audioEncoder: { ...connection.getCodecOptions("opus").audioEncoder }
     };
 }
 
@@ -41,7 +41,7 @@ export function getReplaceableAudioTransportationOptions(
             ...(rateEnabled && rate ? { rate } : {}),
             ...(pacsizeEnabled && pacsize ? { pacsize } : {}),
             ...(freqEnabled && freq ? { freq } : {}),
-            ...(channelsEnabled && channels ? { channels } : { channels: 1 })
+            ...(channelsEnabled && channels && (channels === 1 || Settings.plugins.BetterMicrophone.nativePatching) ? { channels } : {})
         }
     };
 }

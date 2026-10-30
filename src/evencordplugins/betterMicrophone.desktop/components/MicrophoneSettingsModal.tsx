@@ -16,8 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Settings } from "@api/Settings";
 import { Card } from "@components/Card";
 import { Flex } from "@components/Flex";
+import { Paragraph } from "@components/Paragraph";
 import { Switch } from "@components/Switch";
 import { MicrophoneProfile, MicrophoneStore } from "@evencordplugins/betterMicrophone.desktop/stores";
 import {
@@ -33,7 +35,7 @@ import {
 import { Styles } from "@evencordplugins/philsPluginLibrary.desktop/styles";
 import { ModalSize } from "@utils/modal";
 import { SelectOption } from "@vencord/discord-types";
-import { Forms, Select, Slider, TextInput, useEffect, useState } from "@webpack/common";
+import { Forms, Select, showToast, Slider, TextInput, useEffect, useState } from "@webpack/common";
 
 const simpleVoiceBitrates: readonly SelectOption[] = [
     {
@@ -118,8 +120,8 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
 
     const simpleToggle =
         <Flex style={{ justifyContent: "center", alignItems: "center", gap: "0.6em" }}>
-            <Forms.FormTitle style={{ margin: 0 }} tag="h5">Simple</Forms.FormTitle>
-            <Switch checked={simpleMode ?? false} disabled={isSaving} onChange={checked => setSimpleMode(checked)} />
+            <Forms.FormTitle style={{ margin: 0 }} tag="h5">Advanced controls</Forms.FormTitle>
+            <Switch checked={!simpleMode} disabled={isSaving} onChange={checked => setSimpleMode(!checked)} />
         </Flex>;
 
     const settingsCardVoiceBitrateSimple =
@@ -138,18 +140,18 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
                     options={simpleVoiceBitrates}
                     select={(value: number) => setVoiceBitrate(value)}
                     isSelected={(value: number) => value === voiceBitrate}
-                    serialize={() => ""} />
+                    serialize={value => String(value)} />
             </SettingsModalCardItem>
         </SettingsModalCard>;
 
     const settingsCardChannelsSimple =
         <SettingsModalCard
-            title="Stereo"
+            title="Stereo input"
             flex={0.2}
             switchEnabled
             switchProps={{
-                checked: (channelsEnabled && channels === 2) ?? false,
-                disabled: isSaving,
+                checked: Boolean(channelsEnabled && channels === 2),
+                disabled: isSaving || !Settings.plugins.BetterMicrophone.nativePatching,
                 onChange: status => {
                     setChannelsEnabled(status);
                     setChannels(2);
@@ -183,7 +185,7 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
 
     const settingsCardRate =
         <SettingsModalCard
-            title="Sample Rate"
+            title="Encoder rate"
             switchEnabled
             switchProps={{
                 checked: rateEnabled ?? false,
@@ -205,7 +207,7 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
 
     const settingsCardFreq =
         <SettingsModalCard
-            title="Sample Frequency"
+            title="Sample frequency (Hz)"
             switchEnabled
             switchProps={{
                 checked: freqEnabled ?? false,
@@ -227,7 +229,7 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
 
     const settingsCardPacsize =
         <SettingsModalCard
-            title="Pac Size"
+            title="Packet size"
             switchEnabled
             switchProps={{
                 checked: pacsizeEnabled ?? false,
@@ -279,7 +281,7 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
         <Card style={{ ...Styles.infoCard }}>
             <Forms.FormTitle tag="h5">Important</Forms.FormTitle>
             <Forms.FormText>
-                To take full advantage of this plugin, please disable <span style={{ fontWeight: "bold" }}>Krisp</span> and <span style={{ fontWeight: "bold" }}>Echo Cancellation</span>, otherwise features like Stereo (Channels) will not work.
+                Choose Discord default to stop requesting custom encoder settings. Rejoin the voice channel to restore its native defaults. Stereo needs the optional native patch setting and a restart; Krisp or echo cancellation may downmix the input.
             </Forms.FormText>
         </Card>;
 
@@ -295,12 +297,19 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
             }
             {...props}
             onDone={() => {
-                props.onClose();
-                props.onDone && props.onDone();
+                try {
+                    props.onDone?.();
+                    props.onClose();
+                    showToast({ text: "Microphone profile saved. Join or rejoin voice to apply connection defaults.", variant: "success" });
+                } catch {
+                    showToast({ text: "Could not apply this microphone profile. Rejoin voice and try again.", variant: "critical" });
+                }
             }}
         >
+            <Paragraph>Choose a profile or adjust bitrate below. Profile edits are saved locally. Use Apply to send them to your current voice connection. Native stereo: {Settings.plugins.BetterMicrophone.nativePatching ? "enabled, restart required after changing it" : "off"}.</Paragraph>
             {simpleMode
-                ? <div style={{ width: "30em", display: "flex", flexDirection: "column", gap: "1em" }}>
+                ? <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "1em" }}>
+                    {settingsCardProfiles}
                     <SettingsModalCardRow>
                         {settingsCardVoiceBitrateSimple}
                         {settingsCardChannelsSimple}
@@ -311,7 +320,7 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
                         </SettingsModalCardRow>
                     }
                 </div>
-                : <div style={{ display: "flex", flexDirection: "column", width: "50em", gap: "1em", maxHeight: "30em" }}>
+                : <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: "1em" }}>
                     <SettingsModalCardRow>
                         {settingsCardFreq}
                         {settingsCardRate}

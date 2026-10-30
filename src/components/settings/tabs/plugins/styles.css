@@ -121,8 +121,8 @@
 }
 
 .vc-plugin-stats-card-divider {
-    border-left: 1px solid #ccc;
-    height: 100%;
+    border-left: 1px solid var(--border-subtle);
+    height: 40px;
     margin: 0 10px;
 }
 
@@ -268,8 +268,8 @@
 .vc-plugins-stats-container {
     margin-top: 16px;
     gap: 16px;
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
     width: 100%;
 }
 

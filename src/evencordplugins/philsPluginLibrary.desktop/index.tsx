@@ -17,37 +17,15 @@
 */
 
 import { EvenCordAuthors } from "@evencordplugins/_authors";
-import { replacedUserPanelComponent } from "@evencordplugins/philsPluginLibrary.desktop/patches";
 import definePlugin from "@utils/types";
 import { MediaEngineStore, useStateFromStores } from "@webpack/common";
 
 export default definePlugin({
     name: "PhilsPluginLibrary",
-    description: "A library for phil's plugins",
+    enabledByDefault: false,
+    description: "Shared microphone profiles for BetterMicrophone. Enable BetterMicrophone to use its controls.",
     authors: [EvenCordAuthors.viciouscal],
-    patches: [
-        {
-            find: '"--custom-app-panels-height",',
-            replacement: {
-                match: /(\(0,\i\.jsx\)\(\i\.\i,\{section:\i\.\i+\.ACCOUNT_PANEL)/,
-                replace: "$self.replacedUserPanelComponent(),$1"
-            }
-        },
-        {
-            find: "Unknown frame rate",
-            replacement: [
-                {
-                    match: /(switch\((.{0,10})\).{0,1000})(throw Error\(.{0,100}?Unknown resolution.{0,100}?\))(?=})/,
-                    replace: "$1return $2"
-                },
-                {
-                    match: /(switch\((.{0,10})\).{0,1000})(throw Error\(.{0,100}?Unknown frame rate.{0,100}?\))(?=})/,
-                    replace: "$1return $2"
-                }
-            ]
-        }
-    ],
-    replacedUserPanelComponent
+
 });
 
 export const DeafenIcon = (props: React.ComponentProps<"svg">) => {

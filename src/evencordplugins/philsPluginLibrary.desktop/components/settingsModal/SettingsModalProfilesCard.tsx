@@ -87,7 +87,7 @@ export const SettingsModalProfilesCard = <T extends PluginSettings = {},>(props:
                         {isSaving
                             ? <TextInput
                                 style={{ width: "100%" }}
-                                placeholder="Insert name"
+                                placeholder="Profile name"
                                 value={profileNameInput}
                                 onChange={setProfileNameInput} />
                             : <Select
@@ -97,7 +97,7 @@ export const SettingsModalProfilesCard = <T extends PluginSettings = {},>(props:
                                     value: profile.name
                                 }))}
                                 select={value => setCurrentProfile(getProfile(value) || { name: "" })}
-                                serialize={() => ""} />}
+                                serialize={value => String(value)} />}
                     </div>
                     <Flex style={{ gap: "0.8em" }}>
                         <SaveButton onClick={onSaveProfile} />

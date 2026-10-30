@@ -353,19 +353,14 @@ export default function PluginSettings() {
         }
     }
 
-    // Code directly taken from supportHelper.tsx
-    const { totalStockPlugins, totalUserPlugins, enabledStockPlugins, enabledUserPlugins, enabledPlugins } = useMemo(() => {
-        const isApiPlugin = (plugin: string) => plugin.endsWith("API") || Plugins[plugin].required;
+    const countedPlugins = Object.keys(Plugins).filter(p => !p.endsWith("API") && !Plugins[p].required && !Plugins[p].hidden);
+    const enabledPlugins = countedPlugins.filter(isPluginEnabled);
+    const totalStockPlugins = countedPlugins.filter(p => !PluginMeta[p].userPlugin).length;
+    const totalUserPlugins = countedPlugins.filter(p => PluginMeta[p].userPlugin).length;
+    const enabledStockPlugins = enabledPlugins.filter(p => !PluginMeta[p].userPlugin).length;
+    const enabledUserPlugins = enabledPlugins.filter(p => PluginMeta[p].userPlugin).length;
+    const evenCordPlugins = countedPlugins.filter(p => PluginMeta[p].folderName.startsWith("src/evencordplugins/"));
 
-        const totalPlugins = Object.keys(Plugins).filter(p => !isApiPlugin(p));
-        const enabledPlugins = Object.keys(Plugins).filter(p => isPluginEnabled(p) && !isApiPlugin(p));
-
-        const totalStockPlugins = totalPlugins.filter(p => !PluginMeta[p].userPlugin && !Plugins[p].hidden).length;
-        const totalUserPlugins = totalPlugins.filter(p => PluginMeta[p].userPlugin).length;
-        const enabledStockPlugins = enabledPlugins.filter(p => !PluginMeta[p].userPlugin).length;
-        const enabledUserPlugins = enabledPlugins.filter(p => PluginMeta[p].userPlugin).length;
-        return { totalStockPlugins, totalUserPlugins, enabledStockPlugins, enabledUserPlugins, enabledPlugins };
-    }, [settings.plugins]);
     const pluginsToLoad = Math.min(36, plugins.length);
     const [visibleCount, setVisibleCount] = React.useState(pluginsToLoad);
     const loadMore = React.useCallback(() => {
@@ -392,6 +387,7 @@ export default function PluginSettings() {
                     totalStockPlugins={totalStockPlugins}
                     enabledStockPlugins={enabledStockPlugins}
                 />
+                <StockPluginsCard title="EvenCord plugins" totalStockPlugins={evenCordPlugins.length} enabledStockPlugins={evenCordPlugins.filter(isPluginEnabled).length} />
                 <UserPluginsCard
                     totalUserPlugins={totalUserPlugins}
                     enabledUserPlugins={enabledUserPlugins}

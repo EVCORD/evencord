@@ -286,7 +286,8 @@ function FollowIndicator() {
 
 export default definePlugin({
     name: "FollowUser",
-    description: "Adds a follow option in the user context menu to always be in the same VC as them",
+    enabledByDefault: false,
+    description: "Right-click a user to follow their accessible voice channel. Right-click the follow indicator to stop.",
     authors: [Devs.D3SOX],
 
     settings,

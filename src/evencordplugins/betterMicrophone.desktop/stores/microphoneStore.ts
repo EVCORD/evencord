@@ -48,6 +48,7 @@ export interface MicrophoneStore {
 }
 
 export const defaultMicrophoneProfiles = {
+    discord: { name: "Discord default", channelsEnabled: false, voiceBitrateEnabled: false },
     normal: {
         name: "Normal",
         channels: 2,
@@ -82,12 +83,12 @@ export const microphoneStoreDefault: ProfilableInitializer<MicrophoneStore, Micr
 export let microphoneStore: ProfilableStore<MicrophoneStore, MicrophoneProfile>;
 
 export const initMicrophoneStore = () =>
-    microphoneStore = createPluginStore(
+    microphoneStore ??= createPluginStore(
         PluginInfo.PLUGIN_NAME,
         "MicrophoneStore",
         profileable(
             microphoneStoreDefault,
-            { name: "" },
+            { ...defaultMicrophoneProfiles.discord },
             Object.values(defaultMicrophoneProfiles)
         )
     );
