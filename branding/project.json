@@ -27,7 +27,7 @@
         "environmentPrefix": "EVENCORD"
     },
     "release": {
-        "channel": "beta",
+        "channel": "stable",
         "platform": "win32",
         "architecture": "x64",
         "discordChannel": "stable",

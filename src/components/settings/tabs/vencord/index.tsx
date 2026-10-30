@@ -176,7 +176,6 @@ function EquicordSettings() {
                     </Paragraph>
                 </div>
             </div>
-            <Notice.Info>Development preview. Installation and updates are unavailable until Phase 3.</Notice.Info>
 
             <Heading className={Margins.top16}>Quick Actions</Heading>
             <Paragraph className={Margins.bottom16}>

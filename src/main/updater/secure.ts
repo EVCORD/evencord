@@ -6,6 +6,7 @@
 
 import { Project } from "@shared/project";
 import type { UpdateStatus } from "@shared/UpdateStatus";
+import legacyTrustSource from "file://../../../branding/legacy-trust.json?trim=false";
 import loaderSource from "file://../../../branding/loader.cjs?trim=false";
 import engineSource from "file://../../../branding/runtime.cjs?trim=false";
 import trustSource from "file://../../../branding/trust.json?trim=false";
@@ -13,10 +14,11 @@ import { dirname, join, resolve } from "path";
 
 import gitHash from "~git-hash";
 
+import { migrate } from "../../../branding/channel-migration.cjs";
 import compatibility from "../../../branding/discord-compatibility.json";
 import host from "../../../branding/host.cjs";
 import { createUpdater } from "../../../branding/managed-updater.cjs";
-import runtime from "../../../branding/runtime.cjs";
+import runtime from "../../../branding/stable-runtime.cjs";
 import trust from "../../../branding/trust.json";
 import { findStaleSibling, isAlreadyPatched, patchResourcesDir } from "../applyHostPatch";
 import type { Updater } from ".";
@@ -25,12 +27,13 @@ const managed = createUpdater({
     trust,
     context() {
         if (!Project.capabilities.distribution || !Project.capabilities.updates || Object.keys(trust.keys).length === 0)
-            throw new Error("Beta updates are unavailable in this build. Use the verified EvenCord installer for the one-time upgrade.");
+            throw new Error("Updates are unavailable in this build. Use the verified EvenCord installer to upgrade.");
         if (process.platform !== "win32" || process.arch !== "x64") throw new Error("EvenCord updates support Windows x64 only.");
         const root = process.env.EVENCORD_MANAGED_ROOT;
         const encoded = process.env.EVENCORD_RUNNING_RELEASE;
         if (!root || !encoded) throw new Error("This is not a managed signed EvenCord installation. Source checkouts must be updated manually.");
         const resources = join(dirname(process.execPath), "resources");
+        migrate(resources, loaderSource.replaceAll("\r\n", "\n"), engineSource.replaceAll("\r\n", "\n"), legacyTrustSource.replaceAll("\r\n", "\n"), trustSource.replaceAll("\r\n", "\n"));
         const channel = host.validate(resources);
         const owner = host.ownership(resources, loaderSource.replaceAll("\r\n", "\n"), engineSource.replaceAll("\r\n", "\n"), trustSource.replaceAll("\r\n", "\n"));
         if (!compatibility.channels.some(entry => entry.discordChannel === channel && entry.archiveSHA256 === owner.originalSHA256)) throw new Error("This Discord channel archive is not approved by the running EvenCord build.");

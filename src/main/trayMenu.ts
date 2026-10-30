@@ -99,7 +99,7 @@ function createVencordMenuItems(): MenuItemConstructorOptions[] {
                     click: () => openAboutWindow()
                 },
                 {
-                    label: Project.capabilities.updates ? "Update " + Project.displayName : "Updates unavailable (development preview)",
+                    label: Project.capabilities.updates ? "Update " + Project.displayName : "Updates unavailable",
                     enabled: Project.capabilities.distribution && Project.capabilities.updates,
                     async click(_item, window) {
                         if (!Project.capabilities.distribution || !Project.capabilities.updates) return notify(window, "Updates unavailable", DISTRIBUTION_DISABLED);

@@ -70,7 +70,7 @@ function EquibopSection() {
 }
 
 function Updater() {
-    if (!Project.capabilities.distribution || !Project.capabilities.updates) return <SettingsTab><Heading>Manual beta updates</Heading><Paragraph>Automatic updates are disabled for this beta. Use the verified EvenCord installer to upgrade manually. It checks signed release metadata, artifact integrity and Discord compatibility before installation. Your current build remains installed until you choose to upgrade.</Paragraph><Link href="https://github.com/alrimii/evencord-installer/releases">Open EvenCord installer releases</Link></SettingsTab>;
+    if (!Project.capabilities.distribution || !Project.capabilities.updates) return <SettingsTab><Heading>Manual updates</Heading><Paragraph>Automatic updates are disabled in this build. Use the verified EvenCord installer to upgrade manually. It checks signed release metadata, artifact integrity and Discord compatibility before installation. Your current build remains installed until you choose to upgrade.</Paragraph><Link href="https://github.com/alrimii/evencord-installer/releases">Open EvenCord installer releases</Link></SettingsTab>;
     const settings = useSettings(["autoUpdate", "autoUpdateNotification"]);
 
     const [repo, err, repoPending] = useAwaiter(getRepo, { fallbackValue: "Loading..." });
@@ -90,12 +90,12 @@ function Updater() {
             <EquibopSection />
             <Heading className={Margins.top16}>Update Preferences</Heading>
             <Paragraph className={Margins.bottom20}>
-                EvenCord checks its signed beta channel after startup and every 15 minutes, when returning after a while, and after reconnecting. Failed checks retry automatically. Equicord changes reach you only after review and publication in an EvenCord release.
+                EvenCord checks its signed stable channel after startup and every 15 minutes, when returning after a while, and after reconnecting. Failed checks retry automatically. Equicord changes reach you only after review and publication in an EvenCord release.
             </Paragraph>
 
             <div className="vc-settings-switches">
                 <FormSwitch
-                    title="Automatically download verified beta updates"
+                    title="Automatically download verified updates"
                     description="Opt in to background downloads. Compatible, verified updates are staged with recovery data. Discord restarts only when you choose. When disabled, you receive an update notification."
                     value={settings.autoUpdate}
                     onChange={(v: boolean) => settings.autoUpdate = v}

@@ -18,4 +18,4 @@
 import { project, requireDistribution } from "./project.mjs";
 
 requireDistribution();
-throw new Error(project.displayName + " developer injection is unsupported. Use the separately verified Windows installer after release activation.");
+throw new Error(project.displayName + " developer injection is unsupported. Use the verified Windows installer.");

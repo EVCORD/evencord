@@ -9,7 +9,7 @@ const https = require("node:https");
 const path = require("node:path");
 let fs;
 try { fs = require("original-fs"); } catch { fs = require("node:fs"); }
-const runtime = require("./runtime.cjs");
+const runtime = require("./stable-runtime.cjs");
 
 async function downloadArtifact(raw, size, progress, get = https.get) {
     const deadline = Date.now() + 120000;

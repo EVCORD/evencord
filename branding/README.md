@@ -4,4 +4,4 @@
 
 The core and installer preserve matching `runtime.cjs`, `loader.cjs`, `host.cjs` and `trust.json` files. The installer records their source commit in `contract-source.json`. Keep compatibility identifiers and upstream attribution intact.
 
-Beta installation and repair are available; automatic updates, self-update, cloud sync and host repatching remain disabled. See [release security](../docs/RELEASE-SECURITY.md) for signing and distribution details.
+Installation, repair and signed core updates are enabled for reviewed Windows x64 Discord archives. Stable releases are preferred; the legacy beta policy is retained only for migration and rollback. Installer self-update and cloud synchronization remain disabled. Host repatching is limited to verified compatible archives. See [release security](../docs/RELEASE-SECURITY.md) for signing and distribution details.

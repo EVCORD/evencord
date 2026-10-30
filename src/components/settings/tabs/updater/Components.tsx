@@ -93,13 +93,13 @@ export function Updatable(props: CommonProps) {
     const phase = status?.phase;
     const pending = busy || ["checking", "downloading", "verifying", "staging"].includes(phase || "");
     const message = phase === "ready" ? "The signed update is staged. Your current session is unchanged until you restart."
-        : phase === "current" ? "No newer approved beta release is available."
-            : phase === "checking" ? "Checking approved EvenCord beta releases..."
+        : phase === "current" ? "No newer approved release is available."
+            : phase === "checking" ? "Checking approved EvenCord releases..."
                 : phase === "downloading" ? `Downloading ${((status?.received || 0) / 1048576).toFixed(1)} of ${((status?.total || 0) / 1048576).toFixed(1)} MiB...`
                     : phase === "verifying" ? "Verifying the signature, artifact and Discord compatibility..."
                         : phase === "staging" ? "Staging the verified update and preserving recovery files..."
                             : phase === "available" ? `EvenCord ${status?.availableVersion} is available.`
-                                : "Check for an approved EvenCord beta release.";
+                                : "Check for an approved EvenCord release.";
     return <>
         {status?.installedVersion && <Paragraph>Running {status.installedVersion} · Verified key: {status.keyId}</Paragraph>}
         <Flex className={Margins.bottom8} gap="8px" flexWrap="wrap">
