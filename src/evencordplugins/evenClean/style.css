@@ -43,6 +43,18 @@
     gap: 10px;
 }
 
+.ec-clean-start {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.ec-clean-start > span {
+    color: var(--text-subtle);
+}
+
 .ec-clean-scopes {
     display: flex;
     flex-wrap: wrap;
