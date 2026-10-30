@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { EvenCordAuthors } from "../src/evencordplugins/_authors";
 import { Dirent, readdirSync, readFileSync, writeFileSync } from "fs";
 import { access, readFile } from "fs/promises";
 import { join, sep } from "path";
@@ -53,6 +54,8 @@ export interface PluginData {
     dirName: string;
     isModified: boolean;
 }
+
+const evenCordDevs: Record<string, Dev> = Object.fromEntries(Object.entries(EvenCordAuthors).map(([key, author]) => [key, { name: author.name, id: author.id.toString() }]));
 
 export const devs = {} as Record<string, Dev>;
 export const equicordDevs = {} as Record<string, Dev>;
@@ -206,7 +209,7 @@ export async function parseFile(fileName: string) {
                     if (!isArrayLiteralExpression(value)) throw fail("authors is not an array literal");
                     data.authors = value.elements.map(e => {
                         if (!isPropertyAccessExpression(e)) throw fail("authors array contains non-property access expressions");
-                        const d = devs[getName(e)!] || equicordDevs[getName(e)!];
+                        const d = devs[getName(e)!] || equicordDevs[getName(e)!] || evenCordDevs[getName(e)!];
                         if (!d) throw fail(`couldn't look up author ${getName(e)}`);
                         return d;
                     });

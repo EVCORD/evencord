@@ -27,11 +27,14 @@ Browse the [plugin library](https://alrimii.github.io/evencord/plugins/) for des
 
 - **Reclip** saves recent footage of your Discord window with a button or shortcut. Choose the replay duration, quality and audio sources.
 - **Quoter Enhanced** adds a Valenced-inspired quote layout, typography, images, stickers and experimental GIF support.
+- **BetterMicrophone**, **FollowUser**, **PasscodeLock** and **DontControlMe** are available under EvenCord, with PhilsPluginLibrary supporting microphone profiles. New plugins are opt-in. [Capabilities and limitations](src/evencordplugins/IMPORTED-PLUGINS.md).
 - Inherited plugins keep their original names, settings and author credits.
 
 Reclip's speaker audio may include other applications, and microphone capture is independent of Discord mute. [Recording controls and privacy](https://alrimii.github.io/evencord/faq/#recording)
 
 For volunteer testing and transferring compatible plugin preferences, see the [testing and settings-transfer guide](docs/BETA-TESTING.md). Custom plugin code is not installed by settings import.
+
+To contribute or distribute an EvenCord plugin, follow the [plugin publishing process](docs/PLUGIN-RELEASES.md). A GitHub source push alone does not update installed clients.
 
 ## Building from source
 

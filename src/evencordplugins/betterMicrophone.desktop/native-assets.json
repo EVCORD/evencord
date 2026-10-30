@@ -1,0 +1,10 @@
+{
+    "repository": "sultriness/DiscordVoicePatcher",
+    "sourceCommit": "416d53908843622396fef16c87da11d0e92f7ba0",
+    "license": "Apache-2.0",
+    "release": "416d539",
+    "assets": {
+        "addon": { "name": "patcher.node", "size": 322560, "sha256": "49e3c2a370dc70babd76870512b9b2a97b9a2cc4dd60d898758720c64bab1f85" },
+        "config": { "name": "patcher.ini", "size": 7613, "sha256": "0b8c6fb460ebd9cbb5e83d040fd283c85d226c98dec24fa584d4ab43fb46862f" }
+    }
+}
