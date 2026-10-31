@@ -170,6 +170,7 @@ function EquicordSettings() {
                 <div>
                     <Heading>{Project.displayName}</Heading>
                     <Paragraph>{Project.description}</Paragraph>
+                    <Paragraph>Developed by <strong>{Project.developer.name}</strong>{" | "}Discord: {Project.developer.discord}{" | "}<Link href={Project.developer.instagram}>Instagram: _w0d</Link></Paragraph>
                     <Paragraph>
                         Based on <Link href="https://github.com/Equicord/Equicord">Equicord</Link> and{" "}
                         <Link href="https://github.com/Vendicated/Vencord">Vencord</Link>.

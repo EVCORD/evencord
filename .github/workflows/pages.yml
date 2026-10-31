@@ -8,7 +8,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
-    if: github.repository == 'alrimii/evencord' && github.ref == 'refs/heads/main'
+    if: github.repository == 'EVCORD/evencord' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

@@ -5,7 +5,7 @@
  */
 "use strict";
 const fs = require("node:fs"), path = require("node:path"), cp = require("node:child_process");
-const runtime = require("../branding/runtime.cjs");
+const runtime = require("../branding/release-runtime.cjs");
 const trust = require("../branding/trust.json");
 const [command, component, directory] = process.argv.slice(2);
 const names = {core:"desktop.asar","installer-gui":"EvenCordInstaller-x64.exe","installer-cli":"EvenCordInstallerCli-x64.exe"};

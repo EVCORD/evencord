@@ -2,12 +2,12 @@
 // @name            EvenCord
 // @description     A Discord client mod - Web version
 // @version         %version%
-// @author          EvenCord contributors (https://github.com/alrimii)
-// @downloadURL     https://github.com/alrimii/evencord/releases/latest/download/EvenCord.user.js
-// @updateURL       https://github.com/alrimii/evencord/releases/latest/download/EvenCord.user.js
-// @namespace       https://github.com/alrimii/evencord
-// @supportURL      https://github.com/alrimii/evencord
-// @icon            https://raw.githubusercontent.com/alrimii/evencord/refs/heads/main/browser/icon.png
+// @author          EvenCord contributors (https://github.com/EVCORD)
+// @downloadURL     https://github.com/EVCORD/evencord/releases/latest/download/EvenCord.user.js
+// @updateURL       https://github.com/EVCORD/evencord/releases/latest/download/EvenCord.user.js
+// @namespace       https://github.com/EVCORD/evencord
+// @supportURL      https://github.com/EVCORD/evencord
+// @icon            https://raw.githubusercontent.com/EVCORD/evencord/refs/heads/main/browser/icon.png
 // @license         GPL-3.0
 // @match           *://*.discord.com/*
 // @grant           GM_xmlhttpRequest

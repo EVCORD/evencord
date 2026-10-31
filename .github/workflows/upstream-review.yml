@@ -12,7 +12,7 @@ on:
         type: boolean
         default: false
 env:
-  GH_REPO: alrimii/evencord
+  GH_REPO: EVCORD/evencord
 permissions:
   contents: write
   actions: write
@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
-    if: github.repository == 'alrimii/evencord' && github.ref == 'refs/heads/main'
+    if: github.repository == 'EVCORD/evencord' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:

@@ -14,7 +14,7 @@ try {
    const card=element('article','','plugin');const badge=element('span',`${{evencord:'EvenCord',equicord:'Equicord',vencord:'Vencord'}[p.source]} Plugin`,'source-label '+p.source);if(p.source==='evencord'){const icon=document.createElement('img');icon.src='../assets/mark-light.svg';icon.width=16;icon.height=16;icon.alt='';badge.prepend(icon);}card.append(badge,element('h2',p.name),element('p',p.description));
    card.append(element('p',p.authors.length?'By '+p.authors.map(a=>a.name).join(', '):'Public author not declared in source','authors'));
    card.append(element('div',[...(p.tags||[]),...(p.required?['System dependency']:[])].join(' · '),'tags'));
-   const link=element('a','View source \u2197');link.href='https://github.com/alrimii/evencord/tree/main/'+p.filePath;card.append(link);list.append(card);
+   const link=element('a','View source \u2197');link.href='https://github.com/EVCORD/evencord/tree/main/'+p.filePath;card.append(link);list.append(card);
   }
   if(!matches.length)list.append(element('p','No plugins match these filters. Try a broader search.','empty'));
  }

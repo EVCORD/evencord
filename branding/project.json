@@ -6,18 +6,18 @@
     "description": "An open-source Discord client modification based on Equicord.",
     "repositories": {
         "core": {
-            "slug": "alrimii/evencord",
+            "slug": "EVCORD/evencord",
             "id": 1438489516
         },
         "installer": {
-            "slug": "alrimii/evencord-installer",
+            "slug": "EVCORD/evencord-installer",
             "id": 1438489594
         }
     },
     "links": {
-        "source": "https://github.com/alrimii/evencord",
-        "documentation": "https://github.com/alrimii/evencord#readme",
-        "support": "https://github.com/alrimii/evencord/issues"
+        "source": "https://github.com/EVCORD/evencord",
+        "documentation": "https://github.com/EVCORD/evencord#readme",
+        "support": "https://github.com/EVCORD/evencord/issues"
     },
     "storage": {
         "directory": "EvenCord",
@@ -60,5 +60,10 @@
         "primary": "#805263",
         "accent": "#805263",
         "text": "#F0EDEB"
+    },
+    "developer": {
+        "name": "BOSS",
+        "discord": "bss",
+        "instagram": "https://www.instagram.com/_w0d/"
     }
 }

@@ -8,8 +8,8 @@ body:
       attributes:
           value: |
               This form is not for any of the following:
-              - Plugin requests - Go to our [Discord server](https://github.com/alrimii/evencord#support) for that
-              - Feature requests for plugins - Go to our [Discord server](https://github.com/alrimii/evencord#support) for that
+              - Plugin requests - Go to our [Discord server](https://github.com/EVCORD/evencord#support) for that
+              - Feature requests for plugins - Go to our [Discord server](https://github.com/EVCORD/evencord#support) for that
 
     - type: textarea
       id: feature-description

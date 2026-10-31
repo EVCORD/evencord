@@ -5,7 +5,7 @@
  */
 "use strict";
 const fs=require("node:fs"),path=require("node:path"),cp=require("node:child_process");
-const runtime=require("../branding/runtime.cjs");
+const runtime=require("../branding/release-runtime.cjs");
 const project=require("../branding/project.json");
 const approved=require("../branding/discord-compatibility.json");
 const [component,directory,sequenceText] = process.argv.slice(2);

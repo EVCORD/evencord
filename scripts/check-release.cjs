@@ -8,8 +8,8 @@
 const assert = require("node:assert/strict"), fs = require("node:fs"), path = require("node:path");
 const project = require("../branding/project.json"), trust = require("../branding/trust.json");
 assert.equal(project.id,"evencord");
-assert.equal(project.repositories.core.slug,"alrimii/evencord");
-assert.equal(project.repositories.installer.slug,"alrimii/evencord-installer");
+assert.equal(project.repositories.core.slug,"EVCORD/evencord");
+assert.equal(project.repositories.installer.slug,"EVCORD/evencord-installer");
 assert.equal(trust.schemaVersion,1);
 for (const [name, value] of Object.entries(project.capabilities)) assert.equal(value,["distribution","installation","repair","updates","hostRepatch"].includes(name),"Unexpected release capability: " + name);
 assert.equal(project.release.channel,"stable");

@@ -3,7 +3,7 @@
  * Copyright (c) 2026 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
-const base = "https://github.com/alrimii/evencord-installer/releases/latest/download/";
+const base = "https://github.com/EVCORD/evencord-installer/releases/latest/download/";
 const tabs = [...document.querySelectorAll("[data-platform]")];
 function update(platform) {
     const arch = document.querySelector(`[data-arch="${platform}"]`).value;

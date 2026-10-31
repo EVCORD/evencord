@@ -70,7 +70,7 @@ function EquibopSection() {
 }
 
 function Updater() {
-    if (!Project.capabilities.distribution || !Project.capabilities.updates) return <SettingsTab><Heading>Manual updates</Heading><Paragraph>Automatic updates are disabled in this build. Use the verified EvenCord installer to upgrade manually. It checks signed release metadata, artifact integrity and Discord compatibility before installation. Your current build remains installed until you choose to upgrade.</Paragraph><Link href="https://github.com/alrimii/evencord-installer/releases">Open EvenCord installer releases</Link></SettingsTab>;
+    if (!Project.capabilities.distribution || !Project.capabilities.updates) return <SettingsTab><Heading>Manual updates</Heading><Paragraph>Automatic updates are disabled in this build. Use the verified EvenCord installer to upgrade manually. It checks signed release metadata, artifact integrity and Discord compatibility before installation. Your current build remains installed until you choose to upgrade.</Paragraph><Link href="https://github.com/EVCORD/evencord-installer/releases">Open EvenCord installer releases</Link></SettingsTab>;
     const settings = useSettings(["autoUpdate", "autoUpdateNotification"]);
 
     const [repo, err, repoPending] = useAwaiter(getRepo, { fallbackValue: "Loading..." });

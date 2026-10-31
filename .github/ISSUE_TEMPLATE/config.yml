@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
     - name: 💬 EvenCord Support
-      url: https://github.com/alrimii/evencord#support
+      url: https://github.com/EVCORD/evencord#support
       about: For plugin requests, support questions, and general help - read the EvenCord support information
     - name: 🔌 Plugin Requests
-      url: https://github.com/alrimii/evencord#support
+      url: https://github.com/EVCORD/evencord#support
       about: Read the contribution and support information before proposing a plugin
     - name: ❓ Support & Questions
-      url: https://github.com/alrimii/evencord#support
+      url: https://github.com/EVCORD/evencord#support
       about: Need help? Read the EvenCord development documentation

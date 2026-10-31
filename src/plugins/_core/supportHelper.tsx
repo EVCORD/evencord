@@ -142,7 +142,7 @@ async function generateDebugInfoMessage() {
 
     const info = {
         EvenCord:
-            `v${VERSION} • [${gitHashShort}](<https://github.com/alrimii/evencord/commit/${gitHash}>)` +
+            `v${VERSION} • [${gitHashShort}](<https://github.com/EVCORD/evencord/commit/${gitHash}>)` +
             `${IS_EQUIBOP ? "" : SettingsPlugin.getVersionInfo()} - ${Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(BUILD_TIMESTAMP)}`,
         Client: `${RELEASE_CHANNEL} ~ ${clientString}`,
         Platform: platformDisplay

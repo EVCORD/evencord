@@ -6,7 +6,7 @@
 
 "use strict";
 const fs = require("node:fs"), crypto = require("node:crypto");
-const runtime = require("../branding/runtime.cjs"), trust = require("../branding/trust.json");
+const runtime = require("../branding/release-runtime.cjs"), trust = require("../branding/trust.json");
 const [manifestPath,keyId,outputPath] = process.argv.slice(2);
 if (!manifestPath || !keyId || !outputPath) throw Error("Usage: sign-release.cjs MANIFEST KEY_ID OUTPUT (Ed25519 private PEM on stdin)");
 if (!Object.hasOwn(trust.keys,keyId) || trust.revoked.includes(keyId)) throw Error("Signing key is not enrolled in the reviewed public trust store.");
