@@ -8,6 +8,8 @@ import "./VencordTab.css";
 
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { useSettings } from "@api/Settings";
+import { LinkButton } from "@components/Button";
+import { Card } from "@components/Card";
 import { Divider } from "@components/Divider";
 import { EvenCordIcon } from "@components/EvenCordIcon";
 import { FormSwitch } from "@components/FormSwitch";
@@ -21,7 +23,7 @@ import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
 import BadgeAPI from "@plugins/_api/badges";
 import NoTrack from "@plugins/_core/noTrack";
 import SettingsPlugin from "@plugins/_core/settings";
-import { Project } from "@shared/project";
+import { Community, Project } from "@shared/project";
 import { gitRemote } from "@shared/vencordUserAgent";
 import { DONOR_ROLE_ID, GUILD_ID, IS_WINDOWS, VC_DONOR_ROLE_ID, VC_GUILD_ID } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
@@ -183,6 +185,18 @@ function EquicordSettings() {
                     </Paragraph>
                 </div>
             </div>
+
+            <Card className={cl("community")} defaultPadding>
+                <Heading tag="h3">Official EvenCord Discord</Heading>
+                <Paragraph>
+                    Get help, discover plugins and suggest new features. Arabic and English are welcome.
+                </Paragraph>
+                <div className="vc-settings-card-buttons" style={{ flexWrap: "wrap" }}>
+                    <LinkButton href={Community.invite} variant="primary">Join the Discord server</LinkButton>
+                    <LinkButton href={Community.support} variant="secondary">Get support</LinkButton>
+                    <LinkButton href={Community.suggestions} variant="secondary">Share a suggestion</LinkButton>
+                </div>
+            </Card>
 
             <Heading className={Margins.top16}>Quick Actions</Heading>
             <Paragraph className={Margins.bottom16}>

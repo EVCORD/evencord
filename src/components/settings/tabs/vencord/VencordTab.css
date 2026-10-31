@@ -76,3 +76,15 @@
 .vc-vencord-tab-identity a {
     text-decoration: underline;
 }
+
+.vc-vencord-tab-community {
+    margin-top: 16px;
+}
+
+.vc-vencord-tab-community .vc-btn-primary {
+    color: var(--control-primary-text-default);
+}
+
+.vc-vencord-tab-community .vc-btn-secondary {
+    color: var(--control-secondary-text-default);
+}

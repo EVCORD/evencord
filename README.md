@@ -2,7 +2,13 @@
 
 Discord, with your plugins and your style. Built on [Equicord](https://github.com/Equicord/Equicord).
 
-[Website](https://evcord.github.io/evencord/) | [Plugins](https://evcord.github.io/evencord/plugins/) | [Help](https://evcord.github.io/evencord/faq/)
+[Website](https://evcord.github.io/evencord/) | [Plugins](https://evcord.github.io/evencord/plugins/) | [Help](https://evcord.github.io/evencord/faq/) | [Discord](https://discord.gg/X9ZPfzEe9b)
+
+## Discord community
+
+**[Join the official EvenCord server](https://discord.gg/X9ZPfzEe9b)** for plugins, release news and help in Arabic or English.
+
+[Get support](https://discord.com/channels/1396464693169885315/1566071279864512574) | [Suggest a feature](https://discord.com/channels/1396464693169885315/1566071265649889421)
 
 ## Download
 
@@ -59,5 +65,3 @@ EvenCord is independent of Discord. Client modifications may conflict with Disco
 Developed by **BOSS**. Discord: **bss** / [Instagram: _w0d](https://www.instagram.com/_w0d/).
 
 Compatible [Esharq plugins](docs/esharq.md) keep their original logo and credits and receive upstream updates through EvenCord.
-
-Join the [official EvenCord community](https://discord.gg/X9ZPfzEe9b) for plugin discussions, support and suggestions.

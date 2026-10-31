@@ -4,8 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import community from "../../branding/community.json";
 import project from "../../branding/project.json";
 
+export const Community = community;
 export const Project = project;
 const hostChannel = !IS_WEB && typeof VencordNative !== "undefined" ? VencordNative.settings.getHostChannel() : undefined;
 const hostSuffix = hostChannel && hostChannel !== "stable" ? ":" + hostChannel : "";

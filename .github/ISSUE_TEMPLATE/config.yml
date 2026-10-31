@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-    - name: 💬 EvenCord Support
-      url: https://github.com/EVCORD/evencord#support
-      about: For plugin requests, support questions, and general help - read the EvenCord support information
-    - name: 🔌 Plugin Requests
-      url: https://github.com/EVCORD/evencord#support
-      about: Read the contribution and support information before proposing a plugin
-    - name: ❓ Support & Questions
-      url: https://github.com/EVCORD/evencord#support
-      about: Need help? Read the EvenCord development documentation
+    - name: EvenCord Discord community
+      url: https://discord.gg/X9ZPfzEe9b
+      about: Join the official server for plugins, updates and community discussions.
+    - name: Support and questions
+      url: https://discord.com/channels/1396464693169885315/1566071279864512574
+      about: Open a support thread in the EvenCord Discord server.
+    - name: Suggestions and plugin requests
+      url: https://discord.com/channels/1396464693169885315/1566071265649889421
+      about: Share an idea and vote on suggestions in the community forum.
