@@ -60,10 +60,10 @@ jobs:
         run: |
           node node_modules/typescript/bin/tsc --noEmit
           node --test tests/upstream-migration.test.cjs tests/upstream-updater.test.cjs tests/evenclean.test.cjs tests/evenclean-channels.test.cjs tests/reclip-export.test.cjs tests/settings-import.test.cjs
-          node node_modules/tsx/dist/cli.mjs scripts/generatePluginList.ts dist/plugins.json
-          node node_modules/tsx/dist/cli.mjs scripts/generatePluginList.ts --evencord dist/evencord-plugins.json
           node scripts/build/build.mjs --standalone --all-targets
           node scripts/build/buildWeb.mjs --standalone
+          node node_modules/tsx/dist/cli.mjs scripts/generatePluginList.ts dist/plugins.json
+          node node_modules/tsx/dist/cli.mjs scripts/generatePluginList.ts --evencord dist/evencord-plugins.json
       - name: Sign compatibility metadata for existing installations
         if: steps.version.outputs.publish == 'true'
         env:
