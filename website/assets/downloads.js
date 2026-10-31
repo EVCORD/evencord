@@ -10,7 +10,7 @@ function update(platform) {
     const suffix = arch === "arm64" ? "-arm64" : "";
     let gui, cli;
     if (platform === "windows") { gui = `EvenCord${suffix}.exe`; cli = `EvenCord-cli${suffix}.exe`; }
-    else if (platform === "macos") { gui = `EvenCord${arch === "universal" ? "" : "-" + arch}.dmg`; cli = `EvenCord-cli-${arch}`; }
+    else if (platform === "macos") { gui = `EvenCord${arch === "arm64" ? "-arm64" : ""}.dmg`; cli = `EvenCord-cli-${arch}`; }
     else { const session = document.querySelector("#linux-session").value; gui = `EvenCord${session === "combined" ? "" : "-" + session}${suffix}`; cli = `EvenCord-cli-linux${suffix}`; }
     document.querySelector(`[data-gui="${platform}"]`).href = base + gui;
     document.querySelector(`[data-cli="${platform}"]`).href = base + cli;

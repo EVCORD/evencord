@@ -2,14 +2,14 @@
 
 Discord, with your plugins and your style. Built on [Equicord](https://github.com/Equicord/Equicord).
 
-[Website](https://alrimii.github.io/evencord/) ? [Plugins](https://alrimii.github.io/evencord/plugins/) ? [Help](https://alrimii.github.io/evencord/faq/)
+[Website](https://alrimii.github.io/evencord/) | [Plugins](https://alrimii.github.io/evencord/plugins/) | [Help](https://alrimii.github.io/evencord/faq/)
 
 ## Download
 
 | Platform | Intel / AMD (x64) | ARM64 |
 | --- | --- | --- |
 | Windows | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord.exe) | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-arm64.exe) |
-| macOS | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-x64.dmg) | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-arm64.dmg) |
+| macOS | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord.dmg) | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-arm64.dmg) |
 | Linux | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord) | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-arm64) |
 
 **macOS:** [Universal download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord.dmg) for Apple silicon and Intel.
@@ -23,7 +23,7 @@ Discord, with your plugins and your style. Built on [Equicord](https://github.co
 | macOS | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-cli-x64) | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-cli-arm64) |
 | Linux | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-cli-linux) | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-cli-linux-arm64) |
 
-Linux: [X11](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-x11) ? [Wayland](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-wayland) ? [X11 ARM64](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-x11-arm64) ? [Wayland ARM64](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-wayland-arm64).
+Linux: [X11](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-x11) | [Wayland](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-wayland) | [X11 ARM64](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-x11-arm64) | [Wayland ARM64](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-wayland-arm64).
 
 </details>
 
