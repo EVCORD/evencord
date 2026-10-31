@@ -162,7 +162,7 @@ migratePluginSettings("Reclip", "bossclip");
 
 export default definePlugin({
     name: "Reclip",
-    description: "Keep a replay buffer of Discord and save recent footage with a click or shortcut. Choose your clip length, quality, and audio sources.",
+    description: "احفظ آخر لحظات نافذة Discord على Windows بضغطة، مع اختيار مدة المقطع والجودة وصوت النظام والميكروفون ومجلد الحفظ.",
     authors: [],
     tags: ["Media", "Utility"],
     searchTerms: ["bossclip", "replay", "recorder", "clips"],

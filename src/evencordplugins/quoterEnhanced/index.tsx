@@ -6,6 +6,7 @@
 
 import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import { FormSwitch } from "@components/FormSwitch";
+import { Paragraph } from "@components/Paragraph";
 import { Devs, EquicordDevs } from "@utils/constants";
 import { getCurrentChannel } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
@@ -44,10 +45,15 @@ migratePluginSettings("Quoter Enhanced", "Quoter");
 export default definePlugin({
     name: "Quoter Enhanced",
     searchTerms: ["Quoter", "Valenced", "quotes", "GIF"],
-    description: "Valenced-style quote layout, animated media, and sticker support.",
+    description: "حوّل الرسائل إلى اقتباسات مصورة مع صورة الكاتب وخطوط عربية ودعم الصور والملصقات والوسائط المتحركة.",
     tags: ["Chat"],
     authors: [Devs.Samwich, Devs.thororen, EquicordDevs.neoarz, Devs.prism],
     settings,
+    settingsAboutComponent: () => <section dir="rtl" lang="ar">
+        <Paragraph>اضغط بزر الفأرة الأيمن على رسالة واختر Quote. راجع الاقتباس في المعاينة ثم اضغط Send لإرساله في المحادثة الحالية.</Paragraph>
+        <Paragraph>اختر خط Cairo أو Tajawal للنص العربي. يمكنك تضمين الصور والملصقات، وإظهار علامات الاقتباس، وتغيير اللون الرمادي والعلامة المائية من المعاينة. نص العلامة المائية يدعم حتى 32 حرفاً.</Paragraph>
+        <Paragraph>يمكن الحفاظ على حركة الوسائط المدعومة عند تفعيل خيار الحركة؛ يعتمد ذلك على توفر الملف وإمكانية تحميله ومعالجته. الإضافة مبنية على عمل المطورين المذكورين أعلاه، مع تحسينات EvenCord.</Paragraph>
+    </section>,
     async start() { await ensureFontLoaded(); },
     stop() {
         document.getElementById("quoter-font-style")?.remove();

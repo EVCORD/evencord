@@ -54,7 +54,11 @@ function CleanupButton() {
 function CleanupSettings() {
     const { enabled } = useSettings(["plugins.EvenClean.enabled"]).plugins.EvenClean;
     return <>
-        <Paragraph>Enable EvenClean, choose channels, preview your own messages, then confirm the exact batch before deleting. Nothing starts automatically.</Paragraph>
+        <section dir="rtl" lang="ar">
+            <Paragraph>نظّف رسائلك أنت من المحادثة الحالية أو الخاص أو قنوات سيرفر تختارها. افتح Open EvenClean أو زر سلة المهملات أعلى المحادثة، وحدد المحادثات والفلاتر: النص والتاريخ والمرفقات والروابط. الرسائل المثبتة مستثناة افتراضياً.</Paragraph>
+            <Paragraph>اضغط Find my messages للبحث والمعاينة فقط؛ لن يبدأ الحذف تلقائياً. راجع النتائج ثم وافق على التنبيه واكتب DELETE متبوعة بعدد الرسائل، مثل DELETE 25، لتأكيد الدفعة المعروضة. نتائج البحث قد لا تشمل كامل السجل.</Paragraph>
+            <Paragraph>يمكنك الإيقاف المؤقت والاستئناف أو الضغط على Stop. إغلاق اللوحة لا يوقف عملية جارية، وقد يكتمل الطلب الذي بدأ قبل الضغط على Stop. الحذف نهائي ولا يزيل نسخ الآخرين أو لقطات الشاشة. الإضافة تحذف رسائلك فقط ولا تحتاج إدخال توكن حسابك.</Paragraph>
+        </section>
         <Button disabled={!enabled} onClick={openCleanup}>Open EvenClean</Button>
         <Paragraph>Deletion is permanent. Respecting rate limits does not make account automation approved by Discord or guarantee protection from account restrictions.</Paragraph>
     </>;
@@ -62,7 +66,7 @@ function CleanupSettings() {
 
 export default definePlugin({
     name: "EvenClean",
-    description: "Preview and remove your own messages from selected channels, with confirmation, pause controls and rate-limit cooldowns.",
+    description: "ابحث عن رسائلك وراجعها قبل حذفها من الخاص أو قنوات تختارها، مع فلاتر وتأكيد للدفعة وإيقاف مؤقت واستئناف.",
     authors: [EvenCordAuthors.EvenCord],
     enabledByDefault: false,
     tags: ["Chat", "Utility"],
