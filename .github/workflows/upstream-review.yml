@@ -50,6 +50,11 @@ jobs:
         run: |
           npm install --global pnpm@12.15.0
           pnpm install --frozen-lockfile
+      - name: Install recording test tools
+        if: steps.version.outputs.publish == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
       - name: Validate and build universal payloads
         if: steps.version.outputs.publish == 'true'
         run: |
