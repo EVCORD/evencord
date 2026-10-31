@@ -3,6 +3,8 @@
 // @description     A Discord client mod - Web version
 // @version         %version%
 // @author          EvenCord contributors (https://github.com/alrimii)
+// @downloadURL     https://github.com/alrimii/evencord/releases/latest/download/EvenCord.user.js
+// @updateURL       https://github.com/alrimii/evencord/releases/latest/download/EvenCord.user.js
 // @namespace       https://github.com/alrimii/evencord
 // @supportURL      https://github.com/alrimii/evencord
 // @icon            https://raw.githubusercontent.com/alrimii/evencord/refs/heads/main/browser/icon.png
@@ -23,4 +25,4 @@
 // to overwrite stuff on the window on sites that use CSP. Use Tampermonkey or use a chromium based browser
 // https://github.com/violentmonkey/violentmonkey/issues/997
 
-// this is a compiled and minified version of Equicord. For the source code, visit the GitHub repo
+// this is a compiled and minified version of EvenCord. For the source code, visit the GitHub repo

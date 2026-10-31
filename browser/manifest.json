@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "minimum_chrome_version": "111",
-    "name": "EvenCord Web (unsupported development build)",
+    "name": "EvenCord Web",
     "description": "The other cutest Discord mod now in your browser",
     "author": "EvenCord contributors",
     "homepage_url": "https://github.com/alrimii/evencord",
@@ -33,7 +33,7 @@
                 "*://*.discord.com/*"
             ],
             "js": [
-                "dist/Equicord.js"
+                "dist/EvenCord.js"
             ],
             "all_frames": true,
             "world": "MAIN"

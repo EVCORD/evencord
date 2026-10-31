@@ -90,7 +90,7 @@ jobs:
           git push origin HEAD:main
           sha256sum dist/*.asar > dist/SHA256SUMS.txt
           version=$(node -p 'require("./package.json").version')
-          gh release create "$TAG" --target "$(git rev-parse HEAD)" --title "EvenCord $version $(git rev-parse HEAD)" --notes-file "docs/releases/$version.md" dist/*.asar dist/*.zip dist/plugins.json dist/evencord-plugins.json dist/SHA256SUMS.txt dist/core.release.json dist/core.source.json LICENSE
+          gh release create "$TAG" --target "$(git rev-parse HEAD)" --title "EvenCord $version $(git rev-parse HEAD)" --notes-file "docs/releases/$version.md" dist/*.asar dist/*.zip dist/plugins.json dist/evencord-plugins.json dist/SHA256SUMS.txt dist/core.release.json dist/core.source.json dist/EvenCord.user.js dist/EvenCord.user.js.LEGAL.txt LICENSE
       - name: Update published website
         if: steps.version.outputs.publish == 'true'
         env:
