@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name            EvenCord (unsupported development build)
+// @name            EvenCord
 // @description     A Discord client mod - Web version
 // @version         %version%
 // @author          EvenCord contributors (https://github.com/alrimii)
