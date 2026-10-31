@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths-ignore: ['website/**', 'docs/**']
   workflow_dispatch:
+env:
+  GH_REPO: alrimii/evencord
 permissions:
   contents: write
   actions: write
