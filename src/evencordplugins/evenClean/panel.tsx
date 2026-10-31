@@ -18,7 +18,7 @@ import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
 import { ChannelStore, Checkbox, closeModal, GuildStore, Modal, openModal, PermissionStore, React, SearchableSelect, Select, SelectedChannelStore, SelectedGuildStore, showToast, TextInput, useEffect, UserStore, useState, useStateFromStores } from "@webpack/common";
 
-import { canAccess, cleaner, settings } from ".";
+import { canAccess, cleaner, CleanupIcon, settings } from ".";
 import { addCleanupChannels, channelLabel, channelTitle, CleanupScope, filterCleanupChannels, getCleanupChannels } from "./channels";
 import { CleanupFilters, CleanupTarget } from "./engine";
 
@@ -66,122 +66,129 @@ function CleanupPanel(props: RenderModalProps) {
         invalidate();
         setSelected(previous => { const next = new Set(previous); if (value) next.add(id); else next.delete(id); return next; });
     };
-    const notifyError = (error: unknown) => showToast({ text: error instanceof Error ? error.message : "Could not start cleanup.", variant: "critical" });
+    const notifyError = (error: unknown) => showToast({ text: error instanceof Error ? error.message : "تعذر بدء العملية.", variant: "critical" });
     const preview = () => {
         setAcknowledged(false);
-        if (unavailableCount) { notifyError(new Error("Some selected channels are no longer accessible. Clear the selection and choose again.")); return; }
+        if (unavailableCount) { notifyError(new Error("تعذر الوصول إلى بعض المحادثات. أعد تحديد المحادثات.")); return; }
         const targets: CleanupTarget[] = selectedChannels.map(channel => ({ id: channel.id, label: channelLabel(channel), guildId: channel.guild_id || undefined }));
         void cleaner.preview(targets, filters).catch(notifyError);
     };
     const count = state.messages.length;
     const ready = state.phase === "review" && count > 0 && !locked;
-    const previewButton = <Button disabled={locked || !selected.size || unavailableCount > 0} onClick={preview}>Find my messages ({selected.size} conversation{selected.size === 1 ? "" : "s"})</Button>;
-    return <Modal {...props} title="حذف الرسائل | EvenClean" subtitle="اختر المحادثات، راجع رسائلك، ثم أكد حذف الدفعة بعلامة صح." size="xl">
-        <div className="ec-clean" style={{ "--ec-clean-accent": Project.colors.primary } as React.CSSProperties}>
-            <Notice.Info>Choose a conversation, click Find my messages, then review the results and confirm deletion. Searching does not delete anything.</Notice.Info>
-            <Notice.Warning>Deletion is permanent. Account automation can violate Discord's rules. Rate-limit handling does not guarantee account safety. <Link href="https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots">Discord's policy</Link></Notice.Warning>
+    const step = state.mode === "delete" ? 2 : state.phase === "idle" ? 0 : 1;
+    const completed = state.deleted + state.missing + state.skipped;
+    return <Modal {...props} title="حذف الرسائل" subtitle="اختر المحادثات وراجع رسائلك قبل الحذف." size="xl">
+        <div className="vc-evenclean" dir="rtl" lang="ar" style={{ "--vc-evenclean-accent": Project.colors.primary } as React.CSSProperties}>
+            <ol className="vc-evenclean-steps" aria-label="مراحل حذف الرسائل">
+                {["اختيار المحادثات", "مراجعة الرسائل", "الحذف"].map((label, index) => <li key={label} aria-current={step === index ? "step" : undefined} data-complete={step > index}>
+                    <span aria-hidden="true">{step > index ? "✓" : index + 1}</span>{label}
+                </li>)}
+            </ol>
             {state.error && <Notice.Danger>{state.error}</Notice.Danger>}
-            <div className="ec-clean-start">
-                {previewButton}
-                <span>{busy ? `${state.detail} ${count} message${count === 1 ? "" : "s"} found.` : `${selected.size} selected / maximum ${filters.limit} messages`}</span>
-                {busy && state.mode === "preview" && count > 0 && <Button variant="secondary" onClick={() => cleaner.finishPreview()}>Review results now</Button>}
-                {busy && <Button variant="dangerPrimary" onClick={() => cleaner.stop()}>Stop</Button>}
-            </div>
-            <div className="ec-clean-layout">
-                <section className="ec-clean-options" aria-label="Cleanup scope and filters">
-                    <Heading tag="h3">اختر المحادثات لحذف رسائلك منها</Heading>
-                    <div className="ec-clean-scopes" role="group" aria-label="Conversation type">
-                        {([{ value: "current", label: "This chat" }, { value: "dms", label: "Direct messages" }, { value: "server", label: "Server channels" }] as const).map(option => <Button key={option.value} size="small" variant="secondary" aria-pressed={scope === option.value} disabled={locked || (option.value === "current" && !channels.some(channel => channel.id === currentChannel))} onClick={() => changeScope(option.value)}>{option.label}</Button>)}
+            <div className="vc-evenclean-layout">
+                <section className="vc-evenclean-options vc-evenclean-sidebar" aria-label="المحادثات والفلاتر">
+                    <div className="vc-evenclean-section-heading">
+                        <Heading tag="h3">المحادثات</Heading>
+                        <span>{selected.size} محددة</span>
                     </div>
-                    {scope === "server" && <label className="ec-clean-field">Server<SearchableSelect placeholder="Choose a server" options={guilds.map(guild => ({ label: guild.name, value: guild.id }))} value={guildId} onChange={(id: string) => { invalidate(); setGuildId(id); setSelected(new Set()); setSearch(""); setShownCount(50); }} isDisabled={locked} /></label>}
-                    {scope === "current" ? <Paragraph>This chat is selected automatically. Choose another type above to clean other conversations.</Paragraph> : <TextInput placeholder={scope === "dms" ? "Find a person or group DM" : "Find a channel in this server"} aria-label="Find conversations" value={search} onChange={value => { setSearch(value); setShownCount(50); }} disabled={locked} />}
-                    <div className="ec-clean-actions">
-                        <Button size="small" variant="secondary" disabled={locked || !visible.length || selected.size >= 100} onClick={() => { invalidate(); setSelected(previous => addCleanupChannels(previous, visible)); }}>Select matching{visible.length > 100 ? " (up to 100)" : ""}</Button>
-                        <Button size="small" variant="secondary" disabled={locked || !selected.size} onClick={() => { invalidate(); setSelected(new Set()); }}>Clear selection</Button>
-                        <span aria-live="polite">{selected.size}/100 selected</span>
+                    <div className="vc-evenclean-scopes" role="group" aria-label="نوع المحادثات">
+                        {([{ value: "current", label: "الحالية" }, { value: "dms", label: "الخاص" }, { value: "server", label: "السيرفر" }] as const).map(option => <Button key={option.value} size="small" variant="none" aria-pressed={scope === option.value} disabled={locked || (option.value === "current" && !channels.some(channel => channel.id === currentChannel))} onClick={() => changeScope(option.value)}>{option.label}</Button>)}
                     </div>
-                    <div className="ec-clean-channel-list" role="group" aria-label="Choose conversations">
-                        {shown.map(channel => <Button key={channel.id} variant="none" className="ec-clean-channel" aria-pressed={selected.has(channel.id)} disabled={locked || (!selected.has(channel.id) && selected.size >= 100)} onClick={() => toggle(channel.id, !selected.has(channel.id))}>
-                            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><rect x="2" y="2" width="16" height="16" rx="4" />{selected.has(channel.id) && <path d="m6 10 3 3 5-6" strokeWidth="2" />}</svg>
-                            <span><strong>{channelTitle(channel)}</strong><span>{channel.guild_id ? GuildStore.getGuild(channel.guild_id)?.name : channel.type === 3 ? "Group direct message" : "Direct message"}{channel.isThread() ? " / Thread" : ""}</span></span>
+                    {scope === "server" && <label className="vc-evenclean-field">السيرفر<SearchableSelect placeholder="اختر سيرفراً" options={guilds.map(guild => ({ label: guild.name, value: guild.id }))} value={guildId} onChange={(id: string) => { invalidate(); setGuildId(id); setSelected(new Set()); setSearch(""); setShownCount(50); }} isDisabled={locked} /></label>}
+                    {scope !== "current" && <TextInput placeholder={scope === "dms" ? "ابحث عن شخص أو مجموعة" : "ابحث عن قناة"} aria-label="البحث في المحادثات" value={search} onChange={value => { setSearch(value); setShownCount(50); }} disabled={locked} />}
+                    <div className="vc-evenclean-actions vc-evenclean-selection-actions">
+                        <Button size="xs" variant="none" disabled={locked || !visible.length || selected.size >= 100} onClick={() => { invalidate(); setSelected(previous => addCleanupChannels(previous, visible)); }}>تحديد الكل{visible.length > 100 ? " (حتى 100)" : ""}</Button>
+                        <Button size="xs" variant="none" disabled={locked || !selected.size} onClick={() => { invalidate(); setSelected(new Set()); }}>إلغاء التحديد</Button>
+                    </div>
+                    <div className="vc-evenclean-channel-list" role="group" aria-label="اختيار المحادثات">
+                        {shown.map(channel => <Button key={channel.id} variant="none" className="vc-evenclean-channel" aria-pressed={selected.has(channel.id)} disabled={locked || (!selected.has(channel.id) && selected.size >= 100)} onClick={() => toggle(channel.id, !selected.has(channel.id))}>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><rect x="2" y="2" width="16" height="16" rx="5" />{selected.has(channel.id) && <path d="m6 10 3 3 5-6" strokeWidth="2" />}</svg>
+                            <span><strong dir="auto">{channelTitle(channel)}</strong><span dir="auto">{channel.guild_id ? GuildStore.getGuild(channel.guild_id)?.name : channel.type === 3 ? "مجموعة خاصة" : "محادثة خاصة"}{channel.isThread() ? " / ثريد" : ""}</span></span>
                         </Button>)}
-                        {!shown.length && <Paragraph>{scope === "server" && !guildId ? "Choose a server to see its channels." : search ? "No conversations match this search. Try a different name or clear the search." : "No accessible conversations are loaded here. Open the DM or server in Discord, then reopen EvenClean."}</Paragraph>}
+                        {!shown.length && <p className="vc-evenclean-muted">{scope === "server" && !guildId ? "اختر سيرفراً لعرض قنواته." : search ? "لا توجد محادثات مطابقة." : "افتح المحادثة في Discord ثم أعد فتح هذه النافذة."}</p>}
                     </div>
-                    {visible.length > shown.length && <Button size="small" variant="secondary" onClick={() => setShownCount(count => count + 50)}>Show more ({visible.length - shown.length} remaining)</Button>}
-                    {selected.size > 0 && <details className="ec-clean-selection"><summary>Selected conversations ({selected.size})</summary><ul>{selectedChannels.map(channel => <li key={channel.id}><span>{channelLabel(channel)}</span><Button size="xs" variant="secondary" disabled={locked} onClick={() => toggle(channel.id, false)} aria-label={`Remove ${channelLabel(channel)} from selection`}>Remove</Button></li>)}</ul></details>}
-                    {unavailableCount > 0 && <Notice.Warning>{unavailableCount} selected channel(s) are no longer accessible. Clear the selection and choose again.</Notice.Warning>}
-                    <details className="ec-clean-filters">
-                        <summary>Optional filters</summary>
-                        <div className="ec-clean-options">
-                            <label className="ec-clean-field">Message text contains<TextInput value={filters.contains} onChange={contains => edit({ contains })} placeholder="Optional, matched literally" maxLength={200} disabled={locked} /></label>
-                            <div className="ec-clean-dates">
-                                <label className="ec-clean-field">After, local time<TextInput type="datetime-local" value={filters.after} onChange={after => edit({ after })} disabled={locked} /></label>
-                                <label className="ec-clean-field">Before, local time<TextInput type="datetime-local" value={filters.before} onChange={before => edit({ before })} disabled={locked} /></label>
+                    {visible.length > shown.length && <Button size="small" variant="secondary" onClick={() => setShownCount(count => count + 50)}>عرض المزيد ({visible.length - shown.length})</Button>}
+                    {selected.size > 0 && scope !== "current" && <details className="vc-evenclean-details">
+                        <summary>المحادثات المحددة ({selected.size})</summary>
+                        <ul className="vc-evenclean-selection">{selectedChannels.map(channel => <li key={channel.id}><bdi>{channelLabel(channel)}</bdi><Button size="xs" variant="none" disabled={locked} onClick={() => toggle(channel.id, false)} aria-label={`إلغاء تحديد ${channelLabel(channel)}`}>إزالة</Button></li>)}</ul>
+                    </details>}
+                    {unavailableCount > 0 && <Notice.Warning>تعذر الوصول إلى {unavailableCount} من المحادثات المحددة. أعد تحديد المحادثات.</Notice.Warning>}
+                    <details className="vc-evenclean-details vc-evenclean-filters">
+                        <summary>فلاتر البحث</summary>
+                        <div className="vc-evenclean-options">
+                            <label className="vc-evenclean-field">نص الرسالة<TextInput value={filters.contains} onChange={contains => edit({ contains })} placeholder="كلمة أو عبارة" maxLength={200} disabled={locked} /></label>
+                            <div className="vc-evenclean-dates">
+                                <label className="vc-evenclean-field">من<TextInput type="datetime-local" value={filters.after} onChange={after => edit({ after })} disabled={locked} /></label>
+                                <label className="vc-evenclean-field">إلى<TextInput type="datetime-local" value={filters.before} onChange={before => edit({ before })} disabled={locked} /></label>
                             </div>
-                            <label className="ec-clean-field">Message kind<Select options={[{ label: "All ordinary messages and replies", value: "all" }, { label: "With attachments", value: "attachments" }, { label: "With links", value: "links" }]} isSelected={value => value === filters.media} select={media => edit({ media })} serialize={String} isDisabled={locked} /></label>
-                            <FormSwitch title="Include pinned messages" value={filters.includePinned} onChange={includePinned => edit({ includePinned })} disabled={locked} hideBorder />
+                            <label className="vc-evenclean-field">نوع الرسائل<Select options={[{ label: "جميع الرسائل", value: "all" }, { label: "تحتوي مرفقات", value: "attachments" }, { label: "تحتوي روابط", value: "links" }]} isSelected={value => value === filters.media} select={media => edit({ media })} serialize={String} isDisabled={locked} /></label>
+                            <FormSwitch title="تضمين الرسائل المثبتة" value={filters.includePinned} onChange={includePinned => edit({ includePinned })} disabled={locked} hideBorder />
                         </div>
                     </details>
-                    <label className="ec-clean-field">Maximum messages in this batch<Select options={[100, 500, 1000, 5000].map(value => ({ label: String(value), value }))} isSelected={value => value === filters.limit} select={limit => edit({ limit })} serialize={String} isDisabled={locked} /></label>
-                    {previewButton}
-                    <Paragraph>Preview only searches your own messages. Nothing is deleted until you review and confirm. Changing the conversation type or server resets the selection.</Paragraph>
+                    <div className="vc-evenclean-search-footer">
+                        <label className="vc-evenclean-field">الحد الأقصى للدفعة<Select options={[100, 500, 1000, 5000].map(value => ({ label: `${value} رسالة`, value }))} isSelected={value => value === filters.limit} select={limit => edit({ limit })} serialize={String} isDisabled={locked} /></label>
+                        <Button disabled={locked || !selected.size || unavailableCount > 0} onClick={preview}>البحث عن رسائلي</Button>
+                    </div>
                 </section>
-                <section ref={reviewRef} className="ec-clean-review" aria-label="Preview and progress">
-                    <Heading tag="h3">Review before deleting</Heading>
-                    <div className="ec-clean-summary" aria-live="polite">
-                        <strong>{{ idle: "Choose conversations to begin", previewing: "Finding your messages", review: "Preview ready", deleting: "Deleting confirmed messages", paused: "Paused", done: "Batch complete", stopped: "Stopped", error: "Could not finish" }[state.phase]}</strong>
-                        <p>{state.detail}</p>
-                        {busy && state.mode === "preview" && <p>Conversation {state.targetIndex} of {state.targets.length}. Page {state.page}. {state.scanned}/20 search pages used. Search ends automatically within 90 seconds, excluding pauses.</p>}
-                        {state.requestPending && <p>Waiting for Discord's response: {Math.max(0, Math.floor((clock - state.requestStartedAt) / 1000))} seconds. No other request will start while this one is pending.</p>}
-                        {state.waitUntil > clock && <p>Next request in at least {Math.ceil((state.waitUntil - clock) / 1000)} seconds. This is a cooldown, not a frozen search.</p>}
-                        <span>{count} found · {state.deleted} deleted · {state.missing} already missing · {state.skipped} skipped</span>
+                <section ref={reviewRef} className="vc-evenclean-review" aria-label="مراجعة الرسائل">
+                    <div className="vc-evenclean-section-heading">
+                        <Heading tag="h3">الرسائل</Heading>
+                        <span>{count} نتيجة</span>
                     </div>
-                    {state.targets.length > 0 && <details>
-                        <summary>Batch channels ({state.targets.length})</summary>
-                        <ul className="ec-clean-channel-list">{state.targets.map(target => <li key={target.id}>{target.label}</li>)}</ul>
-                    </details>}
-                    {state.limited && <Notice.Info>This is a partial preview. More matching messages may exist. Review this batch, or narrow the date range and search again.</Notice.Info>}
-                    {busy && <>
-                        <progress aria-label="Cleanup progress" value={state.mode === "delete" ? state.deleted + state.missing + state.skipped : undefined} max={Math.max(1, count)} />
-                        <div className="ec-clean-actions">
-                            <Button variant="secondary" onClick={() => state.phase === "paused" ? cleaner.resume() : cleaner.pause()}>{state.phase === "paused" ? "Resume" : "Pause"}</Button>
-                            {state.mode === "preview" && <Button variant="primary" disabled={!count} onClick={() => cleaner.finishPreview()}>Review {count} result{count === 1 ? "" : "s"} now</Button>}
-                            <Button variant="dangerPrimary" onClick={() => cleaner.stop()}>Stop</Button>
+                    {state.phase !== "idle" && <div className="vc-evenclean-status" data-phase={state.phase} role="status">
+                        <div className="vc-evenclean-status-line">
+                            <strong>{{ idle: "", previewing: "جارٍ البحث عن رسائلك…", review: "الرسائل جاهزة للمراجعة", deleting: "جارٍ حذف الرسائل…", paused: "متوقف مؤقتاً", done: "اكتمل حذف الدفعة", stopped: "تم الإيقاف", error: "تعذر إكمال العملية" }[state.phase]}</strong>
+                            {state.mode === "delete" && <span>{completed} / {count}</span>}
                         </div>
-                        <Paragraph>Closing this window does not stop the job. Stop prevents new requests; an in-flight request may complete.</Paragraph>
-                    </>}
-                    {!busy && state.requestPending && <Notice.Warning>The batch has stopped, but Discord still has an outstanding request. New searches and deletion are blocked until it finishes. Restart Discord manually if the connection stays stuck.</Notice.Warning>}
-                    {state.phase === "review" && count === 0 && <Notice.Info>No eligible messages were found in this preview. Check the selected conversation, clear optional filters or adjust the dates, then click Find my messages again.</Notice.Info>}
-                    <FormSwitch title="Reveal message text in this window" description="Keep this off while sharing your screen." value={reveal} onChange={setReveal} hideBorder />
-                    <div className="ec-clean-messages">
-                        {state.messages.slice(0, 100).map(message => <article key={message.id}>
-                            <div>{new Date(message.timestamp).toLocaleString()} · {message.attachments} attachment{message.attachments === 1 ? "" : "s"}{message.pinned ? " · pinned" : ""}</div>
-                            <p>{reveal ? message.content || "No text content" : "Message text hidden"}</p>
-                            <Link href={`https://discord.com/channels/${state.targets.find(t => t.id === message.channelId)?.guildId ?? "@me"}/${message.channelId}/${message.id}`}>Open original message</Link>
-                        </article>)}
-                        {count > 100 && <Paragraph>Showing 100 of {count} matching messages. Export the preview to review every ID locally.</Paragraph>}
-                    </div>
-                    <div className="ec-clean-actions">
-                        <Button size="small" variant="secondary" disabled={!count || busy || state.accountId !== UserStore.getCurrentUser()?.id} onClick={() => saveFile(new File([JSON.stringify({ product: "EvenCord EvenClean", exportedAt: new Date().toISOString(), accountId: state.accountId, targets: state.targets, messages: state.messages }, null, 2)], "evenclean-preview.json", { type: "application/json" }))}>Export preview JSON</Button>
-                        <Button size="small" variant="secondary" disabled={locked || !count} onClick={invalidate}>Forget preview</Button>
-                    </div>
-                    <Paragraph>Exported previews contain private message text and IDs. Nothing is uploaded. Previews expire after 15 minutes and are not resumed automatically after Discord restarts.</Paragraph>
-                    {ready && <div className="ec-clean-confirm">
-                        <Heading tag="h3">تأكيد حذف {count} رسالة</Heading>
-                        <Paragraph>راجع الرسائل أعلاه، ثم ضع علامة صح واضغط حذف. لا تحتاج كتابة أي عبارة أو عدد.</Paragraph>
+                        {busy && <progress aria-label="تقدم العملية" value={state.mode === "delete" ? completed : undefined} max={Math.max(1, count)} />}
+                        {busy && state.mode === "preview" && <p>المحادثة {state.targetIndex} من {state.targets.length}</p>}
+                        {state.waitUntil > clock ? <p>استئناف الطلبات خلال {Math.ceil((state.waitUntil - clock) / 1000)} ثانية.</p> : state.requestPending && <p>بانتظار استجابة Discord منذ {Math.max(0, Math.floor((clock - state.requestStartedAt) / 1000))} ثانية.</p>}
+                        {state.mode === "delete" && <p>{state.deleted} محذوفة{state.missing > 0 ? `، ${state.missing} محذوفة مسبقاً` : ""}{state.skipped > 0 ? `، ${state.skipped} متجاوزة` : ""}</p>}
+                        {busy && <div className="vc-evenclean-actions">
+                            <Button size="small" variant="secondary" onClick={() => state.phase === "paused" ? cleaner.resume() : cleaner.pause()}>{state.phase === "paused" ? "استئناف" : "إيقاف مؤقت"}</Button>
+                            {state.mode === "preview" && count > 0 && <Button size="small" variant="primary" onClick={() => cleaner.finishPreview()}>مراجعة النتائج</Button>}
+                            <Button size="small" variant="dangerSecondary" onClick={() => cleaner.stop()}>إيقاف</Button>
+                        </div>}
+                        {busy && state.mode === "delete" && <p>لإيقاف الحذف، استخدم زر إيقاف قبل إغلاق النافذة.</p>}
+                    </div>}
+                    {state.limited && <Notice.Info>هذه نتائج جزئية. يمكنك مراجعتها أو تضييق الفلاتر والبحث مجدداً.</Notice.Info>}
+                    {!busy && state.requestPending && <Notice.Warning>بانتظار تأكيد طلب حذف سابق من Discord قبل بدء عملية جديدة.</Notice.Warning>}
+                    {count > 0 ? <>
+                        <div className="vc-evenclean-preview-toolbar">
+                            <FormSwitch title="إظهار نص الرسائل" value={reveal} onChange={setReveal} hideBorder />
+                            <Button size="xs" variant="none" disabled={locked} onClick={invalidate}>مسح النتائج</Button>
+                        </div>
+                        <div className="vc-evenclean-messages">
+                            {state.messages.slice(0, 100).map(message => <article key={message.id}>
+                                <div className="vc-evenclean-message-meta"><time dateTime={message.timestamp}>{new Date(message.timestamp).toLocaleString("ar")}</time><Link href={`https://discord.com/channels/${state.targets.find(t => t.id === message.channelId)?.guildId ?? "@me"}/${message.channelId}/${message.id}`}>فتح الرسالة</Link></div>
+                                <p dir="auto" data-hidden={!reveal}>{reveal ? message.content || "رسالة دون نص" : "نص الرسالة مخفي"}</p>
+                                {(message.attachments > 0 || message.pinned) && <span className="vc-evenclean-muted">{message.attachments > 0 ? `${message.attachments} مرفقات` : ""}{message.pinned ? " · مثبتة" : ""}</span>}
+                            </article>)}
+                        </div>
+                        <div className="vc-evenclean-preview-footer">
+                            <span>{count > 100 ? `عرض 100 من ${count} رسالة` : `${count} رسالة في هذه الدفعة`}</span>
+                            <Button size="xs" variant="none" disabled={busy || state.accountId !== UserStore.getCurrentUser()?.id} onClick={() => saveFile(new File([JSON.stringify({ product: "EvenCord EvenClean", exportedAt: new Date().toISOString(), accountId: state.accountId, targets: state.targets, messages: state.messages }, null, 2)], "evenclean-preview.json", { type: "application/json" }))}>تصدير النتائج</Button>
+                        </div>
+                    </> : <div className="vc-evenclean-empty">
+                        <CleanupIcon width="40" height="40" />
+                        <Heading tag="h3">{state.phase === "review" ? "لا توجد رسائل مطابقة" : busy ? "جارٍ تجهيز النتائج" : "رسائلك تظهر هنا"}</Heading>
+                        <p>{state.phase === "review" ? "جرّب محادثة أخرى أو عدّل فلاتر البحث." : busy ? "ستظهر الرسائل التي يعثر عليها البحث تباعاً." : "حدد المحادثات ثم اضغط البحث عن رسائلي."}</p>
+                    </div>}
+                    {ready && <div className="vc-evenclean-confirm">
                         <Checkbox value={acknowledged} onChange={(_, checked) => setAcknowledged(checked)} size={20}>
-                            <Paragraph>أؤكد حذف هذه الدفعة ({count} رسالة من رسائلي) وأفهم أن الحذف نهائي.</Paragraph>
+                            <Paragraph>أوافق على حذف {count} رسالة نهائياً.</Paragraph>
                         </Checkbox>
                         <Button variant="dangerPrimary" disabled={!acknowledged} onClick={() => { void cleaner.remove(`DELETE ${count}`, acknowledged, settings.store.deleteDelay).catch(notifyError); }}>حذف {count} رسالة</Button>
                     </div>}
                 </section>
             </div>
+            <footer className="vc-evenclean-footer"><span>الحذف نهائي ويشمل رسائلك فقط.</span><Link href="https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots">سياسة Discord</Link></footer>
         </div>
     </Modal>;
 }
 
 export function openCleanup() {
-    if (!isPluginEnabled("EvenClean")) { showToast({ text: "Enable EvenClean in plugin settings first.", variant: "critical" }); return; }
+    if (!isPluginEnabled("EvenClean")) { showToast({ text: "فعّل إضافة حذف الرسائل من إعدادات EvenCord أولاً.", variant: "critical" }); return; }
     if (modalKey) return;
     modalKey = openModal(props => <CleanupPanel {...props} />, { onCloseCallback: () => { modalKey = undefined; } });
 }

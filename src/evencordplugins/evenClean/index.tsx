@@ -55,12 +55,10 @@ function CleanupSettings() {
     const { enabled } = useSettings(["plugins.EvenClean.enabled"]).plugins.EvenClean;
     return <>
         <section dir="rtl" lang="ar">
-            <Paragraph>احذف رسائلك أنت من المحادثة الحالية أو الخاص أو قنوات سيرفر تختارها. افتح حذف الرسائل أو زر سلة المهملات أعلى المحادثة، وحدد المحادثات والفلاتر: النص والتاريخ والمرفقات والروابط. الرسائل المثبتة مستثناة افتراضياً.</Paragraph>
-            <Paragraph>اضغط Find my messages للبحث والمعاينة فقط؛ لن يبدأ الحذف تلقائياً. يتوقف البحث تلقائياً خلال 90 ثانية باستثناء الإيقاف المؤقت، ويمكنك عرض النتائج مبكراً. راجع الدفعة ثم ضع علامة صح واضغط حذف؛ لا تحتاج كتابة DELETE أو العدد. نتائج البحث قد لا تشمل كامل السجل.</Paragraph>
-            <Paragraph>يمكنك الإيقاف المؤقت والاستئناف أو الضغط على Stop. إغلاق اللوحة لا يوقف عملية جارية، وقد يكتمل الطلب الذي بدأ قبل الضغط على Stop. الحذف نهائي ولا يزيل نسخ الآخرين أو لقطات الشاشة. الإضافة تحذف رسائلك فقط ولا تحتاج إدخال توكن حسابك.</Paragraph>
+            <Paragraph>احذف رسائلك من الخاص أو قنوات تختارها، مع البحث بالنص والتاريخ والمرفقات والروابط. الرسائل المثبتة مستثناة افتراضياً.</Paragraph>
+            <Paragraph>حدد المحادثات، اضغط البحث عن رسائلي، ثم راجع النتائج وأكد حذف الدفعة. يمكنك إيقاف العملية واستئنافها من النافذة.</Paragraph>
         </section>
         <Button disabled={!enabled} onClick={openCleanup}>حذف الرسائل</Button>
-        <Paragraph>Deletion is permanent. Respecting rate limits does not make account automation approved by Discord or guarantee protection from account restrictions.</Paragraph>
     </>;
 }
 
