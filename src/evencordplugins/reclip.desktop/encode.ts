@@ -11,20 +11,24 @@ import { basename, delimiter, isAbsolute, join } from "node:path";
 import { NativeSettings } from "@main/settings";
 import { type BrowserWindow, dialog } from "electron";
 
+const ffmpegBinary = process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
+
 async function executable(path: unknown) {
-    if (typeof path !== "string" || !isAbsolute(path) || path.startsWith("\\\\") || basename(path).toLowerCase() !== "ffmpeg.exe") return false;
+    if (typeof path !== "string" || !isAbsolute(path) || path.startsWith("\\\\") || basename(path).toLowerCase() !== ffmpegBinary) return false;
     return (await stat(path).catch(() => undefined))?.isFile() || false;
 }
 
 export async function findFFmpeg(): Promise<string | undefined> {
     const chosen: unknown = NativeSettings.store.plugins.Reclip?.ffmpegPath;
     if (typeof chosen === "string" && await executable(chosen)) return chosen;
-    const local = process.env.LOCALAPPDATA;
+    const local = process.platform === "win32" ? process.env.LOCALAPPDATA : undefined;
     const candidates = [
-        ...(process.env.PATH || "").split(delimiter).map(p => join(p.trim().replace(/^"|"$/g, ""), "ffmpeg.exe")),
+        ...(process.env.PATH || "").split(delimiter).map(p => join(p.trim().replace(/^"|"$/g, ""), ffmpegBinary)),
         ...(local ? [join(local, "Microsoft", "WinGet", "Links", "ffmpeg.exe")] : []),
-        join(process.env.ProgramFiles || "C:\\Program Files", "ffmpeg", "bin", "ffmpeg.exe"),
-        join(process.env.SystemDrive || "C:", "\\", "ffmpeg", "bin", "ffmpeg.exe")
+        ...(process.platform === "win32" ? [
+            join(process.env.ProgramFiles || "C:\\Program Files", "ffmpeg", "bin", "ffmpeg.exe"),
+            join(process.env.SystemDrive || "C:", "\\", "ffmpeg", "bin", "ffmpeg.exe")
+        ] : ["/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/opt/homebrew/bin/ffmpeg"])
     ];
     for (const path of candidates) if (await executable(path)) return path;
     if (local) {
@@ -42,10 +46,10 @@ export async function findFFmpeg(): Promise<string | undefined> {
 }
 
 export async function selectFFmpeg(window: BrowserWindow) {
-    const result = await dialog.showOpenDialog(window, { title: "Choose ffmpeg.exe for MP4 export", properties: ["openFile"], filters: [{ name: "FFmpeg executable", extensions: ["exe"] }] });
+    const result = await dialog.showOpenDialog(window, { title: "Choose FFmpeg for MP4 export", properties: ["openFile"], filters: process.platform === "win32" ? [{ name: "FFmpeg executable", extensions: ["exe"] }] : [] });
     if (result.canceled || !result.filePaths[0]) return null;
     const path = result.filePaths[0];
-    if (!await executable(path)) throw new Error("Choose a local ffmpeg.exe file.");
+    if (!await executable(path)) throw new Error("Choose a local FFmpeg executable.");
     NativeSettings.store.plugins.Reclip ||= {};
     NativeSettings.store.plugins.Reclip.ffmpegPath = path;
     return path;
