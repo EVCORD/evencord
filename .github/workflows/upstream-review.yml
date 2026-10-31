@@ -128,6 +128,12 @@ jobs:
           git diff --cached --quiet || git commit -m 'Update published release and plugin catalog'
           git push origin HEAD:main
           gh workflow run pages.yml --ref main
+      - name: Announce release in Discord
+        if: steps.version.outputs.publish == 'true'
+        continue-on-error: true
+        env:
+          DISCORD_RELEASE_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+        run: node scripts/announce-discord-release.mjs
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: failure()
         with:

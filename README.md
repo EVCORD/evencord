@@ -59,3 +59,5 @@ EvenCord is independent of Discord. Client modifications may conflict with Disco
 Developed by **BOSS**. Discord: **bss** / [Instagram: _w0d](https://www.instagram.com/_w0d/).
 
 Compatible [Esharq plugins](docs/esharq.md) keep their original logo and credits and receive upstream updates through EvenCord.
+
+Join the [official EvenCord community](https://discord.gg/X9ZPfzEe9b) for plugin discussions, support and suggestions.
