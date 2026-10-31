@@ -28,6 +28,8 @@ jobs:
         run: |
           git config user.name 'EvenCord automation'
           git config user.email 'actions@users.noreply.github.com'
+          git remote add upstream https://github.com/Equicord/Equicord.git
+          git fetch upstream main
       - name: Integrate Equicord
         if: github.event_name != 'push'
         run: node scripts/sync-upstream.mjs
