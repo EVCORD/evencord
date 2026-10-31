@@ -48,13 +48,18 @@ async function fixture(t) {
     return { updater: module.exports.default, status: module.exports.getUpdateStatus, restart: module.exports.prepareUpdateRestart, release, payload, target, tamper(value) { bytes = value; }, downloads: () => downloads };
 }
 
-test("verified update replaces the stable payload once and offers restart", async t => {
+test("verified update stages a versioned payload without replacing the running archive", async t => {
     const f = await fixture(t);
     assert.equal((await f.updater.listUpdates()).length, 1);
     assert.equal(await f.restart(), false);
     assert.deepEqual(await Promise.all([f.updater.applyUpdate(), f.updater.applyUpdate()]), [true, true]);
     assert.equal(f.downloads(), 1);
-    assert.deepEqual(fs.readFileSync(f.target), f.payload);
+    assert.equal(fs.readFileSync(f.target, "utf8"), "previous payload");
+    const activation = JSON.parse(fs.readFileSync(path.join(path.dirname(f.target), "current-core.json"), "utf8"));
+    assert.equal(activation.version, "1.1.1");
+    assert.equal(activation.size, f.payload.length);
+    assert.equal(activation.sha256, crypto.createHash("sha256").update(f.payload).digest("hex"));
+    assert.deepEqual(fs.readFileSync(path.join(path.dirname(f.target), "releases", activation.sha256 + ".asar")), f.payload);
     assert.equal(f.status().phase, "ready");
     assert.equal(await f.restart(), true);
     assert.equal(await f.updater.applyUpdate(), true);

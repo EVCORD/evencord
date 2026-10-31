@@ -132,7 +132,7 @@ const buildConfigs = ([
     // Discord Desktop main & renderer & preload
     {
         ...nodeCommonOpts,
-        entryPoints: [join(dirname(fileURLToPath(import.meta.url)), "../../src/main/index.ts")],
+        entryPoints: [join(dirname(fileURLToPath(import.meta.url)), "../../src/main/bootstrap.ts")],
         outfile: "dist/desktop/patcher.js",
         footer: { js: "//# sourceURL=file:///VencordPatcher\n" + sourceMapFooter("patcher") },
         sourcemap,

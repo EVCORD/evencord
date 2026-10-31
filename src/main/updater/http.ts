@@ -22,7 +22,7 @@ import { Project } from "@shared/project";
 import type { UpdateStatus } from "@shared/UpdateStatus";
 import { VENCORD_USER_AGENT } from "@shared/vencordUserAgent";
 import { createHash } from "crypto";
-import { existsSync, renameSync, unlinkSync, writeFileSync } from "original-fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "original-fs";
 import { join } from "path";
 
 import gitRemote from "~git-remote";
@@ -83,7 +83,11 @@ async function downloadUpdate() {
     status.phase = "downloading";
     status.received = 0;
     status.error = "";
-    const temporary = target + ".pending";
+    const digest = asset.digest.slice("sha256:".length);
+    const destination = IS_DISCORD_DESKTOP ? join(DATA_DIR, "releases", digest + ".asar") : target;
+    const temporary = destination + ".pending";
+    const pointer = join(DATA_DIR, "current-core.json");
+    const pointerTemporary = pointer + ".pending";
     try {
         const response = await checkedFetch(asset.browser_download_url, { signal: AbortSignal.timeout(120_000) });
         if (!response.body) throw new Error("The update download is empty.");
@@ -97,13 +101,28 @@ async function downloadUpdate() {
         status.phase = "verifying";
         if (data.length !== asset.size || "sha256:" + createHash("sha256").update(data).digest("hex") !== asset.digest)
             throw new Error("The update does not match its published digest.");
-        writeFileSync(temporary, data, { flush: true });
-        renameSync(temporary, target);
+        if (IS_DISCORD_DESKTOP) {
+            mkdirSync(join(DATA_DIR, "releases"), { recursive: true });
+            if (existsSync(destination)) {
+                const saved = readFileSync(destination);
+                if (saved.length !== asset.size || createHash("sha256").update(saved).digest("hex") !== digest)
+                    throw new Error("The saved update is damaged. Use the EvenCord installer to repair this installation.");
+            } else {
+                writeFileSync(temporary, data, { flush: true });
+                renameSync(temporary, destination);
+            }
+            writeFileSync(pointerTemporary, JSON.stringify({ version: status.availableVersion, sha256: digest, size: asset.size }) + "\n", { flush: true });
+            renameSync(pointerTemporary, pointer);
+        } else {
+            writeFileSync(temporary, data, { flush: true });
+            renameSync(temporary, target);
+        }
         status.phase = "ready";
         pending = undefined;
         return true;
     } catch (error) {
         if (existsSync(temporary)) unlinkSync(temporary);
+        if (IS_DISCORD_DESKTOP && existsSync(pointerTemporary)) unlinkSync(pointerTemporary);
         status.phase = "error";
         status.error = error instanceof Error ? error.message : String(error);
         throw error;
