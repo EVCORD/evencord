@@ -41,6 +41,7 @@ const number = (value: unknown) => typeof value === "number" || typeof value ===
 const initial = (): CleanupState => ({ phase: "idle", mode: "preview", messages: [], targets: [], accountId: "", deleted: 0, missing: 0, skipped: 0, scanned: 0, targetIndex: 0, page: 0, requestPending: false, requestStartedAt: 0, limited: false, waitUntil: 0, detail: "Choose conversations, then click Find my messages. Nothing is deleted during the search.", error: "" });
 const stopped = new Error("Stopped by user.");
 const previewFinished = new Error("Review the results found so far.");
+const searchTimedOut = new Error("Search reached its 90-second limit. Review the results found so far, or narrow the selected conversations and dates before searching again.");
 const requestTimedOut = new Error("Discord did not answer within 30 seconds. This batch stopped. If the request is still pending, wait for it to finish before starting again. An in-flight deletion may still complete.");
 
 function header(response: Record<string, unknown>, name: string): string {
@@ -70,6 +71,7 @@ export function createCleaner(deps: Dependencies) {
     let planAt = 0;
     let forgetOnStop = false;
     let finishRequested = false;
+    let searchDeadline = 0;
     let pendingRequest: Promise<void> | undefined;
     let approvedFilters: CleanupFilters | undefined;
     const set = (update: Partial<CleanupState>) => { state = { ...state, ...update, requestPending: Boolean(pendingRequest) }; listeners.forEach(fn => fn()); };
@@ -80,7 +82,8 @@ export function createCleaner(deps: Dependencies) {
     async function gate() {
         active();
         if (finishRequested && state.mode === "preview") throw previewFinished;
-        while (paused) { await sleep(200); active(); if (finishRequested && state.mode === "preview") throw previewFinished; }
+        while (paused) { const start = now(); await sleep(200); if (searchDeadline) searchDeadline += now() - start; active(); if (finishRequested && state.mode === "preview") throw previewFinished; }
+        if (state.mode === "preview" && searchDeadline && now() >= searchDeadline) throw searchTimedOut;
     }
     async function send(method: "get" | "del", url: string, query: Record<string, string> | undefined) {
         let response: unknown, error: unknown;
@@ -100,10 +103,16 @@ export function createCleaner(deps: Dependencies) {
         });
         pendingRequest = pending;
         set({ requestStartedAt: started, waitUntil: 0, detail: method === "get" ? `Waiting for Discord search, conversation ${state.targetIndex} of ${state.targets.length}, page ${state.page}.` : "Waiting for Discord to confirm deletion of one approved message." });
-        while (!completed) {
-            active();
-            if (now() - started >= 30000) throw requestTimedOut;
-            await sleep(200);
+        try {
+            while (!completed) {
+                active();
+                if (method === "get" && finishRequested) throw previewFinished;
+                if (method === "get" && searchDeadline && now() >= searchDeadline) throw searchTimedOut;
+                if (now() - started >= 30000) throw requestTimedOut;
+                await sleep(200);
+            }
+        } finally {
+            if (method === "get" && !completed && pendingRequest === pending) { pendingRequest = undefined; set({}); }
         }
         active();
         if (failed) throw error;
@@ -143,7 +152,7 @@ export function createCleaner(deps: Dependencies) {
             try { response = await send(method, url, query); }
             catch (error) {
                 active();
-                if (error === requestTimedOut) throw error;
+                if (error === requestTimedOut || error === previewFinished || error === searchTimedOut) throw error;
                 response = rejectedResponse(error);
             }
             active();
@@ -157,7 +166,7 @@ export function createCleaner(deps: Dependencies) {
             const retry = status === 429 || status === 202 || status === 0 || status >= 500;
             if (!retry) throw new Error(`Discord returned HTTP ${Number.isFinite(status) ? status : "unknown"}${typeof record(response.body).message === "string" ? `: ${String(record(response.body).message).slice(0, 200)}` : ""}. Cleanup stopped.`);
             if (status === 429 || status === 202) {
-                if (status === 202) nextRequestAt = Math.max(nextRequestAt, now() + 10000);
+                if (status === 202) nextRequestAt = Math.max(nextRequestAt, now() + Math.max(3000, number(record(response.body).retry_after) * 1000 || 10000));
                 set({ detail: status === 429 ? "Discord requested a cooldown. All EvenClean requests are waiting." : "Discord is building its search index. Waiting before retrying." });
             } else nextRequestAt = Math.max(nextRequestAt, now() + Math.min(30000, 2000 * 2 ** attempt));
             if (attempt === 3) throw new Error("Discord is still rate limited, indexing or unavailable after four attempts. No further requests will be sent. Wait, then create a fresh preview.");
@@ -167,10 +176,13 @@ export function createCleaner(deps: Dependencies) {
     async function work(task: () => Promise<void>) {
         if (running) throw new Error("A cleanup operation is already running.");
         if (pendingRequest) throw new Error("The previous Discord request is still pending. No second request will be sent until it finishes. Restart Discord manually if the connection remains stuck.");
-        running = true; cancelled = paused = finishRequested = false;
+        running = true; cancelled = paused = finishRequested = false; searchDeadline = 0;
         try { await task(); }
         catch (error) {
             if (error === previewFinished) { set({ phase: "review", limited: true, waitUntil: 0, detail: "Search ended early. Review only the messages found so far, or start a fresh preview to search further." }); return; }
+            if (state.mode === "preview" && error !== stopped && (state.messages.length > 0 || error === searchTimedOut)) {
+                set({ phase: "review", limited: true, waitUntil: 0, detail: error instanceof Error ? error.message : "Search could not finish. Review the messages found so far." }); return;
+            }
             set({ phase: error === stopped ? "stopped" : "error", waitUntil: 0, error: error === stopped ? "" : error instanceof Error ? error.message : "Cleanup failed.", detail: error === stopped ? "Stopped. A request already in flight may have completed." : "No further requests will be sent." });
         } finally { running = false; paused = false; if (forgetOnStop) { approvedFilters = undefined; forgetOnStop = false; set(initial()); } else set({}); }
     }
@@ -182,7 +194,7 @@ export function createCleaner(deps: Dependencies) {
         pause() { if (running && !paused) { paused = true; set({ phase: "paused", detail: "Paused. A request already in flight may finish." }); } },
         resume() { if (running && paused) { paused = false; set({ phase: state.mode === "preview" ? "previewing" : "deleting", detail: "Resuming with the existing request cooldown." }); } },
         stop() { if (running) { cancelled = true; paused = false; set({ detail: "Stopping after any request already in flight." }); } },
-        finishPreview() { if (running && state.mode === "preview") { finishRequested = true; paused = false; set({ detail: "Finishing the current search page before showing the results found so far." }); } },
+        finishPreview() { if (running && state.mode === "preview") { finishRequested = true; paused = false; set({ detail: "Showing the results found so far without waiting for another page." }); } },
         dispose() { approvedFilters = undefined; if (running) { forgetOnStop = true; cancelled = true; paused = false; } else set(initial()); },
         clear() { if (running) return; approvedFilters = undefined; set(initial()); },
         preview(targets: CleanupTarget[], filters: CleanupFilters) {
@@ -196,6 +208,7 @@ export function createCleaner(deps: Dependencies) {
                 if (!Number.isFinite(after) || !Number.isFinite(before) || before <= after) throw new Error("Choose a valid date range with the end after the start.");
                 const snowflake = (time: number) => ((BigInt(Math.max(1420070400000, Math.floor(time))) - 1420070400000n) << 22n).toString();
                 approvedFilters = { ...filters }; planAt = now();
+                searchDeadline = now() + 90000;
                 set({ ...initial(), phase: "previewing", mode: "preview", accountId, filters: { ...filters }, targets: targets.map(t => ({ ...t })), detail: "Searching only messages authored by your signed-in account." });
                 const found: CleanupMessage[] = [], seen = new Set<string>();
                 for (const [targetIndex, target] of targets.entries()) {
@@ -204,12 +217,14 @@ export function createCleaner(deps: Dependencies) {
                         await gate();
                         if (!deps.canAccess(target.id)) throw new Error("Channel permissions changed. Start a new preview after checking access.");
                         const query: Record<string, string> = { author_id: accountId, sort_by: "timestamp", sort_order: "desc", offset: "0", max_id: cursor };
+                        if (filters.contains) query.content = filters.contains;
+                        if (filters.media !== "all") query.has = filters.media === "attachments" ? "file" : "link";
                         if (after) query.min_id = snowflake(after);
                         if (target.guildId) query.channel_id = target.id;
                         const url = target.guildId ? `/guilds/${target.guildId}/messages/search` : `/channels/${target.id}/messages/search`;
                         if (state.scanned >= 20) { set({ limited: true }); break; }
                         set({ detail: `Searching ${target.label}.`, scanned: state.scanned + 1, targetIndex: targetIndex + 1, page: page + 1 });
-                        const response = await request("get", url, query, 10000);
+                        const response = await request("get", url, query, 3000);
                         const body = record(response.body);
                         if (!Array.isArray(body.messages)) throw new Error("Discord returned an unsupported search response. Nothing was deleted.");
                         const hits = body.messages.flatMap(group => {

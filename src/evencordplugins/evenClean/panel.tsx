@@ -16,7 +16,7 @@ import { Paragraph } from "@components/Paragraph";
 import { Project } from "@shared/project";
 import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, closeModal, GuildStore, Modal, openModal, PermissionStore, React, SearchableSelect, Select, SelectedChannelStore, SelectedGuildStore, showToast, TextInput, useEffect, UserStore, useState, useStateFromStores } from "@webpack/common";
+import { ChannelStore, Checkbox, closeModal, GuildStore, Modal, openModal, PermissionStore, React, SearchableSelect, Select, SelectedChannelStore, SelectedGuildStore, showToast, TextInput, useEffect, UserStore, useState, useStateFromStores } from "@webpack/common";
 
 import { canAccess, cleaner, settings } from ".";
 import { addCleanupChannels, channelLabel, channelTitle, CleanupScope, filterCleanupChannels, getCleanupChannels } from "./channels";
@@ -36,7 +36,6 @@ function CleanupPanel(props: RenderModalProps) {
     const [guildId, setGuildId] = useState(() => state.targets.find(t => t.guildId)?.guildId || ChannelStore.getChannel(currentChannel)?.guild_id || SelectedGuildStore.getGuildId() || guilds[0]?.id || "");
     const [search, setSearch] = useState("");
     const [shownCount, setShownCount] = useState(50);
-    const [confirmation, setConfirmation] = useState("");
     const [acknowledged, setAcknowledged] = useState(false);
     const [reveal, setReveal] = useState(false);
     const [clock, setClock] = useState(Date.now());
@@ -57,7 +56,7 @@ function CleanupPanel(props: RenderModalProps) {
     const shown = visible.slice(0, shownCount);
     const selectedChannels = channels.filter(channel => selected.has(channel.id));
     const unavailableCount = selected.size - selectedChannels.length;
-    const invalidate = () => { cleaner.clear(); setConfirmation(""); setAcknowledged(false); };
+    const invalidate = () => { cleaner.clear(); setAcknowledged(false); };
     const changeScope = (next: CleanupScope) => {
         invalidate(); setScope(next); setSearch(""); setShownCount(50);
         setSelected(new Set(next === "current" && currentChannel && canAccess(currentChannel) ? [currentChannel] : []));
@@ -69,7 +68,7 @@ function CleanupPanel(props: RenderModalProps) {
     };
     const notifyError = (error: unknown) => showToast({ text: error instanceof Error ? error.message : "Could not start cleanup.", variant: "critical" });
     const preview = () => {
-        setConfirmation(""); setAcknowledged(false);
+        setAcknowledged(false);
         if (unavailableCount) { notifyError(new Error("Some selected channels are no longer accessible. Clear the selection and choose again.")); return; }
         const targets: CleanupTarget[] = selectedChannels.map(channel => ({ id: channel.id, label: channelLabel(channel), guildId: channel.guild_id || undefined }));
         void cleaner.preview(targets, filters).catch(notifyError);
@@ -77,7 +76,7 @@ function CleanupPanel(props: RenderModalProps) {
     const count = state.messages.length;
     const ready = state.phase === "review" && count > 0 && !locked;
     const previewButton = <Button disabled={locked || !selected.size || unavailableCount > 0} onClick={preview}>Find my messages ({selected.size} conversation{selected.size === 1 ? "" : "s"})</Button>;
-    return <Modal {...props} title="EvenClean" subtitle="Choose a conversation, preview your messages, then decide what to remove." size="xl">
+    return <Modal {...props} title="حذف الرسائل | EvenClean" subtitle="اختر المحادثات، راجع رسائلك، ثم أكد حذف الدفعة بعلامة صح." size="xl">
         <div className="ec-clean" style={{ "--ec-clean-accent": Project.colors.primary } as React.CSSProperties}>
             <Notice.Info>Choose a conversation, click Find my messages, then review the results and confirm deletion. Searching does not delete anything.</Notice.Info>
             <Notice.Warning>Deletion is permanent. Account automation can violate Discord's rules. Rate-limit handling does not guarantee account safety. <Link href="https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots">Discord's policy</Link></Notice.Warning>
@@ -90,7 +89,7 @@ function CleanupPanel(props: RenderModalProps) {
             </div>
             <div className="ec-clean-layout">
                 <section className="ec-clean-options" aria-label="Cleanup scope and filters">
-                    <Heading tag="h3">Choose where to clean</Heading>
+                    <Heading tag="h3">اختر المحادثات لحذف رسائلك منها</Heading>
                     <div className="ec-clean-scopes" role="group" aria-label="Conversation type">
                         {([{ value: "current", label: "This chat" }, { value: "dms", label: "Direct messages" }, { value: "server", label: "Server channels" }] as const).map(option => <Button key={option.value} size="small" variant="secondary" aria-pressed={scope === option.value} disabled={locked || (option.value === "current" && !channels.some(channel => channel.id === currentChannel))} onClick={() => changeScope(option.value)}>{option.label}</Button>)}
                     </div>
@@ -132,7 +131,7 @@ function CleanupPanel(props: RenderModalProps) {
                     <div className="ec-clean-summary" aria-live="polite">
                         <strong>{{ idle: "Choose conversations to begin", previewing: "Finding your messages", review: "Preview ready", deleting: "Deleting confirmed messages", paused: "Paused", done: "Batch complete", stopped: "Stopped", error: "Could not finish" }[state.phase]}</strong>
                         <p>{state.detail}</p>
-                        {busy && state.mode === "preview" && <p>Conversation {state.targetIndex} of {state.targets.length}. Page {state.page}. {state.scanned}/20 search pages used.</p>}
+                        {busy && state.mode === "preview" && <p>Conversation {state.targetIndex} of {state.targets.length}. Page {state.page}. {state.scanned}/20 search pages used. Search ends automatically within 90 seconds, excluding pauses.</p>}
                         {state.requestPending && <p>Waiting for Discord's response: {Math.max(0, Math.floor((clock - state.requestStartedAt) / 1000))} seconds. No other request will start while this one is pending.</p>}
                         {state.waitUntil > clock && <p>Next request in at least {Math.ceil((state.waitUntil - clock) / 1000)} seconds. This is a cooldown, not a frozen search.</p>}
                         <span>{count} found · {state.deleted} deleted · {state.missing} already missing · {state.skipped} skipped</span>
@@ -168,11 +167,12 @@ function CleanupPanel(props: RenderModalProps) {
                     </div>
                     <Paragraph>Exported previews contain private message text and IDs. Nothing is uploaded. Previews expire after 15 minutes and are not resumed automatically after Discord restarts.</Paragraph>
                     {ready && <div className="ec-clean-confirm">
-                        <Heading tag="h3">Delete this reviewed batch</Heading>
-                        <Paragraph>Nothing has been deleted yet. Check the box, type DELETE {count}, then click Delete below.</Paragraph>
-                        <FormSwitch title="I understand deletion is permanent and account automation may carry restrictions." value={acknowledged} onChange={setAcknowledged} hideBorder />
-                        <label className="ec-clean-field">Type DELETE {count} to confirm this exact batch<TextInput value={confirmation} onChange={setConfirmation} placeholder={`DELETE ${count}`} autoComplete="off" /></label>
-                        <Button variant="dangerPrimary" disabled={!acknowledged || confirmation !== `DELETE ${count}`} onClick={() => { void cleaner.remove(confirmation, acknowledged, settings.store.deleteDelay).catch(notifyError); }}>Delete {count} own messages</Button>
+                        <Heading tag="h3">تأكيد حذف {count} رسالة</Heading>
+                        <Paragraph>راجع الرسائل أعلاه، ثم ضع علامة صح واضغط حذف. لا تحتاج كتابة أي عبارة أو عدد.</Paragraph>
+                        <Checkbox value={acknowledged} onChange={(_, checked) => setAcknowledged(checked)} size={20}>
+                            <Paragraph>أؤكد حذف هذه الدفعة ({count} رسالة من رسائلي) وأفهم أن الحذف نهائي.</Paragraph>
+                        </Checkbox>
+                        <Button variant="dangerPrimary" disabled={!acknowledged} onClick={() => { void cleaner.remove(`DELETE ${count}`, acknowledged, settings.store.deleteDelay).catch(notifyError); }}>حذف {count} رسالة</Button>
                     </div>}
                 </section>
             </div>

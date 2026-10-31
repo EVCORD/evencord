@@ -48,25 +48,26 @@ export function CleanupIcon(props: SVGProps<SVGSVGElement>) {
 
 function CleanupButton() {
     const state = React.useSyncExternalStore(cleaner.subscribe, cleaner.snapshot);
-    return <HeaderBarButton icon={CleanupIcon} iconSize={20} aria-label="Open EvenClean message cleanup" tooltip={cleaner.busy() ? `EvenClean: ${state.phase}` : "EvenClean message cleanup"} onClick={openCleanup} />;
+    return <HeaderBarButton icon={CleanupIcon} iconSize={20} aria-label="حذف الرسائل" tooltip={cleaner.busy() ? `حذف الرسائل: ${state.phase}` : "حذف الرسائل | EvenClean"} onClick={openCleanup} />;
 }
 
 function CleanupSettings() {
     const { enabled } = useSettings(["plugins.EvenClean.enabled"]).plugins.EvenClean;
     return <>
         <section dir="rtl" lang="ar">
-            <Paragraph>نظّف رسائلك أنت من المحادثة الحالية أو الخاص أو قنوات سيرفر تختارها. افتح Open EvenClean أو زر سلة المهملات أعلى المحادثة، وحدد المحادثات والفلاتر: النص والتاريخ والمرفقات والروابط. الرسائل المثبتة مستثناة افتراضياً.</Paragraph>
-            <Paragraph>اضغط Find my messages للبحث والمعاينة فقط؛ لن يبدأ الحذف تلقائياً. راجع النتائج ثم وافق على التنبيه واكتب DELETE متبوعة بعدد الرسائل، مثل DELETE 25، لتأكيد الدفعة المعروضة. نتائج البحث قد لا تشمل كامل السجل.</Paragraph>
+            <Paragraph>احذف رسائلك أنت من المحادثة الحالية أو الخاص أو قنوات سيرفر تختارها. افتح حذف الرسائل أو زر سلة المهملات أعلى المحادثة، وحدد المحادثات والفلاتر: النص والتاريخ والمرفقات والروابط. الرسائل المثبتة مستثناة افتراضياً.</Paragraph>
+            <Paragraph>اضغط Find my messages للبحث والمعاينة فقط؛ لن يبدأ الحذف تلقائياً. يتوقف البحث تلقائياً خلال 90 ثانية باستثناء الإيقاف المؤقت، ويمكنك عرض النتائج مبكراً. راجع الدفعة ثم ضع علامة صح واضغط حذف؛ لا تحتاج كتابة DELETE أو العدد. نتائج البحث قد لا تشمل كامل السجل.</Paragraph>
             <Paragraph>يمكنك الإيقاف المؤقت والاستئناف أو الضغط على Stop. إغلاق اللوحة لا يوقف عملية جارية، وقد يكتمل الطلب الذي بدأ قبل الضغط على Stop. الحذف نهائي ولا يزيل نسخ الآخرين أو لقطات الشاشة. الإضافة تحذف رسائلك فقط ولا تحتاج إدخال توكن حسابك.</Paragraph>
         </section>
-        <Button disabled={!enabled} onClick={openCleanup}>Open EvenClean</Button>
+        <Button disabled={!enabled} onClick={openCleanup}>حذف الرسائل</Button>
         <Paragraph>Deletion is permanent. Respecting rate limits does not make account automation approved by Discord or guarantee protection from account restrictions.</Paragraph>
     </>;
 }
 
 export default definePlugin({
     name: "EvenClean",
-    description: "ابحث عن رسائلك وراجعها قبل حذفها من الخاص أو قنوات تختارها، مع فلاتر وتأكيد للدفعة وإيقاف مؤقت واستئناف.",
+    searchTerms: ["حذف الرسائل", "Message deletion", "Delete messages"],
+    description: "حذف الرسائل: ابحث عن رسائلك وراجعها ثم أكد الحذف بعلامة صح، مع فلاتر وإيقاف مؤقت واستئناف.",
     authors: [EvenCordAuthors.EvenCord],
     enabledByDefault: false,
     tags: ["Chat", "Utility"],
@@ -74,7 +75,7 @@ export default definePlugin({
     settings,
     settingsAboutComponent: CleanupSettings,
     headerBarButton: { icon: CleanupIcon, render: CleanupButton, location: "headerbar" },
-    toolboxActions: { "Open message cleanup": openCleanup },
+    toolboxActions: { "حذف الرسائل": openCleanup },
     flux: { LOGOUT: () => { cleaner.dispose(); closeCleanup(); } },
     stop: () => { cleaner.dispose(); closeCleanup(); }
 });

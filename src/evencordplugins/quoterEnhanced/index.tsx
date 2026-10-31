@@ -6,6 +6,7 @@
 
 import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import { FormSwitch } from "@components/FormSwitch";
+import { Link } from "@components/Link";
 import { Paragraph } from "@components/Paragraph";
 import { Devs, EquicordDevs } from "@utils/constants";
 import { getCurrentChannel } from "@utils/discord";
@@ -45,7 +46,7 @@ migratePluginSettings("Quoter Enhanced", "Quoter");
 export default definePlugin({
     name: "Quoter Enhanced",
     searchTerms: ["Quoter", "Valenced", "quotes", "GIF"],
-    description: "حوّل الرسائل إلى اقتباسات مصورة مع صورة الكاتب وخطوط عربية ودعم الصور والملصقات والوسائط المتحركة.",
+    description: "اقتباسات مصورة بخطوط عربية ودعم الوسائط المتحركة. مبنية على إضافة Quoter الأصلية في Equicord، بتصميم مستلهم من Valenced Quoter.",
     tags: ["Chat"],
     authors: [Devs.Samwich, Devs.thororen, EquicordDevs.neoarz, Devs.prism],
     settings,
@@ -53,6 +54,7 @@ export default definePlugin({
         <Paragraph>اضغط بزر الفأرة الأيمن على رسالة واختر Quote. راجع الاقتباس في المعاينة ثم اضغط Send لإرساله في المحادثة الحالية.</Paragraph>
         <Paragraph>اختر خط Cairo أو Tajawal للنص العربي. يمكنك تضمين الصور والملصقات، وإظهار علامات الاقتباس، وتغيير اللون الرمادي والعلامة المائية من المعاينة. نص العلامة المائية يدعم حتى 32 حرفاً.</Paragraph>
         <Paragraph>يمكن الحفاظ على حركة الوسائط المدعومة عند تفعيل خيار الحركة؛ يعتمد ذلك على توفر الملف وإمكانية تحميله ومعالجته. الإضافة مبنية على عمل المطورين المذكورين أعلاه، مع تحسينات EvenCord.</Paragraph>
+        <Paragraph>المصدر الأصلي: <Link href="https://github.com/Equicord/Equicord/tree/main/src/equicordplugins/quoter">Quoter في Equicord</Link>. مرجع التصميم والوسائط: <Link href="https://github.com/Accentaro/Valenced-Plugins/tree/main/plugins/quoter">Valenced Quoter</Link>.</Paragraph>
     </section>,
     async start() { await ensureFontLoaded(); },
     stop() {
@@ -168,7 +170,7 @@ function QuoteModal({ message, ...props }: RenderModalProps & { message: Message
         <Modal
             {...props}
             size="md"
-            title="Catch Them In 4K — Valenced Layout"
+            title="Quoter Enhanced | الاقتباس المطوّر"
             actions={[
                 { text: "Export", variant: "primary", onClick: handleExport },
                 { text: "Send", variant: "primary", onClick: handleSendInChat }

@@ -89,15 +89,14 @@ test("an archived thread is skipped after one response instead of requesting eve
     assert.equal(f.calls.filter(c=>c.method==='del').length,1);assert.equal(f.cleaner.snapshot().skipped,2);
 });
 
-test("a stalled request times out, blocks overlap and cannot insert late results", async () => {
+test("a stalled search times out, releases the panel and cannot insert late results", async () => {
     let resolve;
     const f = fixture({ request: () => new Promise(done => { resolve = done; }) });
     await f.preview();
     assert.equal(f.cleaner.snapshot().phase, "error");
     assert.match(f.cleaner.snapshot().error, /30 seconds/);
-    assert.equal(f.cleaner.snapshot().requestPending, true);
+    assert.equal(f.cleaner.snapshot().requestPending, false);
     assert.equal(f.cleaner.busy(), false);
-    await assert.rejects(f.preview(), /previous Discord request is still pending/);
     assert.equal(f.calls.length, 1);
     resolve({ status: 200, body: { total_results: 1, messages: [[f.results[0]]] } });
     await new Promise(done => setImmediate(done));
@@ -114,8 +113,7 @@ test("stop releases the UI during a pending request and retains a late 429 coold
     });
     await f.preview();
     assert.equal(f.cleaner.snapshot().phase, "stopped");
-    assert.equal(f.cleaner.snapshot().requestPending, true);
-    await assert.rejects(f.preview(), /still pending/);
+    assert.equal(f.cleaner.snapshot().requestPending, false);
     reject({ status: 429, body: { retry_after: 40 } });
     await new Promise(done => setImmediate(done));
     assert.equal(f.cleaner.snapshot().requestPending, false);
