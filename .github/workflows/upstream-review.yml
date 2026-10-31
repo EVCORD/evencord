@@ -1,4 +1,4 @@
-name: Integrate Equicord and publish EvenCord
+name: Integrate upstreams and publish EvenCord
 on:
   schedule:
     - cron: '17 */6 * * *'
@@ -37,9 +37,28 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git remote add upstream https://github.com/Equicord/Equicord.git
           git fetch upstream main
-      - name: Integrate Equicord
+      - name: Integrate Equicord and Esharq
         if: github.event_name != 'push'
-        run: node scripts/sync-upstream.mjs
+        run: |
+          previous_version=$(node -p 'require("./package.json").version')
+          node scripts/sync-upstream.mjs
+          node scripts/sync-esharq.mjs
+          if git diff --quiet -- branding/esharq-lock.json; then exit 0; fi
+          EVENCORD_PREVIOUS_VERSION="$previous_version" node --input-type=module - <<'NODE'
+          import { readFileSync, writeFileSync, existsSync } from "node:fs";
+          const pkg = JSON.parse(readFileSync("package.json", "utf8"));
+          if (pkg.version === process.env.EVENCORD_PREVIOUS_VERSION) {
+            const version = pkg.version.split(".").map(Number);
+            version[2]++;
+            pkg.version = version.join(".");
+          }
+          const upstream = JSON.parse(readFileSync("branding/esharq-lock.json", "utf8"));
+          const notes = `docs/releases/${pkg.version}.md`;
+          writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
+          writeFileSync(notes, (existsSync(notes) ? readFileSync(notes, "utf8") : `# EvenCord ${pkg.version}\n`) + `\nUpdates the compatible Esharq plugins from LOSTSTR/Esharq commit ${upstream.commit}. Original authors and Esharq branding are preserved.\n`);
+          NODE
+          git add src/esharqplugins branding/esharq-lock.json package.json docs/releases
+          git commit -m 'Integrate Esharq plugin updates'
       - name: Select unpublished version
         id: version
         env:

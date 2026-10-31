@@ -1,0 +1,30 @@
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+import { findOption, RequiredMessageOption } from "@api/Commands";
+import { t } from "@esharqplugins/_compat/i18n";
+import definePlugin from "@utils/types";
+
+export default definePlugin({
+    name: "ClapText",
+    description: "Adds /clap to 👏 put 👏 claps 👏 between 👏 your 👏 words.",
+    authors: [{ name: "Sharp", id: 0n }],
+    tags: ["Commands", "Fun"],
+    dependencies: ["CommandsAPI"],
+    commands: [
+        {
+            name: "clap",
+            description: t("ضع 👏 تصفيقاً 👏 بين 👏 الكلمات", "Put 👏 claps 👏 between 👏 words"),
+            options: [RequiredMessageOption],
+            execute: opts => ({
+                content: findOption(opts, "message", "")
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .join(" 👏 ")
+            })
+        }
+    ]
+});

@@ -59,6 +59,9 @@
             "@webpack/types": [
                 "./src/webpack/types"
             ],
+            "@esharqplugins/*": [
+                "./src/esharqplugins/*"
+            ],
             "@evencordplugins/*": [
                 "./src/evencordplugins/*"
             ],

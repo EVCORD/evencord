@@ -106,7 +106,8 @@ const enum SearchStatus {
     NEW,
     USER_PLUGINS,
     API_PLUGINS,
-    EVENCORD
+    EVENCORD,
+    ESHARQ
 }
 
 export const ExcludedReasons: Record<PluginTarget, string> = {
@@ -215,6 +216,9 @@ export default function PluginSettings() {
                 break;
             case SearchStatus.ENABLED:
                 if (!isPluginEnabled(plugin.name)) return false;
+                break;
+            case SearchStatus.ESHARQ:
+                if (!PluginMeta[plugin.name].folderName.startsWith("src/esharqplugins/")) return false;
                 break;
             case SearchStatus.EVENCORD:
                 if (!PluginMeta[plugin.name].folderName.startsWith("src/evencordplugins/")) return false;
@@ -359,6 +363,7 @@ export default function PluginSettings() {
     const totalUserPlugins = countedPlugins.filter(p => PluginMeta[p].userPlugin).length;
     const enabledStockPlugins = enabledPlugins.filter(p => !PluginMeta[p].userPlugin).length;
     const enabledUserPlugins = enabledPlugins.filter(p => PluginMeta[p].userPlugin).length;
+    const esharqPlugins = countedPlugins.filter(p => PluginMeta[p].folderName.startsWith("src/esharqplugins/"));
     const evenCordPlugins = countedPlugins.filter(p => PluginMeta[p].folderName.startsWith("src/evencordplugins/"));
 
     const pluginsToLoad = Math.min(36, plugins.length);
@@ -388,6 +393,7 @@ export default function PluginSettings() {
                     enabledStockPlugins={enabledStockPlugins}
                 />
                 <StockPluginsCard title="EvenCord plugins" totalStockPlugins={evenCordPlugins.length} enabledStockPlugins={evenCordPlugins.filter(isPluginEnabled).length} />
+                <StockPluginsCard title="Esharq plugins" totalStockPlugins={esharqPlugins.length} enabledStockPlugins={esharqPlugins.filter(isPluginEnabled).length} />
                 <UserPluginsCard
                     totalUserPlugins={totalUserPlugins}
                     enabledUserPlugins={enabledUserPlugins}
@@ -420,6 +426,7 @@ export default function PluginSettings() {
                             { label: "Show Favorites", value: SearchStatus.FAVORITES },
                             { label: "Show Enabled", value: SearchStatus.ENABLED },
                             { label: "Show Disabled", value: SearchStatus.DISABLED },
+                            { label: "Show Esharq", value: SearchStatus.ESHARQ },
                             { label: "Show EvenCord", value: SearchStatus.EVENCORD },
                             { label: "Show Equicord", value: SearchStatus.EQUICORD },
                             { label: "Show Vencord", value: SearchStatus.VENCORD },

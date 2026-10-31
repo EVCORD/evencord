@@ -57,3 +57,5 @@ Based on [Equicord](https://github.com/Equicord/Equicord), [Vencord](https://git
 EvenCord is independent of Discord. Client modifications may conflict with Discord's terms.
 
 Developed by **BOSS**. Discord: **bss** / [Instagram: _w0d](https://www.instagram.com/_w0d/).
+
+Compatible [Esharq plugins](docs/esharq.md) keep their original logo and credits and receive upstream updates through EvenCord.

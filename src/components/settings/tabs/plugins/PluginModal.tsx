@@ -271,7 +271,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                                 />
                                 <GithubButton
                                     text="Source Code"
-                                    href={`https://github.com/${gitRemote}/tree/main/${pluginMeta.folderName}`}
+                                    href={source.id === "esharq" ? source.website : `https://github.com/${gitRemote}/tree/main/${pluginMeta.folderName}`}
                                 />
                             </div>
                         )}

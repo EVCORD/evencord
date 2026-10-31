@@ -39,7 +39,7 @@ import { getEntryPoint, isPluginFile, parseDevs, parseEquicordDevs, parseFile, P
     } else if (vencordFlag) {
         dirs = ["src/plugins", "src/plugins/_core"];
     } else {
-        dirs = ["src/plugins", "src/plugins/_core", "src/equicordplugins/_core", "src/equicordplugins", "src/evencordplugins/_core", "src/evencordplugins"];
+        dirs = ["src/plugins", "src/plugins/_core", "src/equicordplugins/_core", "src/equicordplugins", "src/evencordplugins/_core", "src/evencordplugins", "src/esharqplugins"];
     }
 
     const outputPath = args.find(a => !a.startsWith("--")) ?? null;

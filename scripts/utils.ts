@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Devs as EsharqDevs, EquicordDevs as EsharqEquicordDevs } from "../src/esharqplugins/_shared/constants";
 import { EvenCordAuthors } from "../src/evencordplugins/_authors";
 import { Dirent, readdirSync, readFileSync, writeFileSync } from "fs";
 import { access, readFile } from "fs/promises";
@@ -56,6 +57,8 @@ export interface PluginData {
 }
 
 const evenCordDevs: Record<string, Dev> = Object.fromEntries(Object.entries(EvenCordAuthors).map(([key, author]) => [key, { name: author.name, id: author.id.toString() }]));
+
+const esharqAuthors: Record<string, { name: string; id: bigint; }> = { ...EsharqDevs, ...EsharqEquicordDevs };
 
 export const devs = {} as Record<string, Dev>;
 export const equicordDevs = {} as Record<string, Dev>;
@@ -169,8 +172,9 @@ export async function parseFile(fileName: string) {
             switch (key) {
                 case "name":
                 case "description":
-                    if (!isStringLiteral(value)) throw fail(`${key} is not a string literal`);
-                    data[key] = value.text;
+                    const text = fileName.includes("esharqplugins") && isCallExpression(value) && isIdentifier(value.expression) && value.expression.text === "t" ? value.arguments[1] : value;
+                    if (!text || !isStringLiteral(text)) throw fail(`${key} is not a string literal`);
+                    data[key] = text.text;
                     break;
                 case "patches":
                     data.hasPatches = true;
@@ -208,8 +212,17 @@ export async function parseFile(fileName: string) {
                 case "authors":
                     if (!isArrayLiteralExpression(value)) throw fail("authors is not an array literal");
                     data.authors = value.elements.map(e => {
+                        if (fileName.includes("esharqplugins") && isObjectLiteralExpression(e)) {
+                            const name = getObjectProp(e, "name");
+                            const id = getObjectProp(e, "id");
+                            const label = name && isCallExpression(name) && isIdentifier(name.expression) && name.expression.text === "t" ? name.arguments[1] : name;
+                            if (!label || !isStringLiteral(label) || !id || id.kind !== SyntaxKind.BigIntLiteral) throw fail("invalid Esharq author");
+                            return { name: label.text, id: (id as BigIntLiteral).text.slice(0, -1) };
+                        }
                         if (!isPropertyAccessExpression(e)) throw fail("authors array contains non-property access expressions");
-                        const d = devs[getName(e)!] || equicordDevs[getName(e)!] || evenCordDevs[getName(e)!];
+                        const key = e.name.text;
+                        const imported = fileName.includes("esharqplugins") ? esharqAuthors[key] : undefined;
+                        const d = imported ? { name: imported.name, id: imported.id.toString() } : devs[key] || equicordDevs[key] || evenCordDevs[key];
                         if (!d) throw fail(`couldn't look up author ${getName(e)}`);
                         return d;
                     });
@@ -255,7 +268,8 @@ export async function parseFile(fileName: string) {
             .replace(/\/index\.([jt]sx?)$/, "")
             .replace(/^src\/plugins\//, "")
             .replace(/^src\/equicordplugins\//, "")
-            .replace(/^src\/evencordplugins\//, "");
+            .replace(/^src\/evencordplugins\//, "")
+            .replace(/^src\/esharqplugins\//, "");
 
         return [data] as const;
     }

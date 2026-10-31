@@ -6,7 +6,7 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
-export const officialPluginRoots = ["plugins", "equicordplugins", "evencordplugins"];
+export const officialPluginRoots = ["plugins", "equicordplugins", "evencordplugins", "esharqplugins"];
 export const pluginOverrides = {
     "src/equicordplugins/quoter": "src/evencordplugins/quoterEnhanced"
 };
@@ -18,6 +18,7 @@ export function includePlugin(folder) {
     return false;
 }
 export function pluginSource(folder) {
+    if (folder.startsWith("src/esharqplugins/")) return "esharq";
     if (folder.startsWith("src/evencordplugins/")) return "evencord";
     if (folder.startsWith("src/equicordplugins/")) return "equicord";
     if (folder.startsWith("src/plugins/")) return "vencord";

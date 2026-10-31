@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import EsharqIcon from "@esharqplugins/_shared/icon";
 import { EvenCordIcon } from "@components/EvenCordIcon";
 import { Project } from "@shared/project";
 import type { Plugin } from "@utils/types";
@@ -12,6 +13,10 @@ import { PluginMeta } from "~plugins";
 
 export function pluginSource(plugin: Plugin) {
     const { folderName, userPlugin } = PluginMeta[plugin.name];
+    if (folderName.startsWith("src/esharqplugins/")) return {
+        id: "esharq", label: "Esharq Plugin", icon: EsharqIcon,
+        website: "https://github.com/LOSTSTR/Esharq/tree/main/" + folderName
+    };
     if (folderName.startsWith("src/evencordplugins/")) return {
         id: "evencord", label: "EvenCord Plugin", icon: "",
         website: Project.links.source + "/tree/main/" + folderName
