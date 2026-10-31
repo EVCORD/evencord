@@ -1,0 +1,382 @@
+{
+  "updatedAt": "2026-10-31T13:41:54.638Z",
+  "firstUpdatedAt": "2026-10-31T13:41:54.638Z",
+  "metric": "Installer asset downloads, not unique users",
+  "source": "https://github.com/EVCORD/evencord-installer/releases",
+  "downloads": {
+    "total": 170,
+    "windows": 101,
+    "macos": 23,
+    "linux": 46
+  },
+  "latestRelease": "core-v1.1.9",
+  "assets": [
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-arm64",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-arm64.dmg",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-arm64.exe",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-cli-arm64",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-cli-arm64.exe",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-cli-linux",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-cli-linux-arm64",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-cli-universal",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-cli-x64",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-cli.exe",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-wayland",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-wayland-arm64",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-x11",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-x11-arm64",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord-x64.dmg",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord.dmg",
+      "downloads": 1
+    },
+    {
+      "release": "installer-v1.1.2",
+      "name": "EvenCord.exe",
+      "downloads": 4
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-arm64",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-arm64.dmg",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-arm64.exe",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-cli-arm64",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-cli-arm64.exe",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-cli-linux",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-cli-linux-arm64",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-cli-universal",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-cli-x64",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-cli.exe",
+      "downloads": 3
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-wayland",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-wayland-arm64",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-x11",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord-x11-arm64",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord.dmg",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.1",
+      "name": "EvenCord.exe",
+      "downloads": 4
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstaller",
+      "downloads": 3
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstaller-arm64",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstaller-arm64.dmg",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstaller-arm64.exe",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstaller-wayland",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstaller-wayland-arm64",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstaller-x11",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstaller-x11-arm64",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstaller-x64.dmg",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstaller-x64.exe",
+      "downloads": 3
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstaller.dmg",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstaller.exe",
+      "downloads": 0
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstallerCli-arm64",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstallerCli-arm64.exe",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstallerCli-linux",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstallerCli-linux-arm64",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstallerCli-universal",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstallerCli-x64",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstallerCli-x64.exe",
+      "downloads": 3
+    },
+    {
+      "release": "installer-v1.1.0",
+      "name": "EvenCordInstallerCli.exe",
+      "downloads": 0
+    },
+    {
+      "release": "installer-v1.0.0",
+      "name": "EvenCordInstaller-x64.exe",
+      "downloads": 5
+    },
+    {
+      "release": "installer-v1.0.0",
+      "name": "EvenCordInstallerCli-x64.exe",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v0.1.0-beta.8",
+      "name": "EvenCordInstaller-x64.exe",
+      "downloads": 9
+    },
+    {
+      "release": "installer-v0.1.0-beta.8",
+      "name": "EvenCordInstallerCli-x64.exe",
+      "downloads": 2
+    },
+    {
+      "release": "installer-v0.1.0-beta.7",
+      "name": "EvenCordInstaller-x64.exe",
+      "downloads": 6
+    },
+    {
+      "release": "installer-v0.1.0-beta.7",
+      "name": "EvenCordInstallerCli-x64.exe",
+      "downloads": 3
+    },
+    {
+      "release": "installer-v0.1.0-beta.6",
+      "name": "EvenCordInstaller-x64.exe",
+      "downloads": 4
+    },
+    {
+      "release": "installer-v0.1.0-beta.6",
+      "name": "EvenCordInstallerCli-x64.exe",
+      "downloads": 3
+    },
+    {
+      "release": "installer-v0.1.0-beta.5",
+      "name": "EvenCordInstaller-x64.exe",
+      "downloads": 6
+    },
+    {
+      "release": "installer-v0.1.0-beta.5",
+      "name": "EvenCordInstallerCli-x64.exe",
+      "downloads": 3
+    },
+    {
+      "release": "installer-v0.1.0-beta.4",
+      "name": "EvenCordInstaller-x64.exe",
+      "downloads": 4
+    },
+    {
+      "release": "installer-v0.1.0-beta.4",
+      "name": "EvenCordInstallerCli-x64.exe",
+      "downloads": 4
+    },
+    {
+      "release": "installer-v0.1.0-beta.3",
+      "name": "EvenCordInstaller-x64.exe",
+      "downloads": 6
+    },
+    {
+      "release": "installer-v0.1.0-beta.3",
+      "name": "EvenCordInstallerCli-x64.exe",
+      "downloads": 3
+    },
+    {
+      "release": "installer-v0.1.0-beta.2",
+      "name": "EvenCordInstaller-x64.exe",
+      "downloads": 3
+    },
+    {
+      "release": "installer-v0.1.0-beta.2",
+      "name": "EvenCordInstallerCli-x64.exe",
+      "downloads": 3
+    },
+    {
+      "release": "installer-v0.1.0-beta.1",
+      "name": "EvenCordInstaller-x64.exe",
+      "downloads": 4
+    },
+    {
+      "release": "installer-v0.1.0-beta.1",
+      "name": "EvenCordInstallerCli-x64.exe",
+      "downloads": 3
+    }
+  ],
+  "discordMessageId": "1566084810479501429",
+  "discordChannelId": "1566070959696515232"
+}
