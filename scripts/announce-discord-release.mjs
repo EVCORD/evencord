@@ -35,7 +35,7 @@ if (webhook) {
         }]
     };
     try {
-        const response = await fetch(webhook + "?wait=true", {
+        const response = await fetch(webhook + "?wait=true&with_components=true", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
