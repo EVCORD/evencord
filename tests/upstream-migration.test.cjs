@@ -36,15 +36,16 @@ function fixture(t) {
     const env = { EVENCORD_RUNNING_RELEASE: envelope.toString("base64") };
     fs.writeFileSync(path.join(root, "booting.json"), JSON.stringify({ sha256: manifest.artifact.sha256 }));
     const module = { exports: {} };
+    const migrationRuntime = { ...runtime };
     vm.runInNewContext(fs.readFileSync(path.resolve(__dirname, "../branding/upstream-migration.cjs"), "utf8"), {
         module, Buffer, process: { env }, require(name) {
-            if (name === "./runtime.cjs") return runtime;
+            if (name === "./runtime.cjs") return migrationRuntime;
             if (name === "./trust.json") return trust;
             if (name === "original-fs") return fs;
             return require(name);
         }
     });
-    return { migrate: () => module.exports.migrate({ resources, root, payload }), root, resources, payload, bytes, original, record, env };
+    return { migrate: () => module.exports.migrate({ resources, root, payload }), root, resources, payload, bytes, original, record, env, blockWrites() { migrationRuntime.atomic = () => { throw Error("Write denied"); }; } };
 }
 
 test("signed legacy profile transitions to the normal loader and preserves settings and Discord", t => {
@@ -78,5 +79,14 @@ test("untrusted transition metadata cannot replace the loader", t => {
     envelope.signature = Buffer.alloc(64).toString("base64");
     f.env.EVENCORD_RUNNING_RELEASE = Buffer.from(JSON.stringify(envelope)).toString("base64");
     assert.throws(f.migrate, /signature/);
+    assert.equal(fs.readFileSync(path.join(f.resources, "index.js"), "utf8"), "legacy loader");
+});
+
+test("a migration write failure does not reject an otherwise healthy startup", t => {
+    const f = fixture(t);
+    f.blockWrites();
+    assert.throws(f.migrate, /Write denied/);
+    assert.equal(fs.existsSync(path.join(f.root, "booting.json")), false);
+    assert.equal(fs.existsSync(f.record), true);
     assert.equal(fs.readFileSync(path.join(f.resources, "index.js"), "utf8"), "legacy loader");
 });

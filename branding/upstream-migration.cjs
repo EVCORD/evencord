@@ -18,11 +18,11 @@ function migrate({resources, root, payload}) {
     runtime.checkedFile(payload, manifest.artifact);
     const original = path.join(resources, "..", "_app.asar");
     if (runtime.sha(fs.readFileSync(original)) !== owner.originalSHA256) throw Error("The original Discord archive has changed.");
+    runtime.completeBoot(root, manifest.artifact.sha256);
     const target = path.join(root, "evencord.asar");
     runtime.atomic(target, fs.readFileSync(payload));
     const index = `process.env.EVENCORD_USER_DATA_DIR=${JSON.stringify(root)};require(${JSON.stringify(path.join(target, "patcher.js"))});`;
     runtime.atomic(path.join(resources, "index.js"), index);
-    runtime.completeBoot(root, manifest.artifact.sha256);
     fs.renameSync(record, path.join(resources, "..", "evencord-legacy-install.json"));
 }
 module.exports = {migrate};

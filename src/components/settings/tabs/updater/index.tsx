@@ -90,13 +90,13 @@ function Updater() {
             <EquibopSection />
             <Heading className={Margins.top16}>Update Preferences</Heading>
             <Paragraph className={Margins.bottom20}>
-                EvenCord checks its signed stable channel after startup and every 15 minutes, when returning after a while, and after reconnecting. Failed checks retry automatically. Equicord changes reach you only after review and publication in an EvenCord release.
+                EvenCord checks its GitHub releases after startup and every 15 minutes, when returning after a while, and after reconnecting. Failed checks retry automatically. Equicord changes are integrated and tested before publication in an EvenCord release.
             </Paragraph>
 
             <div className="vc-settings-switches">
                 <FormSwitch
                     title="Automatically download verified updates"
-                    description="Opt in to background downloads. Compatible, verified updates are staged with recovery data. Discord restarts only when you choose. When disabled, you receive an update notification."
+                    description="Opt in to background downloads. Downloads are verified before the new payload is saved. Discord restarts only when you choose. When disabled, you receive an update notification."
                     value={settings.autoUpdate}
                     onChange={(v: boolean) => settings.autoUpdate = v}
                     hideBorder
