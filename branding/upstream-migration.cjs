@@ -24,5 +24,7 @@ function migrate({resources, root, payload}) {
     const index = `process.env.EVENCORD_USER_DATA_DIR=${JSON.stringify(root)};require(${JSON.stringify(path.join(target, "patcher.js"))});`;
     runtime.atomic(path.join(resources, "index.js"), index);
     fs.renameSync(record, path.join(resources, "..", "evencord-legacy-install.json"));
+    delete process.env.EVENCORD_MANAGED_ROOT;
+    delete process.env.EVENCORD_RUNNING_RELEASE;
 }
 module.exports = {migrate};
