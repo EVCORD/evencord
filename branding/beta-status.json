@@ -1,13 +1,13 @@
 {
   "published": true,
-  "version": "1.1.1",
+  "version": "1.1.2",
   "installerVersion": "1.1.1",
   "installer": "https://github.com/EVCORD/evencord-installer/releases/download/installer-v1.1.1/EvenCord.exe",
   "release": "https://github.com/EVCORD/evencord-installer/releases/tag/installer-v1.1.1",
-  "coreRelease": "https://github.com/EVCORD/evencord/releases/tag/core-v1.1.1",
+  "coreRelease": "https://github.com/EVCORD/evencord/releases/tag/core-v1.1.2",
   "platforms": [
-    "Windows",
-    "macOS",
-    "Linux"
+    "Windows x64",
+    "Linux",
+    "macOS"
   ]
 }
