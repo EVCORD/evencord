@@ -2,7 +2,7 @@
     "schemaVersion": 1,
     "id": "evencord",
     "displayName": "EvenCord",
-    "installerName": "EvenCord Installer",
+    "installerName": "EvenCord",
     "description": "An open-source Discord client modification based on Equicord.",
     "repositories": {
         "core": {
@@ -32,8 +32,8 @@
         "architecture": "x64",
         "discordChannel": "stable",
         "coreAsset": "desktop.asar",
-        "installerGuiAsset": "EvenCordInstaller-x64.exe",
-        "installerCliAsset": "EvenCordInstallerCli-x64.exe",
+        "installerGuiAsset": "EvenCord.exe",
+        "installerCliAsset": "EvenCord-cli.exe",
         "discordChannels": [
             "stable",
             "ptb",

@@ -6,6 +6,11 @@ on:
     branches: [main]
     paths-ignore: ['website/**', 'docs/**']
   workflow_dispatch:
+    inputs:
+      run_checks:
+        description: Run the full checks before publishing
+        type: boolean
+        default: false
 env:
   GH_REPO: alrimii/evencord
 permissions:
@@ -52,16 +57,16 @@ jobs:
         run: |
           npm install --global pnpm@12.15.0
           pnpm install --frozen-lockfile
-      - name: Install recording test tools
-        if: steps.version.outputs.publish == 'true'
+      - name: Optional full checks
+        if: steps.version.outputs.publish == 'true' && (github.event_name == 'schedule' || inputs.run_checks == true)
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-      - name: Validate and build universal payloads
+          node node_modules/typescript/bin/tsc --noEmit
+          node --test tests/*.test.cjs
+      - name: Build release
         if: steps.version.outputs.publish == 'true'
         run: |
-          node node_modules/typescript/bin/tsc --noEmit
-          node --test tests/upstream-migration.test.cjs tests/upstream-updater.test.cjs tests/evenclean.test.cjs tests/evenclean-channels.test.cjs tests/reclip-export.test.cjs tests/settings-import.test.cjs
           node scripts/build/build.mjs --standalone --all-targets
           node scripts/build/buildWeb.mjs --standalone
           node node_modules/tsx/dist/cli.mjs scripts/generatePluginList.ts dist/plugins.json

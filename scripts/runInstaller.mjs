@@ -26,9 +26,9 @@ requireDistribution();
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const suffix = process.arch === "arm64" ? "arm64" : process.arch === "x64" ? "x64" : undefined;
 if (!suffix) throw Error("Download the installer for a supported architecture.");
-const filename = process.platform === "win32" ? `EvenCordInstallerCli-${suffix}.exe`
-    : process.platform === "darwin" ? `EvenCordInstallerCli-${suffix}`
-        : process.platform === "linux" ? `EvenCordInstallerCli-linux${suffix === "arm64" ? "-arm64" : ""}` : undefined;
+const filename = process.platform === "win32" ? `EvenCord-cli${suffix === "arm64" ? "-arm64" : ""}.exe`
+    : process.platform === "darwin" ? `EvenCord-cli-${suffix}`
+        : process.platform === "linux" ? `EvenCord-cli-linux${suffix === "arm64" ? "-arm64" : ""}` : undefined;
 if (!filename) throw Error("This operating system is unsupported.");
 const response = await fetch(`https://api.github.com/repos/${project.repositories.installer.slug}/releases/latest`, { signal: AbortSignal.timeout(30_000) });
 if (!response.ok) throw Error(`Installer release lookup failed: ${response.status}`);

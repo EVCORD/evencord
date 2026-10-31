@@ -1,54 +1,57 @@
 # <img src="branding/assets/mark.svg" width="36" align="left" alt=""> EvenCord
 
-A Discord client modification based on [Equicord](https://github.com/Equicord/Equicord) and [Vencord](https://github.com/Vendicated/Vencord), with additional plugins and its own identity.
+Discord, with your plugins and your style. Built on [Equicord](https://github.com/Equicord/Equicord).
 
-[Website](https://alrimii.github.io/evencord/) · [Plugins](https://alrimii.github.io/evencord/plugins/) · [Support](https://github.com/alrimii/evencord/issues)
+[Website](https://alrimii.github.io/evencord/) ? [Plugins](https://alrimii.github.io/evencord/plugins/) ? [Help](https://alrimii.github.io/evencord/faq/)
 
 ## Download
 
-EvenCord follows Equicord's core and the Equilotl based installation paths for Windows, macOS and Linux. Download the artifact for your platform from the [installer releases](https://github.com/alrimii/evencord-installer/releases/latest). Available release assets show the current platform builds.
+| Platform | Intel / AMD (x64) | ARM64 |
+| --- | --- | --- |
+| Windows | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord.exe) | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-arm64.exe) |
+| macOS | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-x64.dmg) | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-arm64.dmg) |
+| Linux | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord) | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-arm64) |
 
-1. Save your work and close Discord.
-2. Open the EvenCord installer and choose your Discord installation.
-3. Install or repair EvenCord, then reopen Discord.
+**macOS:** [Universal download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord.dmg) for Apple silicon and Intel.
 
-Settings and themes remain in the EvenCord profile. Uninstall restores Discord's original archive. Version 1.1.0 transitions existing managed Windows clients through a signed update to the normal loader. If EvenCord cannot start, use the current installer Repair operation. Windows executables are not Authenticode signed; macOS builds use ad hoc signing.
+<details>
+<summary>Command line and Linux variants</summary>
 
-Equicord source changes are checked every six hours and rebuilt with EvenCord customizations after validation. Source conflicts stop publishing for review. Your own branding and plugin changes ship through the same release workflow. Downloads use EvenCord's repository, preserving your customizations. [Update and migration details](docs/UPDATING.md).
+| Platform | x64 | ARM64 |
+| --- | --- | --- |
+| Windows | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-cli.exe) | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-cli-arm64.exe) |
+| macOS | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-cli-x64) | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-cli-arm64) |
+| Linux | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-cli-linux) | [Download](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-cli-linux-arm64) |
+
+Linux: [X11](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-x11) ? [Wayland](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-wayland) ? [X11 ARM64](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-x11-arm64) ? [Wayland ARM64](https://github.com/alrimii/evencord-installer/releases/latest/download/EvenCord-wayland-arm64).
+
+</details>
+
+## Install
+
+1. Close Discord.
+2. Open EvenCord and choose your Discord installation.
+3. Select **Install**, then reopen Discord. Use **Repair** if EvenCord is already installed.
+
+Your settings are kept when repairing or uninstalling.
 
 ## Plugins
 
-Browse the [plugin library](https://alrimii.github.io/evencord/plugins/) for descriptions and authors. Vencord, Equicord and EvenCord plugins retain distinct source badges.
+Includes Vencord and Equicord plugins, plus EvenCord additions such as Reclip, Quoter Enhanced, BetterMicrophone and EvenClean. [Browse plugins](https://alrimii.github.io/evencord/plugins/).
 
-- **Reclip** saves recent footage of your Discord window with a button or shortcut. Choose the replay duration, quality and audio sources.
-- **Quoter Enhanced** adds a Valenced-inspired quote layout, typography, images, stickers and experimental GIF support.
-- **BetterMicrophone**, **FollowUser**, **PasscodeLock** and **DontControlMe** are available under EvenCord, with PhilsPluginLibrary supporting microphone profiles. New plugins are opt-in. [Capabilities and limitations](src/evencordplugins/IMPORTED-PLUGINS.md).
-- **EvenClean** previews your own messages and removes only explicitly confirmed batches, with pause controls and request cooldowns. [Usage and account-automation limitations](src/evencordplugins/evenClean/README.md).
-- Inherited plugins keep their original names, settings and author credits.
-
-Reclip's speaker audio may include other applications, and microphone capture is independent of Discord mute. [Recording controls and privacy](https://alrimii.github.io/evencord/faq/#recording)
-
-For volunteer testing and transferring compatible plugin preferences, see the [testing and settings-transfer guide](docs/BETA-TESTING.md). Custom plugin code is not installed by settings import.
-
-To contribute or distribute an EvenCord plugin, follow the [plugin publishing process](docs/PLUGIN-RELEASES.md). A GitHub source push alone does not update installed clients.
-
-## Building from source
-
-Use Node.js 22 and the pnpm version declared in `package.json`.
+## Build
 
 ```sh
 git clone https://github.com/alrimii/evencord.git
 cd evencord
-corepack pnpm install --frozen-lockfile
-corepack pnpm build
+pnpm install --frozen-lockfile
+pnpm build
 ```
 
-Building does not install EvenCord. Use the installer for your platform for installation. See [contributing](CONTRIBUTING.md) and [release documentation](docs/RELEASE-SECURITY.md) for development details.
+Use Node.js 22 or newer. [Contributing](CONTRIBUTING.md).
 
 ## Credits
 
-Built on [Equicord](https://github.com/Equicord/Equicord) and [Vencord](https://github.com/Vendicated/Vencord). The installer derives from [Equilotl](https://github.com/Equicord/Equilotl). Quoter Enhanced retains its original authors and [Valenced attribution](src/evencordplugins/quoterEnhanced/ATTRIBUTION.md).
+Based on [Equicord](https://github.com/Equicord/Equicord), [Vencord](https://github.com/Vendicated/Vencord) and [Equilotl](https://github.com/Equicord/Equilotl). Original plugin authors and license notices are preserved. [GPL-3.0-or-later](LICENSE).
 
-Licensed under [GPL-3.0-or-later](LICENSE). Original copyright notices and contribution history are preserved.
-
-EvenCord is independent and is not affiliated with Discord Inc. Client modifications may conflict with Discord's terms; no guarantee against account restrictions is made.
+EvenCord is independent of Discord. Client modifications may conflict with Discord's terms.
