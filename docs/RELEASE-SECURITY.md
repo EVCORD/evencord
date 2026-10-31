@@ -1,4 +1,14 @@
-# Release security
+# Release security from 1.1.0
+
+EvenCord follows Equicord's normal desktop loader and host update model, with its own repository and settings directory. Normal core and installer downloads must match the exact release URL, published size and GitHub SHA-256 asset digest. The old Discord archive allowlist and startup rejection mechanism are not used after migration.
+
+Compatibility metadata remains signed with the enrolled Ed25519 key so existing managed Windows clients can receive the transition. The protected local key is retained under Windows DPAPI. Automated releases use an encrypted GitHub Actions repository secret, available only to the trusted main release job. Pull requests never receive signing material. Neither source, logs nor release assets contain private key material.
+
+Windows executables are not Authenticode signed. Native build validation and fixture tests are separate from actual platform runtime verification. A failed check or upstream source conflict stops publication. Releases are immutable and require unique versions. Existing users whose mod cannot start need the current installer Repair operation; settings and the original Discord archive are retained.
+
+The sections below document the pre-1.1.0 managed protocol and its compatibility path. They do not describe the normal installation flow introduced in 1.1.0.
+
+# Legacy managed release security
 
 Stable releases use channel `stable` and independent component versions such as `1.0.0`. GitHub tags are `core-vVERSION` and `installer-vVERSION`. The approved repository release list is filtered to stable releases. Stable, PTB and Canary support is constrained by the signed archive catalog.
 
@@ -30,7 +40,7 @@ The core-only `branding/managed-updater.cjs` adds progress and coordination with
 6. Upload reviewed immutable assets to GitHub releases, core first. Validate the public core download using the installer's `release.Latest` and `release.Download` path. Then publish the matching installer release and verify both installer downloads. Never silently replace a published binary; increase the version.
 7. Only then update `branding/beta-status.json`, regenerate the site and announce the release. Publish checksums, license notices and exact source information with each component.
 
-The audited manual Pages workflow and read-only Equicord upstream review are activated in the core repository. The review runs every 12 hours and can be dispatched manually; it creates a report without merging or publishing. Other workflow sources are archived; installer Actions remains disabled. No signing credentials are accessible to pull requests. The site is static and does not execute plugin code. Its catalog is generated from source metadata, filtered to the Windows desktop target.
+Historically, the audited manual Pages workflow and read-only Equicord upstream review were activated in the core repository. The review runs every 12 hours and can be dispatched manually; it creates a report without merging or publishing. Other workflow sources are archived; installer Actions remains disabled. No signing credentials are accessible to pull requests. The site is static and does not execute plugin code. Its catalog is generated from source metadata, filtered to the Windows desktop target.
 
 ## Desktop channel compatibility
 

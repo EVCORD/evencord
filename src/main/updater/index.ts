@@ -8,7 +8,7 @@ import { IpcEvents } from "@shared/IpcEvents";
 import { ipcMain } from "electron";
 
 import { serializeErrors } from "./common";
-import secureUpdater, { getUpdateStatus, prepareUpdateRestart } from "./secure";
+import httpUpdater, { getUpdateStatus, prepareUpdateRestart } from "./http";
 
 export type UpdateData = Record<"hash" | "message" | "author", string>;
 
@@ -19,7 +19,7 @@ export interface Updater {
     applyUpdate(): Promise<boolean>;
 }
 
-const updater: Updater = secureUpdater;
+const updater: Updater = httpUpdater;
 
 ipcMain.handle(IpcEvents.UPDATER_PREPARE_RESTART, serializeErrors(prepareUpdateRestart));
 

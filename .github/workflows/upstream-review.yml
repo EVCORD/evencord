@@ -1,47 +1,102 @@
-name: Review Equicord upstream
+name: Integrate Equicord and publish EvenCord
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '17 */12 * * *'
+    - cron: '17 */6 * * *'
+  push:
+    branches: [main]
+    paths-ignore: ['website/**', 'docs/**']
+  workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
+  actions: write
 concurrency:
-  group: evencord-upstream-review
+  group: evencord-release
   cancel-in-progress: false
 jobs:
-  review:
+  release:
     if: github.repository == 'alrimii/evencord' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
-          persist-credentials: false
-      - name: Compare upstream without changing source
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir review
-          git fetch --no-tags https://github.com/Equicord/Equicord.git main
-          base=$(git merge-base HEAD FETCH_HEAD)
-          git rev-parse HEAD FETCH_HEAD "$base" > review/revisions.txt
-          git log --format='%h %s' HEAD..FETCH_HEAD > review/commits.txt
-          git diff --name-status "$base" FETCH_HEAD > review/upstream-files.txt
-          git diff --name-status "$base" FETCH_HEAD -- src/plugins src/equicordplugins > review/plugin-changes.txt
-          status=0
-          git merge-tree --write-tree HEAD FETCH_HEAD > review/merge-analysis.txt || status=$?
-          if [ "$status" -gt 1 ]; then exit "$status"; fi
-          {
-            echo '## Equicord upstream review'
-            echo "New upstream commits: $(wc -l < review/commits.txt)"
-            if [ "$status" -eq 1 ]; then echo 'Conflicts detected. Review merge-analysis.txt.'; else echo 'Git found no merge conflicts. Source still requires review and validation.'; fi
-            echo 'Download the review artifact for commits, plugin changes and merge analysis.'
-            echo 'This workflow does not merge, push, sign or publish. Vencord changes are inherited through Equicord.'
-          } >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          name: equicord-upstream-review
-          path: review
-          retention-days: 14
-          if-no-files-found: error
+          node-version: '24'
+      - name: Configure release identity
+        run: |
+          git config user.name 'EvenCord automation'
+          git config user.email 'actions@users.noreply.github.com'
+      - name: Integrate Equicord
+        if: github.event_name != 'push'
+        run: node scripts/sync-upstream.mjs
+      - name: Select unpublished version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          if gh release view "core-v$version" >/dev/null 2>&1; then
+            echo 'publish=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'publish=true' >> "$GITHUB_OUTPUT"
+            echo "tag=core-v$version" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install dependencies
+        if: steps.version.outputs.publish == 'true'
+        run: |
+          npm install --global pnpm@12.15.0
+          pnpm install --frozen-lockfile
+      - name: Validate and build universal payloads
+        if: steps.version.outputs.publish == 'true'
+        run: |
+          node node_modules/typescript/bin/tsc --noEmit
+          node --test tests/upstream-migration.test.cjs tests/upstream-updater.test.cjs tests/evenclean.test.cjs tests/evenclean-channels.test.cjs tests/reclip-export.test.cjs tests/settings-import.test.cjs
+          node node_modules/tsx/dist/cli.mjs scripts/generatePluginList.ts dist/plugins.json
+          node node_modules/tsx/dist/cli.mjs scripts/generatePluginList.ts --evencord dist/evencord-plugins.json
+          node scripts/build/build.mjs --standalone --all-targets
+          node scripts/build/buildWeb.mjs --standalone
+      - name: Sign compatibility metadata for existing installations
+        if: steps.version.outputs.publish == 'true'
+        env:
+          EVENCORD_RELEASE_PRIVATE_KEY: ${{ secrets.EVENCORD_RELEASE_PRIVATE_KEY }}
+        run: |
+          test -n "$EVENCORD_RELEASE_PRIVATE_KEY"
+          mkdir -p .cache/candidate
+          cp dist/desktop.asar .cache/candidate/
+          node scripts/prepare-beta.cjs core .cache/candidate "$(date +%s)"
+          node - <<'NODE'
+          const cp = require('node:child_process');
+          const trust = require('./branding/trust.json');
+          const result = cp.spawnSync(process.execPath, ['scripts/sign-release.cjs', '.cache/candidate/core.manifest.json', Object.keys(trust.keys)[0], '.cache/candidate/core.release.json'], {input: process.env.EVENCORD_RELEASE_PRIVATE_KEY, stdio: ['pipe', 'inherit', 'inherit']});
+          process.exit(result.status ?? 1);
+          NODE
+          node scripts/release-tools.cjs verify core .cache/candidate
+          cp .cache/candidate/core.{release,source}.json dist/
+      - name: Publish validated source and release
+        if: steps.version.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git push origin HEAD:main
+          sha256sum dist/*.asar > dist/SHA256SUMS.txt
+          version=$(node -p 'require("./package.json").version')
+          gh release create "$TAG" --target "$(git rev-parse HEAD)" --title "EvenCord $version $(git rev-parse HEAD)" --notes-file "docs/releases/$version.md" dist/*.asar dist/*.zip dist/plugins.json dist/evencord-plugins.json dist/SHA256SUMS.txt dist/core.release.json dist/core.source.json LICENSE
+      - name: Update published website
+        if: steps.version.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/update-site-release.mjs
+          node scripts/build-site.mjs
+          git add branding/beta-status.json website
+          git diff --cached --quiet || git commit -m 'Update published release and plugin catalog'
+          git push origin HEAD:main
+          gh workflow run pages.yml --ref main
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: failure()
+        with:
+          name: upstream-integration-failure
+          path: .git/MERGE_MSG

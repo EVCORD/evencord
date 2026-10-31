@@ -42,7 +42,7 @@ import definePlugin from "@utils/types";
 import { checkForUpdates, isOutdated, update } from "@utils/updater";
 import { RenderModalProps } from "@vencord/discord-types";
 import { CloudUploadPlatform } from "@vencord/discord-types/enums";
-import { Alerts, ChannelStore, CloudUploader, ConfirmModal, Constants, GuildMemberStore, openModal, Parser, PermissionsBits, PermissionStore, RelationshipStore, RestAPI, SelectedChannelStore, showToast, SnowflakeUtils, Text, UserStore } from "@webpack/common";
+import { Alerts, ChannelStore, CloudUploader, ConfirmModal, Constants, GuildMemberStore, openModal, Parser, PermissionsBits, PermissionStore, RelationshipStore, RestAPI, SelectedChannelStore, showToast, SnowflakeUtils, UserStore } from "@webpack/common";
 import { JSX } from "react";
 
 import plugins, { PluginMeta } from "~plugins";
@@ -303,7 +303,7 @@ function DevBuildConfirmModal(props: RenderModalProps) {
                     Please read the <Link href={Project.links.support}>EvenCord support information</Link>.
                 </Paragraph>
 
-                <Text variant="text-md/bold" className={Margins.top8}>Please do not ask upstream maintainers to support EvenCord-specific changes.</Text>
+                <Paragraph className={Margins.top8}>Please do not ask upstream maintainers to support EvenCord-specific changes.</Paragraph>
             </div>
         </ConfirmModal>
     );

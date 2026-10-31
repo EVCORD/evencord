@@ -19,6 +19,7 @@
 import { Settings } from "@api/Settings";
 import { Card } from "@components/Card";
 import { Flex } from "@components/Flex";
+import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { Switch } from "@components/Switch";
 import { MicrophoneProfile, MicrophoneStore } from "@evencordplugins/betterMicrophone.desktop/stores";
@@ -35,7 +36,7 @@ import {
 import { Styles } from "@evencordplugins/philsPluginLibrary.desktop/styles";
 import { ModalSize } from "@utils/modal";
 import { SelectOption } from "@vencord/discord-types";
-import { Forms, Select, showToast, Slider, TextInput, useEffect, useState } from "@webpack/common";
+import { Select, showToast, Slider, TextInput, useEffect, useState } from "@webpack/common";
 
 const simpleVoiceBitrates: readonly SelectOption[] = [
     {
@@ -120,7 +121,7 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
 
     const simpleToggle =
         <Flex style={{ justifyContent: "center", alignItems: "center", gap: "0.6em" }}>
-            <Forms.FormTitle style={{ margin: 0 }} tag="h5">Advanced controls</Forms.FormTitle>
+            <Heading style={{ margin: 0 }} tag="h5">Advanced controls</Heading>
             <Switch checked={!simpleMode} disabled={isSaving} onChange={checked => setSimpleMode(!checked)} />
         </Flex>;
 
@@ -279,10 +280,10 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
 
     const infoCard =
         <Card style={{ ...Styles.infoCard }}>
-            <Forms.FormTitle tag="h5">Important</Forms.FormTitle>
-            <Forms.FormText>
+            <Heading tag="h5">Important</Heading>
+            <Paragraph>
                 Choose Discord default to stop requesting custom encoder settings. Rejoin the voice channel to restore its native defaults. Stereo needs the optional native patch setting and a restart; Krisp or echo cancellation may downmix the input.
-            </Forms.FormText>
+            </Paragraph>
         </Card>;
 
     return (

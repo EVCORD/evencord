@@ -6,20 +6,15 @@ A Discord client modification based on [Equicord](https://github.com/Equicord/Eq
 
 ## Download
 
-**Windows x64 · Stable, PTB and Canary · Stable release**
+EvenCord follows Equicord's core and the Equilotl based installation paths for Windows, macOS and Linux. Download the artifact for your platform from the [installer releases](https://github.com/alrimii/evencord-installer/releases/latest). Available release assets show the current platform builds.
 
-| Installer | Download |
-| --- | --- |
-| Windows GUI | [Download EvenCord Installer](https://github.com/alrimii/evencord-installer/releases/download/installer-v1.0.0/EvenCordInstaller-x64.exe) |
-| Windows CLI | [Download CLI](https://github.com/alrimii/evencord-installer/releases/download/installer-v1.0.0/EvenCordInstallerCli-x64.exe) |
+1. Save your work and close Discord.
+2. Open the EvenCord installer and choose your Discord installation.
+3. Install or repair EvenCord, then reopen Discord.
 
-1. Download and open the installer.
-2. Save any unsaved clips or work. The installer closes the selected Discord channel.
-3. Select **Install EvenCord**, then reopen Discord.
+Settings and themes remain in the EvenCord profile. Uninstall restores Discord's original archive. Version 1.1.0 transitions existing managed Windows clients through a signed update to the normal loader. If EvenCord cannot start, use the current installer Repair operation. Windows executables are not Authenticode signed; macOS builds use ad hoc signing.
 
-To remove EvenCord, open the installer and select **Uninstall**. Your settings are kept. Remove other client modifications using their own installer first.
-
-Windows x64 supports reviewed Stable **1.0.9266**, PTB **1.0.1229** and Canary **1.0.1285/1.0.1286** archives. Channel profiles are separate. Managed installations check signed EvenCord releases automatically and preserve your update preferences. Existing update-enabled beta clients receive a transition update before stable. Very old update-disabled builds require the current installer. Restart only after a verified update is ready. Windows executables are unsigned and may show a SmartScreen warning. [Release notes and checksums](https://github.com/alrimii/evencord-installer/releases) ? [Installation help](https://alrimii.github.io/evencord/faq/)
+Equicord source changes are checked every six hours and rebuilt with EvenCord customizations after validation. Source conflicts stop publishing for review. Your own branding and plugin changes ship through the same release workflow. Downloads use EvenCord's repository, preserving your customizations. [Update and migration details](docs/UPDATING.md).
 
 ## Plugins
 
@@ -48,7 +43,7 @@ corepack pnpm install --frozen-lockfile
 corepack pnpm build
 ```
 
-Building does not install EvenCord. Use the verified installer for installation. See [contributing](CONTRIBUTING.md) and [release documentation](docs/RELEASE-SECURITY.md) for development details.
+Building does not install EvenCord. Use the installer for your platform for installation. See [contributing](CONTRIBUTING.md) and [release documentation](docs/RELEASE-SECURITY.md) for development details.
 
 ## Credits
 

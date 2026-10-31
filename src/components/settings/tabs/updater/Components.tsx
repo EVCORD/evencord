@@ -92,16 +92,16 @@ export function Updatable(props: CommonProps) {
 
     const phase = status?.phase;
     const pending = busy || ["checking", "downloading", "verifying", "staging"].includes(phase || "");
-    const message = phase === "ready" ? "The signed update is staged. Your current session is unchanged until you restart."
-        : phase === "current" ? "No newer approved release is available."
-            : phase === "checking" ? "Checking approved EvenCord releases..."
+    const message = phase === "ready" ? "The update is ready. Restart Discord to load it."
+        : phase === "current" ? "No newer release is available."
+            : phase === "checking" ? "Checking EvenCord releases..."
                 : phase === "downloading" ? `Downloading ${((status?.received || 0) / 1048576).toFixed(1)} of ${((status?.total || 0) / 1048576).toFixed(1)} MiB...`
-                    : phase === "verifying" ? "Verifying the signature, artifact and Discord compatibility..."
-                        : phase === "staging" ? "Staging the verified update and preserving recovery files..."
+                    : phase === "verifying" ? "Verifying the release size and GitHub SHA-256 digest..."
+                        : phase === "staging" ? "Saving the verified update..."
                             : phase === "available" ? `EvenCord ${status?.availableVersion} is available.`
-                                : "Check for an approved EvenCord release.";
+                                : "Check for an EvenCord release.";
     return <>
-        {status?.installedVersion && <Paragraph>Running {status.installedVersion} · Verified key: {status.keyId}</Paragraph>}
+        {status?.installedVersion && <Paragraph>Running {status.installedVersion} · Source: EvenCord GitHub releases</Paragraph>}
         <Flex className={Margins.bottom8} gap="8px" flexWrap="wrap">
             <Button disabled={pending || phase === "ready"} onClick={runWithDispatch(setBusy, async () => {
                 setError("");

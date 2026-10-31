@@ -1,21 +1,13 @@
-# Shipping plugin updates
+# Updating EvenCord
 
-Official EvenCord plugins live in src/evencordplugins. A new plugin in that directory is discovered during the normal build and receives EvenCord provenance. Keep each plugin name unique, preserve author credits and use the existing settings API.
+Equicord is the core upstream. `scripts/sync-upstream.mjs` merges its current main branch while preserving EvenCord identity and plugin discovery. The scheduled workflow checks every six hours, advances the EvenCord patch version and validates before publishing. Conflicting source changes stop the workflow for maintainer review. It never installs Equicord binaries over EvenCord.
 
-Plugins ship inside the signed core payload. Users do not download individual plugin scripts. Pushing source to main alone does not send an update.
+To release your own branding or plugin changes, increment package.json, add matching docs/releases/VERSION.md notes and push main. The same workflow validates and publishes compiled EvenCord assets. A version already published is immutable and is not overwritten.
 
-For each core release:
+The normal desktop updater follows EvenCord GitHub releases on Windows, macOS and Linux. Downloads must match their exact repository URL, published size and GitHub SHA-256 digest. Settings and themes stay in the EvenCord profile. Startup and Discord host updates use the inherited Equicord loader and hooks.
 
-1. Edit the plugin, increase the core version in package.json and add matching docs/releases/VERSION.md notes. Preserve settings keys or provide an explicit migration when renaming them.
-2. Run focused lint/type checks and commit the reviewed source. Build the desktop core from that exact commit.
-3. Place desktop.asar in a new ignored candidate directory. Run node scripts/prepare-beta.cjs core DIRECTORY SEQUENCE using a sequence higher than every previous core release.
-4. Sign the manifest using the protected beta signing identity through scripts/sign-release.cjs. Keep the private key outside Git, logs and uploaded assets. Verify with node scripts/release-tools.cjs verify core DIRECTORY.
-5. Publish immutable artifacts, signed metadata, source identity, checksums and notices as a GitHub prerelease tagged core-vVERSION in alrimii/evencord. Verify the public download before announcing it or updating the website.
+Release automation signs compatibility metadata using the enrolled key stored as an encrypted repository Actions secret. It runs only on main and scheduled upstream integration, never pull requests. The protected local DPAPI key remains available for recovery. Every release retains compatibility metadata for legacy Windows clients.
 
-Managed beta.3 or newer clients check after startup and every 15 minutes. Users can also choose Check for Updates. Automatic downloads follow the user's existing preference. The client verifies identity, Ed25519 signature, artifact size, SHA-256 and Discord compatibility before staging. Restart is offered only after successful staging.
+Version 1.1.0 is also signed using the existing protocol so managed Windows clients can receive the transition through their existing updater. On successful native startup it copies the signed payload to the stable profile path and switches the owned loader to that path, keeping the original Discord archive and settings. Old clients with automatic downloads disabled must choose Check for Updates. Clients that cannot load EvenCord need the current installer repair path.
 
-A core-only plugin change normally needs no installer rebuild: the current installer discovers the newest approved signed core release. Rebuild and independently version the installer when its own code or embedded trust/loader contract changes. Beta.1/beta.2 clients need the one-time manual installer upgrade.
-
-Equicord upstream synchronization is a separate source-review step. Review and integrate upstream changes, then publish an EvenCord release through the same process. An upstream commit never directly updates users.
-
-The read-only Review Equicord upstream workflow checks every 12 hours and supports manual dispatch. Its artifact lists upstream commits, plugin changes and merge conflicts. Review and integrate these changes before building a signed EvenCord release. It has no write permissions or signing credentials.
+The legacy Windows archive allowlist and startup rejection mechanism apply only before transition. New platform support is built through the Equilotl installer matrix. Claims of native runtime verification must state the platforms actually tested.

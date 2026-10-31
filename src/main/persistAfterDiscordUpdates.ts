@@ -9,7 +9,6 @@
  * `app-VERSION` directory on quit and re-applies the patch there.
  */
 
-import { Project } from "@shared/project";
 import { app } from "electron";
 import EventEmitter from "events";
 import { dirname, join } from "path";
@@ -17,17 +16,17 @@ import { dirname, join } from "path";
 import { findStaleSibling, patchResourcesDir } from "./applyHostPatch";
 
 function patchLatest() {
-    if (!Project.capabilities.distribution || !Project.capabilities.hostRepatch || process.env.DISABLE_UPDATER_AUTO_PATCHING) return;
+    if (process.env.DISABLE_UPDATER_AUTO_PATCHING) return;
 
     try {
         const stale = findStaleSibling(dirname(process.execPath));
         if (stale) patchResourcesDir(stale, join(__dirname, "patcher.js"));
     } catch (err) {
-        console.error("[EvenCord] Failed to repatch latest host update", err);
+        console.error("[Equicord] Failed to repatch latest host update", err);
     }
 }
 
-if (Project.capabilities.hostRepatch && (process.platform === "win32" || process.platform === "linux")) {
+if (process.platform === "win32" || process.platform === "linux") {
     EventEmitter.prototype.emit = new Proxy(EventEmitter.prototype.emit, {
         apply(target, thisArg, argArray) {
             if (argArray[0] === "host-updated") {

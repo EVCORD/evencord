@@ -4,34 +4,68 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Project } from "@shared/project";
-import legacyTrustSource from "file://../../branding/legacy-trust.json?trim=false";
-import loaderSource from "file://../../branding/loader.cjs?trim=false";
-import engineSource from "file://../../branding/runtime.cjs?trim=false";
-import trustSource from "file://../../branding/trust.json?trim=false";
-import { readdirSync, statSync } from "original-fs";
+import { existsSync, lstatSync, mkdirSync, readdirSync, renameSync, rmdirSync, statSync, unlinkSync, writeFileSync } from "original-fs";
 import { basename, dirname, join } from "path";
 
-import { migrate } from "../../branding/channel-migration.cjs";
-import host from "../../branding/host.cjs";
-import trust from "../../branding/trust.json";
-
+const STUB_PACKAGE = JSON.stringify({ name: "discord", main: "index.js" });
 const VERSION_PREFIX = "app-";
-export const isAlreadyPatched = (resources: string) => {
+
+const makeStubIndex = (patcherPath: string) =>
+    `process.env.EVENCORD_USER_DATA_DIR=${JSON.stringify(process.env.EVENCORD_USER_DATA_DIR)};require(${JSON.stringify(patcherPath)});`;
+
+/** `_app.asar` next to `app.asar` marks any patched install. */
+export const isAlreadyPatched = (resources: string) =>
+    existsSync(join(resources, "_app.asar"));
+
+/**
+ * apply the folder-shim patch to a discord `resources/` directory.
+ *
+ * renames vanilla `app.asar` to `_app.asar`, creates an `app/` folder
+ * whose `index.js` requires the given patcher script. electron prefers
+ * the folder over the asar of the same name and loads it first.
+ *
+ * idempotent. returns `false` if the directory is already patched or
+ * has no vanilla `app.asar`. throws on partial failure after rolling
+ * back any disk changes already made.
+ */
+export const patchResourcesDir = (resources: string, patcherJsPath: string): boolean => {
+    const app = join(resources, "app.asar");
+    const _app = join(resources, "_app.asar");
+
+    if (isAlreadyPatched(resources) || !existsSync(app) || existsSync(_app)) return false;
     try {
-        host.ownership(resources, loaderSource.replaceAll("\r\n", "\n"), engineSource.replaceAll("\r\n", "\n"), trustSource.replaceAll("\r\n", "\n"));
-        return true;
+        if (lstatSync(app).isDirectory()) return false;
     } catch {
         return false;
     }
-};
-export const patchResourcesDir = (resources: string, _patcherJsPath: string): boolean => {
-    if (!Project.capabilities.distribution || !Project.capabilities.hostRepatch) return false;
-    if (process.platform !== "win32" || process.arch !== "x64") throw new Error("Host persistence supports Windows x64 only.");
-    if (process.env.DISABLE_UPDATER_AUTO_PATCHING && !isAlreadyPatched(resources)) throw new Error("Automatic Discord repatching is disabled by the environment. Use the verified installer before restarting.");
-    migrate(join(dirname(process.execPath), "resources"), loaderSource.replaceAll("\r\n", "\n"), engineSource.replaceAll("\r\n", "\n"), legacyTrustSource.replaceAll("\r\n", "\n"), trustSource.replaceAll("\r\n", "\n"));
-    return host.persist(resources, join(dirname(process.execPath), "resources"), trust,
-        loaderSource.replaceAll("\r\n", "\n"), engineSource.replaceAll("\r\n", "\n"), trustSource.replaceAll("\r\n", "\n"));
+
+    const undo: Array<() => void> = [];
+    try {
+        renameSync(app, _app);
+        undo.push(() => renameSync(_app, app));
+
+        mkdirSync(app);
+        undo.push(() => {
+            const indexPath = join(app, "index.js");
+            const pkgPath = join(app, "package.json");
+            if (existsSync(indexPath)) unlinkSync(indexPath);
+            if (existsSync(pkgPath)) unlinkSync(pkgPath);
+            rmdirSync(app);
+        });
+
+        writeFileSync(join(app, "package.json"), STUB_PACKAGE);
+        writeFileSync(join(app, "index.js"), makeStubIndex(patcherJsPath));
+        return true;
+    } catch (err) {
+        for (let i = undo.length - 1; i >= 0; i--) {
+            try {
+                undo[i]();
+            } catch (cleanupErr) {
+                console.error("[Equicord] Rollback step failed", cleanupErr);
+            }
+        }
+        throw err;
+    }
 };
 
 const parsePart = (s: string) => parseInt(s, 10) || 0;
@@ -69,14 +103,14 @@ export const findStaleSibling = (currentExeDir: string): string | null => {
             try {
                 isDir = statSync(join(discordPath, name)).isDirectory();
             } catch (statErr) {
-                console.error("[EvenCord] Skipping unreadable sibling", name, statErr);
+                console.error("[Equicord] Skipping unreadable sibling", name, statErr);
                 continue;
             }
             if (!isDir) continue;
             if (isNewer(name, latest)) latest = name;
         }
     } catch (err) {
-        console.error("[EvenCord] Failed to scan for sibling versions", err);
+        console.error("[Equicord] Failed to scan for sibling versions", err);
         return null;
     }
 

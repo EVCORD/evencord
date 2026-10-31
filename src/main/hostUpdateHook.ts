@@ -20,7 +20,6 @@
  * reinject flow on first post-update launch.
  */
 
-import { Project } from "@shared/project";
 import Module from "module";
 import { basename, dirname, join, resolve as resolvePath, sep } from "path";
 
@@ -66,7 +65,7 @@ interface DiscordDesktopCore {
     __equicordStartupWrapped?: boolean;
 }
 
-const error = (...args: unknown[]) => console.error("[EvenCord:HostUpdate]", ...args);
+const error = (...args: unknown[]) => console.error("[Equicord:HostUpdate]", ...args);
 
 const hookedUpdaters = new WeakSet<DiscordHostUpdater>();
 let hooked = false;
@@ -218,7 +217,6 @@ const wrapStartup = (coreExports: DiscordDesktopCore | null | undefined) => {
 };
 
 export const installHostUpdateHook = () => {
-    if (!Project.capabilities.distribution || !Project.capabilities.hostRepatch) return;
     if (hooked) return;
     hooked = true;
 

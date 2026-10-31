@@ -17,12 +17,9 @@
 */
 
 import { onceDefined } from "@shared/onceDefined";
-import { Project } from "@shared/project";
 import electron, { app, BrowserWindowConstructorOptions, Menu } from "electron";
 import { dirname, join } from "path";
 
-import releaseRuntime from "../../branding/runtime.cjs";
-import releaseTrust from "../../branding/trust.json";
 import { RendererSettings } from "./settings";
 import { patchTrayMenu } from "./trayMenu";
 import { DATA_DIR, IS_VANILLA } from "./utils/constants";
@@ -51,7 +48,7 @@ if (!IS_VANILLA) {
      * re-apply the patch when discord ships a new host version. skipped
      * on vesktop and equibop because they manage their own updates.
      */
-    if (Project.capabilities.hostRepatch && !IS_VESKTOP && !IS_EQUIBOP) {
+    if (!IS_VESKTOP && !IS_EQUIBOP) {
         try {
             require("./hostUpdateHook").installHostUpdateHook();
         } catch (err) {
@@ -90,7 +87,7 @@ if (!IS_VANILLA) {
                 return;
             }
 
-            const { frameless, mainWindowFrameless, nativeTitleBar, disableMinSize, transparent, macosVibrancyStyle, windowsMaterial } = settings;
+            const { frameless, mainWindowFrameless, nativeTitleBar, disableMinSize, noRoundCorners, transparent, macosVibrancyStyle, windowsMaterial } = settings;
 
             const original = options.webPreferences.preload;
             const isMainWindow = options.title === "Discord";
@@ -108,6 +105,10 @@ if (!IS_VANILLA) {
             if (disableMinSize) {
                 options.minWidth = 0;
                 options.minHeight = 0;
+            }
+
+            if (noRoundCorners) {
+                options.roundedCorners = false;
             }
 
             if (transparent) {
@@ -152,18 +153,16 @@ if (!IS_VANILLA) {
         s.set("DANGEROUS_ENABLE_DEVTOOLS_ONLY_ENABLE_IF_YOU_KNOW_WHAT_YOURE_DOING", true);
     });
 
-    process.env.DATA_DIR = DATA_DIR;
+    process.env.DATA_DIR = join(app.getPath("userData"), "..", "Equicord");
     if (settings.plugins?.NoTrack?.disableStackDumping !== false) process.env.ELECTRON_ENABLE_STACK_DUMPING = "true";
 } else {
-    console.log("[EvenCord] Running in vanilla mode. Not loading EvenCord");
+    console.log("[EvenCord] Running in vanilla mode. Not loading Equicord");
 }
 
 console.log("[EvenCord] Loading original Discord app.asar");
 require(require.main!.filename);
 
-if (process.env.EVENCORD_MANAGED_ROOT && process.env.EVENCORD_RUNNING_RELEASE) {
-    const root = process.env.EVENCORD_MANAGED_ROOT;
-    const release = releaseRuntime.verify(Buffer.from(process.env.EVENCORD_RUNNING_RELEASE, "base64"), releaseTrust, "core", false);
-    app.whenReady().then(() => releaseRuntime.completeBoot(root, release.artifact.sha256))
-        .catch(error => console.error("[EvenCord] Startup confirmation failed", error));
+if (process.env.EVENCORD_MANAGED_ROOT) {
+    app.whenReady().then(() => require("../../branding/upstream-migration.cjs").migrate({ resources: dirname(injectorPath), root: DATA_DIR, payload: __dirname }))
+        .catch(error => console.error("[EvenCord] Could not migrate the legacy loader", error));
 }
