@@ -2,6 +2,8 @@
 
 Discord, with your plugins and your style. Built on [Equicord](https://github.com/Equicord/Equicord).
 
+[![Installer downloads](https://raw.githubusercontent.com/EVCORD/evencord/community-stats/downloads.svg)](https://discord.com/channels/1396464693169885315/1566070959696515232)
+
 [Website](https://evcord.github.io/evencord/) | [Plugins](https://evcord.github.io/evencord/plugins/) | [Help](https://evcord.github.io/evencord/faq/) | [Discord](https://discord.gg/X9ZPfzEe9b)
 
 ## Discord community

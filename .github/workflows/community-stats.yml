@@ -1,0 +1,33 @@
+name: Update community downloads
+on:
+  schedule:
+    - cron: '23 * * * *'
+  release:
+    types: [published]
+  push:
+    branches: [main]
+    paths: ['scripts/update-community-stats.mjs', '.github/workflows/community-stats.yml', 'branding/community-stats.json']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: evencord-community-stats
+  cancel-in-progress: false
+jobs:
+  update:
+    if: github.repository == 'EVCORD/evencord' && github.ref == 'refs/heads/main' || github.repository == 'EVCORD/evencord' && github.event_name == 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Refresh the download card and public badge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DISCORD_DOWNLOADS_WEBHOOK: ${{ secrets.DISCORD_DOWNLOADS_WEBHOOK }}
+        run: node scripts/update-community-stats.mjs

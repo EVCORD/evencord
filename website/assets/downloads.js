@@ -24,4 +24,5 @@ tabs.forEach(tab => tab.addEventListener("click", () => select(tab.dataset.platf
 document.querySelectorAll("[data-arch]").forEach(input => input.addEventListener("change", () => update(input.dataset.arch)));
 document.querySelector("#linux-session").addEventListener("change", () => update("linux"));
 const platform = navigator.userAgentData?.platform || navigator.platform;
-select(/mac/i.test(platform) ? "macos" : /linux/i.test(platform) ? "linux" : "windows");
+const requested = new URLSearchParams(location.search).get("os")?.toLowerCase();
+select(["windows", "macos", "linux"].includes(requested) ? requested : /mac/i.test(platform) ? "macos" : /linux/i.test(platform) ? "linux" : "windows");
