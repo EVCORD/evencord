@@ -80,6 +80,7 @@ async function downloadUpdate() {
     if (status.phase === "ready") return true;
     if (!pending) return false;
     const asset = pending;
+    const version = status.availableVersion;
     status.phase = "downloading";
     status.received = 0;
     status.error = "";
@@ -111,7 +112,7 @@ async function downloadUpdate() {
                 writeFileSync(temporary, data, { flush: true });
                 renameSync(temporary, destination);
             }
-            writeFileSync(pointerTemporary, JSON.stringify({ version: status.availableVersion, sha256: digest, size: asset.size }) + "\n", { flush: true });
+            writeFileSync(pointerTemporary, JSON.stringify({ version, sha256: digest, size: asset.size }) + "\n", { flush: true });
             renameSync(pointerTemporary, pointer);
         } else {
             writeFileSync(temporary, data, { flush: true });
