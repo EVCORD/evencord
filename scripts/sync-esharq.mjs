@@ -40,6 +40,13 @@ for (const entry of files) {
 for (const path of paths) {
     if (!staged.some(([file]) => file === path + "/index.ts" || file === path + "/index.tsx")) throw Error("Esharq plugin entry is missing: " + path);
 }
+for (const required of ["src/esharqplugins/_shared/constants.ts", "src/esharqplugins/_shared/modals.ts", "src/esharqplugins/_shared/icon.png", "src/esharqplugins/LICENSE"]) {
+    if (!staged.some(([path]) => path === required)) throw Error("Esharq shared file is missing: " + required);
+}
+if (JSON.stringify(previous?.plugins) === JSON.stringify(config.plugins) && staged.every(([path, bytes]) => existsSync(path) && readFileSync(path).equals(bytes))) {
+    console.log("No changes to the selected Esharq plugins.");
+    process.exit(0);
+}
 for (const name of new Set([...(previous?.plugins ?? []), ...config.plugins])) {
     if (!/^[a-zA-Z0-9][a-zA-Z0-9_.]*$/.test(name) || name.startsWith("_")) throw Error("Invalid Esharq plugin folder.");
     const root = resolve("src/esharqplugins");
