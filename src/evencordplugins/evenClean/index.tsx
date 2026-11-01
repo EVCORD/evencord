@@ -19,7 +19,7 @@ import { closeCleanup, openCleanup } from "./panel";
 export const settings = definePluginSettings({
     deleteDelay: {
         type: OptionType.SELECT,
-        description: "Minimum pause between requests while deleting. Discord can require a longer cooldown.",
+        description: "أقل فاصل بين الرسائل. يُضاف وقت عشوائي حتى نصف هذا الفاصل، مع احترام انتظار Discord بالكامل.",
         options: [
             { label: "1.5 seconds", value: 1500, default: true },
             { label: "3 seconds", value: 3000 },

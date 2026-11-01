@@ -45,7 +45,7 @@ Your settings are kept when repairing or uninstalling.
 
 ## Plugins
 
-Includes Vencord and Equicord plugins, plus EvenCord additions such as Reclip, Quoter Enhanced, BetterMicrophone and EvenClean. [Browse plugins](https://evcord.github.io/evencord/plugins/).
+Includes Vencord and Equicord plugins, EvenCord additions such as Reclip, Quoter Enhanced and EvenClean, and adapted [community plugins with original credits](docs/community-plugin-sources.md). [Browse plugins](https://evcord.github.io/evencord/plugins/).
 
 ## Build
 

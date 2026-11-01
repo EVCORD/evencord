@@ -10,11 +10,12 @@ import { ErrorCard } from "@components/ErrorCard";
 import { Flex } from "@components/Flex";
 import { Link } from "@components/Link";
 import { Paragraph } from "@components/Paragraph";
-import { Span } from "@components/Span";
 import type { UpdateStatus } from "@shared/UpdateStatus";
 import { Margins } from "@utils/margins";
 import { changes, checkForUpdates, getUpdateStatus, restartAfterUpdate, update } from "@utils/updater";
-import { React, useState } from "@webpack/common";
+import { Parser, React, useState } from "@webpack/common";
+
+import "./style.css";
 
 import { runWithDispatch } from "./runWithDispatch";
 
@@ -33,27 +34,17 @@ export function HashLink({ repo, hash, disabled = false }: { repo: string, hash:
 
 export function Changes({ updates, repo, repoPending }: CommonProps & { updates: typeof changes; }) {
     return (
-        <Card className={Margins.top16} style={{ padding: 0 }} defaultPadding={false}>
-            {updates.map(({ hash, author, message }, i) => (
-                <div
-                    key={hash}
-                    style={{
-                        padding: "12px 16px",
-                        borderBottom: i < updates.length - 1 ? "1px solid var(--border-subtle)" : undefined
-                    }}
-                >
-                    <Flex style={{ alignItems: "center", gap: 8 }}>
-                        <code style={{ color: "var(--text-link)" }}>
+        <Card className="vc-updater-changes" defaultPadding={false}>
+            {updates.map(({ hash, author, message }) => (
+                <article key={hash} className="vc-updater-change">
+                    <div className="vc-updater-change-meta">
+                        <code>
                             <HashLink {...{ repo, hash }} disabled={repoPending} />
                         </code>
-                        <Span size="sm" color="text-default">
-                            {message}
-                        </Span>
-                        <Span size="sm" color="text-subtle">
-                            by {author}
-                        </Span>
-                    </Flex>
-                </div>
+                        <span>{author}</span>
+                    </div>
+                    <div className="vc-updater-change-body" dir="auto">{Parser.parse(message)}</div>
+                </article>
             ))}
         </Card>
     );

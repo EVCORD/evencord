@@ -1,0 +1,1 @@
+Adapted from [viciouscal/Vencord PullUser](https://github.com/viciouscal/Vencord/tree/68a2cf7d4f18dc4b7ffbea51ad82b7c005784af3/src/plugins/pulluser). Original author: viciouscal. GPL-3.0-or-later. Inclusion in EvenCord does not imply exclusive authorship.

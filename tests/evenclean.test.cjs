@@ -169,12 +169,13 @@ test("review results now ends search without deleting and still needs exact conf
     assert.equal(f.cleaner.snapshot().deleted, 1);
 });
 
-test("a sparse filtered preview stops at 20 pages and uses an exclusive advancing cursor", async () => {
-    const f = fixture({ request: ({ query }) => ({ status: 200, body: { total_results: 1000, messages: [[{ ...f.results[0], id: (BigInt(query.max_id) - 1000n).toString() }]] } }) });
+test("a sparse filtered preview follows its cursor until search is exhausted", async () => {
+    let pages = 0;
+    const f = fixture({ request: ({ query }) => ++pages > 20 ? { status: 200, body: { total_results: 0, messages: [] } } : { status: 200, body: { total_results: 1000, messages: [[{ ...f.results[0], id: (BigInt(query.max_id) - 1000n).toString() }]] } } });
     await f.cleaner.preview([{ id: channel, label: "Synthetic channel" }], { ...filters, contains: "No matching content" });
-    assert.equal(f.calls.length, 20);
+    assert.equal(f.calls.length, 21);
     assert.equal(f.cleaner.snapshot().phase, "review");
-    assert.equal(f.cleaner.snapshot().limited, true);
+    assert.equal(f.cleaner.snapshot().limited, false);
     assert.equal(f.cleaner.snapshot().messages.length, 0);
     for (let index = 1; index < f.calls.length; index++) assert.equal(BigInt(f.calls[index - 1].query.max_id) - BigInt(f.calls[index].query.max_id), 1001n);
 });

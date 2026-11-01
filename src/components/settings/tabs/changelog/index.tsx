@@ -19,7 +19,7 @@ import { HashLink } from "@components/settings/tabs/updater/Components";
 import { Margins } from "@utils/margins";
 import { useAwaiter } from "@utils/react";
 import { getRepo, UpdateLogger } from "@utils/updater";
-import { Alerts, React, showToast } from "@webpack/common";
+import { Alerts, Parser, React, showToast } from "@webpack/common";
 
 import gitHash from "~git-hash";
 
@@ -73,8 +73,8 @@ function ChangelogCard({
                         by {entry.author}
                     </span>
                 </div>
-                <div className="vc-changelog-entry-message">
-                    {entry.message}
+                <div className="vc-changelog-entry-message" dir="auto">
+                    {Parser.parse(entry.message)}
                 </div>
             </div>
         </Card>

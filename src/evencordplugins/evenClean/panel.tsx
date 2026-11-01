@@ -22,7 +22,7 @@ import { canAccess, cleaner, CleanupIcon, settings } from ".";
 import { addCleanupChannels, channelLabel, channelTitle, CleanupScope, filterCleanupChannels, getCleanupChannels } from "./channels";
 import { CleanupFilters, CleanupTarget } from "./engine";
 
-const defaults: CleanupFilters = { contains: "", after: "", before: "", media: "all", includePinned: false, limit: 100 };
+const defaults: CleanupFilters = { contains: "", after: "", before: "", media: "all", includePinned: false, limit: 0 };
 let modalKey: string | undefined;
 
 function CleanupPanel(props: RenderModalProps) {
@@ -126,8 +126,9 @@ function CleanupPanel(props: RenderModalProps) {
                         </div>
                     </details>
                     <div className="vc-evenclean-search-footer">
-                        <label className="vc-evenclean-field">الحد الأقصى للدفعة<Select options={[100, 500, 1000, 5000].map(value => ({ label: `${value} رسالة`, value }))} isSelected={value => value === filters.limit} select={limit => edit({ limit })} serialize={String} isDisabled={locked} /></label>
-                        <Button disabled={locked || !selected.size || unavailableCount > 0} onClick={preview}>البحث عن رسائلي</Button>
+                        <label className="vc-evenclean-field">عدد الرسائل<Select options={[{ label: "كل الرسائل", value: "all" }, { label: "عدد محدد", value: "custom" }]} isSelected={value => value === (filters.limit === 0 ? "all" : "custom")} select={value => edit({ limit: value === "all" ? 0 : 100 })} serialize={String} isDisabled={locked} /></label>
+                        {filters.limit !== 0 && <label className="vc-evenclean-field">العدد<TextInput type="number" min={1} step={1} value={filters.limit > 0 ? String(filters.limit) : ""} onChange={value => edit({ limit: /^\d+$/.test(value) ? Number(value) : -1 })} disabled={locked} /></label>}
+                        <Button disabled={locked || !selected.size || unavailableCount > 0 || !Number.isSafeInteger(filters.limit) || filters.limit < 0} onClick={preview}>البحث عن رسائلي</Button>
                     </div>
                 </section>
                 <section ref={reviewRef} className="vc-evenclean-review" aria-label="مراجعة الرسائل">

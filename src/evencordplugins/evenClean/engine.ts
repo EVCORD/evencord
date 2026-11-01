@@ -41,7 +41,6 @@ const number = (value: unknown) => typeof value === "number" || typeof value ===
 const initial = (): CleanupState => ({ phase: "idle", mode: "preview", messages: [], targets: [], accountId: "", deleted: 0, missing: 0, skipped: 0, scanned: 0, targetIndex: 0, page: 0, requestPending: false, requestStartedAt: 0, limited: false, waitUntil: 0, detail: "Choose conversations, then click Find my messages. Nothing is deleted during the search.", error: "" });
 const stopped = new Error("Stopped by user.");
 const previewFinished = new Error("Review the results found so far.");
-const searchTimedOut = new Error("Search reached its 90-second limit. Review the results found so far, or narrow the selected conversations and dates before searching again.");
 const requestTimedOut = new Error("Discord did not answer within 30 seconds. This batch stopped. If the request is still pending, wait for it to finish before starting again. An in-flight deletion may still complete.");
 
 function header(response: Record<string, unknown>, name: string): string {
@@ -71,7 +70,6 @@ export function createCleaner(deps: Dependencies) {
     let planAt = 0;
     let forgetOnStop = false;
     let finishRequested = false;
-    let searchDeadline = 0;
     let pendingRequest: Promise<void> | undefined;
     let approvedFilters: CleanupFilters | undefined;
     const set = (update: Partial<CleanupState>) => { state = { ...state, ...update, requestPending: Boolean(pendingRequest) }; listeners.forEach(fn => fn()); };
@@ -82,8 +80,7 @@ export function createCleaner(deps: Dependencies) {
     async function gate() {
         active();
         if (finishRequested && state.mode === "preview") throw previewFinished;
-        while (paused) { const start = now(); await sleep(200); if (searchDeadline) searchDeadline += now() - start; active(); if (finishRequested && state.mode === "preview") throw previewFinished; }
-        if (state.mode === "preview" && searchDeadline && now() >= searchDeadline) throw searchTimedOut;
+        while (paused) { await sleep(200); active(); if (finishRequested && state.mode === "preview") throw previewFinished; }
     }
     async function send(method: "get" | "del", url: string, query: Record<string, string> | undefined) {
         let response: unknown, error: unknown;
@@ -107,7 +104,6 @@ export function createCleaner(deps: Dependencies) {
             while (!completed) {
                 active();
                 if (method === "get" && finishRequested) throw previewFinished;
-                if (method === "get" && searchDeadline && now() >= searchDeadline) throw searchTimedOut;
                 if (now() - started >= 30000) throw requestTimedOut;
                 await sleep(200);
             }
@@ -152,7 +148,7 @@ export function createCleaner(deps: Dependencies) {
             try { response = await send(method, url, query); }
             catch (error) {
                 active();
-                if (error === requestTimedOut || error === previewFinished || error === searchTimedOut) throw error;
+                if (error === requestTimedOut || error === previewFinished) throw error;
                 response = rejectedResponse(error);
             }
             active();
@@ -176,11 +172,11 @@ export function createCleaner(deps: Dependencies) {
     async function work(task: () => Promise<void>) {
         if (running) throw new Error("A cleanup operation is already running.");
         if (pendingRequest) throw new Error("The previous Discord request is still pending. No second request will be sent until it finishes. Restart Discord manually if the connection remains stuck.");
-        running = true; cancelled = paused = finishRequested = false; searchDeadline = 0;
+        running = true; cancelled = paused = finishRequested = false;
         try { await task(); }
         catch (error) {
             if (error === previewFinished) { set({ phase: "review", limited: true, waitUntil: 0, detail: "Search ended early. Review only the messages found so far, or start a fresh preview to search further." }); return; }
-            if (state.mode === "preview" && error !== stopped && (state.messages.length > 0 || error === searchTimedOut)) {
+            if (state.mode === "preview" && error !== stopped && state.messages.length > 0) {
                 set({ phase: "review", limited: true, waitUntil: 0, detail: error instanceof Error ? error.message : "Search could not finish. Review the messages found so far." }); return;
             }
             set({ phase: error === stopped ? "stopped" : "error", waitUntil: 0, error: error === stopped ? "" : error instanceof Error ? error.message : "Cleanup failed.", detail: error === stopped ? "Stopped. A request already in flight may have completed." : "No further requests will be sent." });
@@ -202,18 +198,18 @@ export function createCleaner(deps: Dependencies) {
                 const accountId = deps.currentUser();
                 if (!accountId || !validId(accountId)) throw new Error("Sign in normally before creating a preview.");
                 if (targets.length < 1 || targets.length > 100 || new Set(targets.map(t => t.id)).size !== targets.length || targets.some(t => !validId(t.id) || !deps.canAccess(t.id))) throw new Error("Select between 1 and 100 accessible channels.");
-                if (!Number.isInteger(filters.limit) || filters.limit < 1 || filters.limit > 5000) throw new Error("Preview batches must contain between 1 and 5000 messages.");
+                if (!Number.isSafeInteger(filters.limit) || filters.limit < 0) throw new Error("Choose all messages or enter a positive whole number.");
+                const limit = filters.limit || Infinity;
                 const after = filters.after ? Date.parse(filters.after) : 0;
                 const before = filters.before ? Date.parse(filters.before) : now();
                 if (!Number.isFinite(after) || !Number.isFinite(before) || before <= after) throw new Error("Choose a valid date range with the end after the start.");
                 const snowflake = (time: number) => ((BigInt(Math.max(1420070400000, Math.floor(time))) - 1420070400000n) << 22n).toString();
                 approvedFilters = { ...filters }; planAt = now();
-                searchDeadline = now() + 90000;
                 set({ ...initial(), phase: "previewing", mode: "preview", accountId, filters: { ...filters }, targets: targets.map(t => ({ ...t })), detail: "Searching only messages authored by your signed-in account." });
                 const found: CleanupMessage[] = [], seen = new Set<string>();
                 for (const [targetIndex, target] of targets.entries()) {
                     let cursor = snowflake(before), emptyPages = 0;
-                    for (let page = 0; page <= 20; page++) {
+                    for (let page = 0; ; page++) {
                         await gate();
                         if (!deps.canAccess(target.id)) throw new Error("Channel permissions changed. Start a new preview after checking access.");
                         const query: Record<string, string> = { author_id: accountId, sort_by: "timestamp", sort_order: "desc", offset: "0", max_id: cursor };
@@ -222,7 +218,6 @@ export function createCleaner(deps: Dependencies) {
                         if (after) query.min_id = snowflake(after);
                         if (target.guildId) query.channel_id = target.id;
                         const url = target.guildId ? `/guilds/${target.guildId}/messages/search` : `/channels/${target.id}/messages/search`;
-                        if (state.scanned >= 20) { set({ limited: true }); break; }
                         set({ detail: `Searching ${target.label}.`, scanned: state.scanned + 1, targetIndex: targetIndex + 1, page: page + 1 });
                         const response = await request("get", url, query, 3000);
                         const body = record(response.body);
@@ -254,19 +249,19 @@ export function createCleaner(deps: Dependencies) {
                             const time = Number((BigInt(raw.id) >> 22n) + 1420070400000n);
                             if (time < after || time >= before) continue;
                             found.push({ id: raw.id, channelId: target.id, authorId: accountId, content: content.slice(0, 4000), timestamp: new Date(time).toISOString(), attachments, pinned: raw.pinned === true });
-                            if (found.length >= filters.limit) break;
+                            if (found.length >= limit) break;
                         }
                         set({ messages: [...found] });
-                        if (found.length >= filters.limit) { set({ limited: true }); break; }
+                        if (found.length >= limit) { set({ limited: true }); break; }
                         if (Number.isFinite(number(body.total_results)) && number(body.total_results) <= hits.length) break;
                         if (nextCursor === BigInt(cursor) && hits.every(m => m.id === cursor && seen.has(cursor))) break;
                         if (nextCursor >= BigInt(cursor)) throw new Error("Search stopped advancing. Cleanup stopped instead of repeating requests.");
                         cursor = (nextCursor - 1n).toString();
                     }
-                    if (found.length >= filters.limit || state.limited) break;
+                    if (found.length >= limit || state.limited) break;
                 }
                 await gate();
-                set({ phase: "review", detail: state.limited ? "Preview stopped at its message or 20-page limit. Review the matches found so far; use a narrower date range to search further." : found.length ? "Review this fixed batch, then confirm below. Nothing has been deleted yet." : "No matching own messages were found in the selected conversations and filters. Nothing was deleted.", waitUntil: 0 });
+                set({ phase: "review", detail: state.limited ? "The selected message count was reached. Review the matches found so far." : found.length ? "Review this fixed batch, then confirm below. Nothing has been deleted yet." : "No matching own messages were found in the selected conversations and filters. Nothing was deleted.", waitUntil: 0 });
             });
         },
         remove(confirmation: string, acknowledged: boolean, delay: number) {
@@ -284,7 +279,8 @@ export function createCleaner(deps: Dependencies) {
                     await gate();
                     if (message.authorId !== state.accountId || !deps.canAccess(message.channelId)) throw new Error("Message ownership or channel access no longer matches the approved preview.");
                     if (archivedChannels.has(message.channelId)) { set({ skipped: state.skipped + 1 }); continue; }
-                    const response = await request("del", `/channels/${message.channelId}/messages/${message.id}`, undefined, deleteDelay);
+                    const spacing = Math.ceil(deleteDelay * (1 + Math.random() * 0.5));
+                    const response = await request("del", `/channels/${message.channelId}/messages/${message.id}`, undefined, spacing);
                     if (response.archived) { archivedChannels.add(message.channelId); set({ skipped: state.skipped + 1, detail: "Skipped an archived thread without modifying it or retrying its other messages." }); }
                     else if (response.missing) set({ missing: state.missing + 1, detail: "A message was already missing; it was not retried." });
                     else { set({ deleted: state.deleted + 1, detail: "Deleted a confirmed own message." }); successfulDeletes++; }

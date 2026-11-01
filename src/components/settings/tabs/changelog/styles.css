@@ -34,6 +34,7 @@
 .vc-changelog-entry-header {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.5em;
     margin-bottom: 0.25em;
 }
@@ -53,7 +54,9 @@
 .vc-changelog-entry-message {
     color: var(--text-default);
     font-size: 0.95em;
-    line-height: 1.4;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .vc-changelog-entry.required .vc-changelog-entry-hash {
