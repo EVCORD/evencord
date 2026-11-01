@@ -44,10 +44,10 @@ function pull() {
 
 export default definePlugin({
     name: "PullUser",
-    description: "نقل أعضاء تختارهم معك بين الرومات الصوتية، عند امتلاك صلاحيات النقل. مبنية على عمل viciouscal.",
+    description: "ينقل أعضاء تختارهم معك بين الرومات الصوتية ضمن صلاحياتك.",
     authors: [EvenCordAuthors.viciouscal],
     tags: ["Voice"],
-    settingsAboutComponent: () => <Paragraph dir="rtl">أضف العضو من قائمته بزر الفأرة الأيمن. يلزم وجوده معك في نفس السيرفر وامتلاك صلاحيات النقل. من مجموعة المجتمع، والمصدر الأصلي: <Link href="https://github.com/viciouscal/Vencord/tree/main/src/plugins/pulluser">viciouscal</Link>.</Paragraph>,
+    settingsAboutComponent: () => <Paragraph dir="rtl">أضف العضو من قائمته بزر الفأرة الأيمن. المصدر: <Link href="https://github.com/viciouscal/Vencord/tree/main/src/plugins/pulluser">viciouscal</Link>.</Paragraph>,
     contextMenus: {
         "user-context": (children, { user }) => {
             if (!user || user.id === UserStore.getCurrentUser()?.id) return;

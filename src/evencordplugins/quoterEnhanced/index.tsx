@@ -24,7 +24,7 @@ const settings = definePluginSettings({
         type: OptionType.SELECT,
         description: "Font for the quote text",
         options: [
-            { label: "M PLUS Rounded 1c (Valenced default)", value: QuoteFont.MPlusRounded, default: true },
+            { label: "M PLUS Rounded 1c", value: QuoteFont.MPlusRounded, default: true },
             { label: "Open Sans", value: QuoteFont.OpenSans },
             { label: "Momo Signature", value: QuoteFont.MomoSignature },
             { label: "Lora", value: QuoteFont.Lora },
@@ -33,7 +33,7 @@ const settings = definePluginSettings({
             { label: "Tajawal (Arabic)", value: QuoteFont.Tajawal }
         ]
     },
-    quotationMarks: { type: OptionType.BOOLEAN, description: "Add quotation marks around text like Valenced", default: true },
+    quotationMarks: { type: OptionType.BOOLEAN, description: "Add quotation marks around text.", default: true },
     allowMedia: { type: OptionType.BOOLEAN, description: "Include images, videos and stickers in quotes", default: true },
     watermark: { type: OptionType.STRING, description: "Custom watermark text (max 32 characters)", default: "Made with EvenCord" },
     grayscale: { type: OptionType.BOOLEAN, description: "Default grayscale state", default: true, hidden: true },
@@ -46,14 +46,12 @@ migratePluginSettings("Quoter Enhanced", "Quoter");
 export default definePlugin({
     name: "Quoter Enhanced",
     searchTerms: ["Quoter", "Valenced", "quotes", "GIF"],
-    description: "اقتباسات مصورة بخطوط عربية ودعم الوسائط المتحركة. مبنية على إضافة Quoter الأصلية في Equicord، بتصميم مستلهم من Valenced Quoter.",
+    description: "اقتباسات مصورة تدعم الخطوط العربية والصور والوسائط المتحركة.",
     tags: ["Chat"],
     authors: [Devs.Samwich, Devs.thororen, EquicordDevs.neoarz, Devs.prism],
     settings,
     settingsAboutComponent: () => <section dir="rtl" lang="ar">
-        <Paragraph>اضغط بزر الفأرة الأيمن على رسالة واختر Quote. راجع الاقتباس في المعاينة ثم اضغط Send لإرساله في المحادثة الحالية.</Paragraph>
-        <Paragraph>اختر خط Cairo أو Tajawal للنص العربي. يمكنك تضمين الصور والملصقات، وإظهار علامات الاقتباس، وتغيير اللون الرمادي والعلامة المائية من المعاينة. نص العلامة المائية يدعم حتى 32 حرفاً.</Paragraph>
-        <Paragraph>يمكن الحفاظ على حركة الوسائط المدعومة عند تفعيل خيار الحركة؛ يعتمد ذلك على توفر الملف وإمكانية تحميله ومعالجته. الإضافة مبنية على عمل المطورين المذكورين أعلاه، مع تحسينات EvenCord.</Paragraph>
+        <Paragraph>من قائمة الرسالة اختر Quote، راجع المعاينة ثم اضغط Send. اختر Cairo أو Tajawal للنص العربي.</Paragraph>
         <Paragraph>المصدر الأصلي: <Link href="https://github.com/Equicord/Equicord/tree/main/src/equicordplugins/quoter">Quoter في Equicord</Link>. مرجع التصميم والوسائط: <Link href="https://github.com/Accentaro/Valenced-Plugins/tree/main/plugins/quoter">Valenced Quoter</Link>.</Paragraph>
     </section>,
     async start() { await ensureFontLoaded(); },
@@ -170,7 +168,7 @@ function QuoteModal({ message, ...props }: RenderModalProps & { message: Message
         <Modal
             {...props}
             size="md"
-            title="Quoter Enhanced | الاقتباس المطوّر"
+            title="Quoter Enhanced"
             actions={[
                 { text: "Export", variant: "primary", onClick: handleExport },
                 { text: "Send", variant: "primary", onClick: handleSendInChat }
@@ -180,7 +178,7 @@ function QuoteModal({ message, ...props }: RenderModalProps & { message: Message
             {rendering && <div style={{ padding: "10px 0", color: "#aaa" }}>Rendering quote / animated media…</div>}
             {error && <div style={{ color: "#f38ba8", padding: "8px 0", whiteSpace: "pre-wrap" }}>Quote failed: {error}</div>}
             {warnings.map(warning => <div key={warning} style={{ color: "#f9e2af", padding: "8px 0", whiteSpace: "pre-wrap" }}>{warning}</div>)}
-            <FormSwitch title="Quotation marks (Valenced style)" value={quotationMarks} onChange={setQuotationMarks} />
+            <FormSwitch title="Quotation marks" value={quotationMarks} onChange={setQuotationMarks} />
             <FormSwitch title="Include media and stickers" value={allowMedia} onChange={setAllowMedia} />
             <FormSwitch title="Grayscale" value={gray} onChange={setGray} />
             <FormSwitch title="Preserve animation (GIF)" value={saveAsGif} onChange={setSaveAsGif} description="Preserve animation from GIF, APNG, WebP and supported video media" />

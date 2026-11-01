@@ -57,12 +57,12 @@ const Control = ErrorBoundary.wrap(() => {
 
 export default definePlugin({
     name: "FakeDeafen",
-    description: "اختيار حالة الميكروفون والسماعات والكاميرا المعروضة للآخرين. مقتبسة من desu وviciouscal.",
+    description: "يخصص حالة الميكروفون والسماعات والكاميرا المعروضة للآخرين.",
     authors: [EvenCordAuthors.desu, EvenCordAuthors.viciouscal],
     dependencies: ["UserAreaAPI"],
     tags: ["Voice"],
     settings,
-    settingsAboutComponent: () => <Paragraph dir="rtl">من مجموعة إضافات المجتمع، وليست عملاً حصرياً لـEvenCord. المصدر الأصلي: <Link href="https://github.com/viciouscal/Vencord/tree/main/src/plugins/fakeDeafen">desu وviciouscal</Link>.</Paragraph>,
+    settingsAboutComponent: () => <Paragraph dir="rtl">المصدر: <Link href="https://github.com/viciouscal/Vencord/tree/main/src/plugins/fakeDeafen">desu وviciouscal</Link>.</Paragraph>,
     patches: [{
         find: "}voiceStateUpdate(",
         replacement: {

@@ -162,7 +162,7 @@ migratePluginSettings("Reclip", "bossclip");
 
 export default definePlugin({
     name: "Reclip",
-    description: "احفظ آخر لحظات نافذة Discord على Windows بضغطة، مع اختيار مدة المقطع والجودة وصوت النظام والميكروفون ومجلد الحفظ.",
+    description: "يحفظ آخر لحظات نافذة Discord بالصوت على Windows.",
     authors: [],
     tags: ["Media", "Utility"],
     searchTerms: ["bossclip", "replay", "recorder", "clips"],

@@ -1,4 +1,4 @@
-# حذف الرسائل | EvenClean
+# EvenClean
 
 An EvenCord message-deletion plugin for previewing and removing your own messages. Disabled by default. It never starts a job when Discord launches.
 

@@ -110,7 +110,7 @@ function CleanupPanel(props: RenderModalProps) {
     const ready = state.phase === "review" && count > 0 && !locked;
     const step = state.mode === "delete" ? 2 : state.phase === "idle" ? 0 : 1;
     const completed = state.deleted + state.missing + state.skipped;
-    return <Modal {...props} title="حذف الرسائل" subtitle="اختر المحادثات وراجع رسائلك قبل الحذف." size="xl">
+    return <Modal {...props} title="EvenClean" subtitle="راجع رسائلك قبل الحذف." size="xl">
         <div className="vc-evenclean" dir="rtl" lang="ar" style={{ "--vc-evenclean-accent": Project.colors.primary } as React.CSSProperties}>
             <ol className="vc-evenclean-steps" aria-label="مراحل حذف الرسائل">
                 {["اختيار المحادثات", "مراجعة الرسائل", "الحذف"].map((label, index) => <li key={label} aria-current={step === index ? "step" : undefined} data-complete={step > index}>

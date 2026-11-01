@@ -48,24 +48,23 @@ export function CleanupIcon(props: SVGProps<SVGSVGElement>) {
 
 function CleanupButton() {
     const state = React.useSyncExternalStore(cleaner.subscribe, cleaner.snapshot);
-    return <HeaderBarButton icon={CleanupIcon} iconSize={20} aria-label="حذف الرسائل" tooltip={cleaner.busy() ? `حذف الرسائل: ${state.phase}` : "حذف الرسائل | EvenClean"} onClick={openCleanup} />;
+    return <HeaderBarButton icon={CleanupIcon} iconSize={20} aria-label="EvenClean" tooltip={cleaner.busy() ? `EvenClean: ${state.phase}` : "EvenClean"} onClick={openCleanup} />;
 }
 
 function CleanupSettings() {
     const { enabled } = useSettings(["plugins.EvenClean.enabled"]).plugins.EvenClean;
     return <>
         <section dir="rtl" lang="ar">
-            <Paragraph>احذف رسائلك من الخاص أو قنوات تختارها، مع البحث بالنص والتاريخ والمرفقات والروابط. الرسائل المثبتة مستثناة افتراضياً.</Paragraph>
-            <Paragraph>حدد المحادثات، اضغط البحث عن رسائلي، ثم راجع النتائج وأكد حذف الدفعة. يمكنك إيقاف العملية واستئنافها من النافذة.</Paragraph>
+            <Paragraph>حدد المحادثات والفلاتر، ابحث عن رسائلك ثم راجع النتائج وأكد الحذف.</Paragraph>
         </section>
-        <Button disabled={!enabled} onClick={openCleanup}>حذف الرسائل</Button>
+        <Button disabled={!enabled} onClick={openCleanup}>Open EvenClean</Button>
     </>;
 }
 
 export default definePlugin({
     name: "EvenClean",
     searchTerms: ["حذف الرسائل", "Message deletion", "Delete messages"],
-    description: "حذف الرسائل: ابحث عن رسائلك وراجعها ثم أكد الحذف بعلامة صح، مع فلاتر وإيقاف مؤقت واستئناف.",
+    description: "مراجعة رسائلك وحذفها، مع فلاتر وإيقاف واستئناف.",
     authors: [EvenCordAuthors.EvenCord],
     enabledByDefault: false,
     tags: ["Chat", "Utility"],
@@ -73,7 +72,7 @@ export default definePlugin({
     settings,
     settingsAboutComponent: CleanupSettings,
     headerBarButton: { icon: CleanupIcon, render: CleanupButton, location: "headerbar" },
-    toolboxActions: { "حذف الرسائل": openCleanup },
+    toolboxActions: { "EvenClean": openCleanup },
     flux: { LOGOUT: () => { cleaner.dispose(); closeCleanup(); } },
     stop: () => { cleaner.dispose(); closeCleanup(); }
 });

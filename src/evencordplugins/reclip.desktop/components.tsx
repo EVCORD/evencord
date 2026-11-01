@@ -42,7 +42,7 @@ export function Controls({ capture, toggle, save, openFolder, showLastClip }: Co
     return <section className="vc-reclip-panel" aria-label="Reclip recorder" style={{ "--reclip-accent": Project.colors.primary } as CSSProperties}>
         <div className="vc-reclip-heading">
             <ClipIcon recording={capture.active} busy={Boolean(capture.busy)} />
-            <div className="vc-reclip-brand"><strong>Reclip</strong><span>Keep the moment.</span></div>
+            <div className="vc-reclip-brand"><strong>Reclip</strong></div>
             <span className="vc-reclip-status" data-recording={capture.active}>{capture.busy || (capture.active ? "Recording" : "Ready to record")}</span>
         </div>
         <div className="vc-reclip-timeline">
