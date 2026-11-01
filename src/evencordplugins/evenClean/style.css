@@ -54,7 +54,6 @@
     display: grid;
     grid-template-columns: minmax(250px, 0.85fr) minmax(0, 1.25fr);
     margin-top: 16px;
-    overflow: hidden;
     border: 1px solid var(--border-subtle);
     border-radius: 12px;
 }
@@ -131,6 +130,19 @@
     gap: 8px;
     font-size: 13px;
     font-weight: 500;
+}
+
+.vc-evenclean-choice {
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
+}
+
+.vc-evenclean-choice > span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .vc-evenclean-dates {

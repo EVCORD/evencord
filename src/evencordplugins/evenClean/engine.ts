@@ -41,7 +41,21 @@ const number = (value: unknown) => typeof value === "number" || typeof value ===
 const initial = (): CleanupState => ({ phase: "idle", mode: "preview", messages: [], targets: [], accountId: "", deleted: 0, missing: 0, skipped: 0, scanned: 0, targetIndex: 0, page: 0, requestPending: false, requestStartedAt: 0, limited: false, waitUntil: 0, detail: "Choose conversations, then click Find my messages. Nothing is deleted during the search.", error: "" });
 const stopped = new Error("Stopped by user.");
 const previewFinished = new Error("Review the results found so far.");
+const searchUnavailable = new Error("Discord search is not ready. Reading accessible channel history instead.");
 const requestTimedOut = new Error("Discord did not answer within 30 seconds. This batch stopped. If the request is still pending, wait for it to finish before starting again. An in-flight deletion may still complete.");
+
+function dateBoundary(value: string, end: boolean, fallback: number) {
+    if (!value) return fallback;
+    const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!parts) return /^\d{4}-\d{2}-\d{2}T/.test(value) ? Date.parse(value) : NaN;
+    const year = Number(parts[1]), month = Number(parts[2]) - 1, day = Number(parts[3]);
+    const date = new Date(0);
+    date.setFullYear(year, month, day);
+    date.setHours(0, 0, 0, 0);
+    if (date.getFullYear() !== year || date.getMonth() !== month || date.getDate() !== day) return NaN;
+    if (end) { date.setDate(date.getDate() + 1); date.setHours(0, 0, 0, 0); }
+    return date.getTime();
+}
 
 function header(response: Record<string, unknown>, name: string): string {
     const { headers } = response;
@@ -158,6 +172,7 @@ export function createCleaner(deps: Dependencies) {
             if (status === 401) throw new Error("Discord rejected this session. Cleanup stopped; sign in normally before trying again.");
             if (status === 403) throw new Error("Access was denied. Cleanup stopped without retrying the forbidden request.");
             if (status === 404 && method === "del") return { ...response, missing: true };
+            if (method === "get" && url.endsWith("/messages/search") && ([400, 404].includes(status) || status === 202 && attempt >= 1)) throw searchUnavailable;
             if (status === 400 && method === "del" && record(response.body).code === 50083) return { ...response, archived: true };
             const retry = status === 429 || status === 202 || status === 0 || status >= 500;
             if (!retry) throw new Error(`Discord returned HTTP ${Number.isFinite(status) ? status : "unknown"}${typeof record(response.body).message === "string" ? `: ${String(record(response.body).message).slice(0, 200)}` : ""}. Cleanup stopped.`);
@@ -200,36 +215,42 @@ export function createCleaner(deps: Dependencies) {
                 if (targets.length < 1 || targets.length > 100 || new Set(targets.map(t => t.id)).size !== targets.length || targets.some(t => !validId(t.id) || !deps.canAccess(t.id))) throw new Error("Select between 1 and 100 accessible channels.");
                 if (!Number.isSafeInteger(filters.limit) || filters.limit < 0) throw new Error("Choose all messages or enter a positive whole number.");
                 const limit = filters.limit || Infinity;
-                const after = filters.after ? Date.parse(filters.after) : 0;
-                const before = filters.before ? Date.parse(filters.before) : now();
-                if (!Number.isFinite(after) || !Number.isFinite(before) || before <= after) throw new Error("Choose a valid date range with the end after the start.");
+                const after = dateBoundary(filters.after, false, 0);
+                const before = Math.min(dateBoundary(filters.before, true, now()), now());
+                if (!Number.isFinite(after) || !Number.isFinite(before) || before <= after) throw new Error("اختر نطاق تواريخ صحيحاً؛ تاريخ النهاية يجب ألا يسبق البداية.");
                 const snowflake = (time: number) => ((BigInt(Math.max(1420070400000, Math.floor(time))) - 1420070400000n) << 22n).toString();
                 approvedFilters = { ...filters }; planAt = now();
                 set({ ...initial(), phase: "previewing", mode: "preview", accountId, filters: { ...filters }, targets: targets.map(t => ({ ...t })), detail: "Searching only messages authored by your signed-in account." });
                 const found: CleanupMessage[] = [], seen = new Set<string>();
                 for (const [targetIndex, target] of targets.entries()) {
-                    let cursor = snowflake(before), emptyPages = 0;
+                    let cursor = snowflake(before), emptyPages = 0, history = false;
+                    const readHistory = () => { history = true; cursor = snowflake(before); emptyPages = 0; set({ detail: `Reading accessible message history in ${target.label}.` }); };
                     for (let page = 0; ; page++) {
                         await gate();
                         if (!deps.canAccess(target.id)) throw new Error("Channel permissions changed. Start a new preview after checking access.");
-                        const query: Record<string, string> = { author_id: accountId, sort_by: "timestamp", sort_order: "desc", offset: "0", max_id: cursor };
-                        if (filters.contains) query.content = filters.contains;
-                        if (filters.media !== "all") query.has = filters.media === "attachments" ? "file" : "link";
-                        if (after) query.min_id = snowflake(after);
-                        if (target.guildId) query.channel_id = target.id;
-                        const url = target.guildId ? `/guilds/${target.guildId}/messages/search` : `/channels/${target.id}/messages/search`;
+                        const query: Record<string, string> = history ? { limit: "100", before: cursor } : { author_id: accountId, sort_by: "timestamp", sort_order: "desc", offset: "0", max_id: cursor };
+                        if (!history && after) query.min_id = (BigInt(snowflake(after)) > 0n ? BigInt(snowflake(after)) - 1n : 0n).toString();
+                        if (!history && target.guildId) query.channel_id = target.id;
+                        const url = history ? `/channels/${target.id}/messages` : target.guildId ? `/guilds/${target.guildId}/messages/search` : `/channels/${target.id}/messages/search`;
                         set({ detail: `Searching ${target.label}.`, scanned: state.scanned + 1, targetIndex: targetIndex + 1, page: page + 1 });
-                        const response = await request("get", url, query, 3000);
+                        let response: Record<string, unknown>;
+                        try { response = await request("get", url, query, 3000); }
+                        catch (error) { if (!history && error === searchUnavailable) { readHistory(); continue; } throw error; }
                         const body = record(response.body);
-                        if (!Array.isArray(body.messages)) throw new Error("Discord returned an unsupported search response. Nothing was deleted.");
-                        const hits = body.messages.flatMap(group => {
+                        const groups = history ? response.body : body.messages;
+                        if (!Array.isArray(groups)) {
+                            if (!history) { readHistory(); continue; }
+                            throw new Error("تعذر قراءة سجل المحادثة من Discord. لم يبدأ الحذف.");
+                        }
+                        const hits = history ? groups.map(record) : groups.flatMap(group => {
                             const messages = (Array.isArray(group) ? group : [group]).map(record);
                             return messages.some(m => typeof m.hit === "boolean") ? messages.filter(m => m.hit === true) : messages;
                         });
                         if (!hits.length) {
-                            if (body.messages.length) throw new Error("Discord returned search groups without usable matches. Nothing was deleted. Try searching this conversation in Discord first.");
-                            if (number(body.total_results) > 0 && emptyPages++ < 2) continue;
-                            if (number(body.total_results) > 0) throw new Error("Search results are still updating. Wait and create a new preview.");
+                            if (!history && (groups.length || number(body.total_results) > 0)) {
+                                if (!groups.length && emptyPages++ < 2) continue;
+                                readHistory(); continue;
+                            }
                             break;
                         }
                         emptyPages = 0;
@@ -245,7 +266,7 @@ export function createCleaner(deps: Dependencies) {
                             const attachments = Array.isArray(raw.attachments) ? raw.attachments.length : 0;
                             if (filters.contains && !content.toLocaleLowerCase().includes(filters.contains.toLocaleLowerCase())) continue;
                             if (filters.media === "attachments" && !attachments) continue;
-                            if (filters.media === "links" && !/https?:\/\//i.test(content)) continue;
+                            if (filters.media === "links" && !/https?:\/\//i.test(content) && !(Array.isArray(raw.embeds) && raw.embeds.some(embed => typeof record(embed).url === "string" && /^https?:\/\//i.test(String(record(embed).url))))) continue;
                             const time = Number((BigInt(raw.id) >> 22n) + 1420070400000n);
                             if (time < after || time >= before) continue;
                             found.push({ id: raw.id, channelId: target.id, authorId: accountId, content: content.slice(0, 4000), timestamp: new Date(time).toISOString(), attachments, pinned: raw.pinned === true });
@@ -253,10 +274,12 @@ export function createCleaner(deps: Dependencies) {
                         }
                         set({ messages: [...found] });
                         if (found.length >= limit) { set({ limited: true }); break; }
-                        if (Number.isFinite(number(body.total_results)) && number(body.total_results) <= hits.length) break;
-                        if (nextCursor === BigInt(cursor) && hits.every(m => m.id === cursor && seen.has(cursor))) break;
-                        if (nextCursor >= BigInt(cursor)) throw new Error("Search stopped advancing. Cleanup stopped instead of repeating requests.");
-                        cursor = (nextCursor - 1n).toString();
+                        if (nextCursor >= BigInt(cursor)) {
+                            if (!history) { readHistory(); continue; }
+                            throw new Error("توقف تقدم سجل المحادثة. راجع النتائج المتاحة أو أعد البحث.");
+                        }
+                        if (nextCursor <= BigInt(snowflake(after))) break;
+                        cursor = nextCursor.toString();
                     }
                     if (found.length >= limit || state.limited) break;
                 }

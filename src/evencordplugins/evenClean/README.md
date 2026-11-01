@@ -10,6 +10,10 @@ An EvenCord message-deletion plugin for previewing and removing your own message
 4. Check the permanent-deletion confirmation box, then click حذف showing the reviewed message count. Only the fixed list of your own message IDs in that preview can be removed.
 5. Pause, resume or stop from the panel. Requests have a 30-second deadline. After a search timeout, Stop or Review, an unresolved read no longer locks the panel. The native client cannot recall that read; its late response cannot modify the abandoned preview, but any returned cooldown remains respected. An unresolved deletion continues to block new work until it settles, because an already-issued deletion may still complete. Closing the panel leaves an active job running; reopen it from the toolbar. Disabling the plugin or logging out stops new work and forgets the in-memory preview.
 
+Date fields accept dates without a time. A selected day starts at local midnight; the end date includes the whole day, including across daylight-saving changes. A same-day range is valid. Use Load more to review messages beyond the first 100 displayed entries.
+
+Selectors use Discord's native context menus. Search does not trust approximate result totals to terminate pagination. Text and media refinements run locally. If the search index is unavailable, malformed or non-advancing, the plugin falls back to accessible channel history, continuing to check ownership, permissions and dates. Authentication and permission failures still stop the operation; they do not trigger a fallback. History reads may take longer in busy conversations.
+
 Choose a 1.5, 3 or 5-second minimum deletion pace in the plugin settings. Each deletion adds random spacing of up to 50% above that minimum. Search pages have an additional three-second local pause. Discord-requested cooldowns take precedence over random spacing, including longer waits and global limits. Pacing does not guarantee account safety.
 
 ## Rate limits and failures
@@ -35,6 +39,8 @@ Discord's [rate-limit documentation](https://docs.discord.com/developers/topics/
 ## References and attribution
 
 The functional references are [Nanda070/rmcord](https://github.com/Nanda070/rmcord/tree/2e824c4a3a3f7ce5ab6b781fbf33373eccefcdf0), whose reviewed source carries GPL-3.0-or-later notices, and the published feature descriptions of [Discrub](https://github.com/pratherbytecraft/discrub). EvenClean's reviewed-batch engine and native-modal interface are independently implemented for EvenCord.
+
+The pagination and indexing behavior was also compared with [Undiscord](https://github.com/victornpb/undiscord) and [Discrub's documented browser-extension search behavior](https://github.com/pratherbytecraft/discrub/blob/main/README.md). Discrub source is not included.
 
 Discrub's current [license](https://github.com/pratherbytecraft/discrub/blob/f8bb8ed5f9732eb19ea67779cb13e0c385b4e26d/LICENSE) reserves reuse and modification rights. No Discrub source, assets or branding are copied or included. No affiliation or endorsement is implied. EvenClean's source uses the project's GPL-3.0-or-later license and preserves upstream framework notices.
 

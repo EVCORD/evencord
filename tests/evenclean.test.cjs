@@ -56,6 +56,7 @@ test("an inclusive final search boundary does not duplicate or stall the preview
     let pages=0, first;
     const f=fixture({request:({method,query})=>{
         if(method==='get') {
+            if (!query.max_id) return {status:200,body:[]};
             if (pages++ === 0) return {status:200,body:{total_results:100,messages:f.results.map(message=>[message])}};
             return {status:200,body:{total_results:1,messages:[[first]]}};
         }
@@ -125,12 +126,12 @@ test("stop releases the UI during a pending request and retains a late 429 coold
     assert.ok(times.length > 0, "A late 429 must retain its cooldown for the next job");
 });
 
-test("one complete search page finishes without a redundant empty-page request", async () => {
+test("search verifies exhaustion instead of trusting the reported result total", async () => {
     const f = fixture();
     await f.preview();
-    assert.equal(f.calls.length, 1);
+    assert.equal(f.calls.length, 2);
     assert.equal(f.cleaner.snapshot().phase, "review");
-    assert.equal(f.cleaner.snapshot().page, 1);
+    assert.equal(f.cleaner.snapshot().page, 2);
     assert.equal(f.cleaner.snapshot().targetIndex, 1);
 });
 
@@ -150,7 +151,7 @@ test("indexing waits honor retry_after before a bounded retry", async () => {
     } });
     await f.preview();
     assert.equal(f.cleaner.snapshot().phase, "review");
-    assert.equal(f.calls.length, 2);
+    assert.equal(f.calls.length, 3);
     assert.ok(f.calls[1].time - f.calls[0].time >= 12750);
 });
 
@@ -177,7 +178,7 @@ test("a sparse filtered preview follows its cursor until search is exhausted", a
     assert.equal(f.cleaner.snapshot().phase, "review");
     assert.equal(f.cleaner.snapshot().limited, false);
     assert.equal(f.cleaner.snapshot().messages.length, 0);
-    for (let index = 1; index < f.calls.length; index++) assert.equal(BigInt(f.calls[index - 1].query.max_id) - BigInt(f.calls[index].query.max_id), 1001n);
+    for (let index = 1; index < f.calls.length; index++) assert.equal(BigInt(f.calls[index - 1].query.max_id) - BigInt(f.calls[index].query.max_id), 1000n);
 });
 
 test("an unanswered deletion stops without retrying or reporting success", async () => {

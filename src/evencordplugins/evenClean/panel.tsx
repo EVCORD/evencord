@@ -16,7 +16,7 @@ import { Paragraph } from "@components/Paragraph";
 import { Project } from "@shared/project";
 import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, Checkbox, closeModal, GuildStore, Modal, openModal, PermissionStore, React, SearchableSelect, Select, SelectedChannelStore, SelectedGuildStore, showToast, TextInput, useEffect, UserStore, useState, useStateFromStores } from "@webpack/common";
+import { ChannelStore, Checkbox, closeModal, ContextMenuApi, GuildStore, Menu, Modal, openModal, PermissionStore, React, SelectedChannelStore, SelectedGuildStore, showToast, TextInput, useEffect, UserStore, useState, useStateFromStores } from "@webpack/common";
 
 import { canAccess, cleaner, CleanupIcon, settings } from ".";
 import { addCleanupChannels, channelLabel, channelTitle, CleanupScope, filterCleanupChannels, getCleanupChannels } from "./channels";
@@ -25,17 +25,50 @@ import { CleanupFilters, CleanupTarget } from "./engine";
 const defaults: CleanupFilters = { contains: "", after: "", before: "", media: "all", includePinned: false, limit: 0 };
 let modalKey: string | undefined;
 
+interface ChoiceProps<T extends string> {
+    id: string;
+    label: string;
+    value: T;
+    options: readonly { label: string; value: T; }[];
+    disabled: boolean;
+    searchable?: boolean;
+    onChange(value: T): void;
+}
+
+function ChoiceMenu<T extends string>({ id, label, value, options, searchable, onChange }: ChoiceProps<T>) {
+    const [query, setQuery] = useState("");
+    const filtered = options.filter(option => option.label.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
+    return <Menu.Menu navId={id} aria-label={label} onClose={ContextMenuApi.closeContextMenu}>
+        {searchable && <Menu.MenuControlItem id={`${id}-search`} control={(props, ref) => <Menu.MenuSearchControl {...props} ref={ref} query={query} onChange={setQuery} placeholder="بحث" autoFocus />} />}
+        {filtered.map(option => <Menu.MenuRadioItem key={option.value} id={`${id}-${option.value}`} group={id} label={option.label} checked={value === option.value} action={() => { ContextMenuApi.closeContextMenu(); onChange(option.value); }} />)}
+        {!filtered.length && <Menu.MenuItem id={`${id}-empty`} label="لا توجد نتائج" disabled />}
+    </Menu.Menu>;
+}
+
+function ChoiceControl<T extends string>(props: ChoiceProps<T>) {
+    return <div className="vc-evenclean-field">
+        <span id={`${props.id}-label`}>{props.label}</span>
+        <Button variant="secondary" className="vc-evenclean-choice" disabled={props.disabled} aria-labelledby={`${props.id}-label`} aria-haspopup="menu" onClick={event => ContextMenuApi.openContextMenu(event, () => <ChoiceMenu {...props} />)}>
+            <span dir="auto">{props.options.find(option => option.value === props.value)?.label ?? "اختر"}</span><span aria-hidden="true">▾</span>
+        </Button>
+    </div>;
+}
+
 function CleanupPanel(props: RenderModalProps) {
     const state = React.useSyncExternalStore(cleaner.subscribe, cleaner.snapshot);
     const [currentChannel] = useState(() => SelectedChannelStore.getChannelId());
     const channels = useStateFromStores([ChannelStore, GuildStore, UserStore, PermissionStore], getCleanupChannels);
     const guilds = useStateFromStores([GuildStore], () => Object.values(GuildStore.getGuilds()).sort((a, b) => a.name.localeCompare(b.name)));
     const [selected, setSelected] = useState(() => new Set(state.targets.length ? state.targets.map(t => t.id) : currentChannel && canAccess(currentChannel) ? [currentChannel] : []));
-    const [filters, setFilters] = useState<CleanupFilters>(() => ({ ...(state.filters ?? defaults) }));
+    const [filters, setFilters] = useState<CleanupFilters>(() => {
+        const previous = state.filters ?? defaults;
+        return { ...previous, after: previous.after.slice(0, 10), before: previous.before.slice(0, 10) };
+    });
     const [scope, setScope] = useState<CleanupScope>(() => state.targets.length ? state.targets.some(t => t.guildId) ? "server" : "dms" : currentChannel && canAccess(currentChannel) ? "current" : "dms");
     const [guildId, setGuildId] = useState(() => state.targets.find(t => t.guildId)?.guildId || ChannelStore.getChannel(currentChannel)?.guild_id || SelectedGuildStore.getGuildId() || guilds[0]?.id || "");
     const [search, setSearch] = useState("");
     const [shownCount, setShownCount] = useState(50);
+    const [previewCount, setPreviewCount] = useState(100);
     const [acknowledged, setAcknowledged] = useState(false);
     const [reveal, setReveal] = useState(false);
     const [clock, setClock] = useState(Date.now());
@@ -56,7 +89,7 @@ function CleanupPanel(props: RenderModalProps) {
     const shown = visible.slice(0, shownCount);
     const selectedChannels = channels.filter(channel => selected.has(channel.id));
     const unavailableCount = selected.size - selectedChannels.length;
-    const invalidate = () => { cleaner.clear(); setAcknowledged(false); };
+    const invalidate = () => { cleaner.clear(); setAcknowledged(false); setPreviewCount(100); };
     const changeScope = (next: CleanupScope) => {
         invalidate(); setScope(next); setSearch(""); setShownCount(50);
         setSelected(new Set(next === "current" && currentChannel && canAccess(currentChannel) ? [currentChannel] : []));
@@ -68,7 +101,7 @@ function CleanupPanel(props: RenderModalProps) {
     };
     const notifyError = (error: unknown) => showToast({ text: error instanceof Error ? error.message : "تعذر بدء العملية.", variant: "critical" });
     const preview = () => {
-        setAcknowledged(false);
+        setAcknowledged(false); setPreviewCount(100);
         if (unavailableCount) { notifyError(new Error("تعذر الوصول إلى بعض المحادثات. أعد تحديد المحادثات.")); return; }
         const targets: CleanupTarget[] = selectedChannels.map(channel => ({ id: channel.id, label: channelLabel(channel), guildId: channel.guild_id || undefined }));
         void cleaner.preview(targets, filters).catch(notifyError);
@@ -94,7 +127,7 @@ function CleanupPanel(props: RenderModalProps) {
                     <div className="vc-evenclean-scopes" role="group" aria-label="نوع المحادثات">
                         {([{ value: "current", label: "الحالية" }, { value: "dms", label: "الخاص" }, { value: "server", label: "السيرفر" }] as const).map(option => <Button key={option.value} size="small" variant="none" aria-pressed={scope === option.value} disabled={locked || (option.value === "current" && !channels.some(channel => channel.id === currentChannel))} onClick={() => changeScope(option.value)}>{option.label}</Button>)}
                     </div>
-                    {scope === "server" && <label className="vc-evenclean-field">السيرفر<SearchableSelect placeholder="اختر سيرفراً" options={guilds.map(guild => ({ label: guild.name, value: guild.id }))} value={guildId} onChange={(id: string) => { invalidate(); setGuildId(id); setSelected(new Set()); setSearch(""); setShownCount(50); }} isDisabled={locked} /></label>}
+                    {scope === "server" && <ChoiceControl id="vc-evenclean-guild" label="السيرفر" options={guilds.map(guild => ({ label: guild.name, value: guild.id }))} value={guildId} onChange={id => { invalidate(); setGuildId(id); setSelected(new Set()); setSearch(""); setShownCount(50); }} disabled={locked} searchable />}
                     {scope !== "current" && <TextInput placeholder={scope === "dms" ? "ابحث عن شخص أو مجموعة" : "ابحث عن قناة"} aria-label="البحث في المحادثات" value={search} onChange={value => { setSearch(value); setShownCount(50); }} disabled={locked} />}
                     <div className="vc-evenclean-actions vc-evenclean-selection-actions">
                         <Button size="xs" variant="none" disabled={locked || !visible.length || selected.size >= 100} onClick={() => { invalidate(); setSelected(previous => addCleanupChannels(previous, visible)); }}>تحديد الكل{visible.length > 100 ? " (حتى 100)" : ""}</Button>
@@ -118,15 +151,15 @@ function CleanupPanel(props: RenderModalProps) {
                         <div className="vc-evenclean-options">
                             <label className="vc-evenclean-field">نص الرسالة<TextInput value={filters.contains} onChange={contains => edit({ contains })} placeholder="كلمة أو عبارة" maxLength={200} disabled={locked} /></label>
                             <div className="vc-evenclean-dates">
-                                <label className="vc-evenclean-field">من<TextInput type="datetime-local" value={filters.after} onChange={after => edit({ after })} disabled={locked} /></label>
-                                <label className="vc-evenclean-field">إلى<TextInput type="datetime-local" value={filters.before} onChange={before => edit({ before })} disabled={locked} /></label>
+                                <label className="vc-evenclean-field" htmlFor="vc-evenclean-after">من تاريخ<TextInput id="vc-evenclean-after" type="date" value={filters.after.slice(0, 10)} onChange={after => edit({ after })} disabled={locked} /></label>
+                                <label className="vc-evenclean-field" htmlFor="vc-evenclean-before">إلى تاريخ<TextInput id="vc-evenclean-before" type="date" value={filters.before.slice(0, 10)} onChange={before => edit({ before })} disabled={locked} /></label>
                             </div>
-                            <label className="vc-evenclean-field">نوع الرسائل<Select options={[{ label: "جميع الرسائل", value: "all" }, { label: "تحتوي مرفقات", value: "attachments" }, { label: "تحتوي روابط", value: "links" }]} isSelected={value => value === filters.media} select={media => edit({ media })} serialize={String} isDisabled={locked} /></label>
+                            <ChoiceControl id="vc-evenclean-kind" label="نوع الرسائل" options={[{ label: "جميع الرسائل", value: "all" }, { label: "تحتوي مرفقات", value: "attachments" }, { label: "تحتوي روابط", value: "links" }]} value={filters.media} onChange={(media: CleanupFilters["media"]) => edit({ media })} disabled={locked} />
                             <FormSwitch title="تضمين الرسائل المثبتة" value={filters.includePinned} onChange={includePinned => edit({ includePinned })} disabled={locked} hideBorder />
                         </div>
                     </details>
                     <div className="vc-evenclean-search-footer">
-                        <label className="vc-evenclean-field">عدد الرسائل<Select options={[{ label: "كل الرسائل", value: "all" }, { label: "عدد محدد", value: "custom" }]} isSelected={value => value === (filters.limit === 0 ? "all" : "custom")} select={value => edit({ limit: value === "all" ? 0 : 100 })} serialize={String} isDisabled={locked} /></label>
+                        <ChoiceControl id="vc-evenclean-amount" label="عدد الرسائل" options={[{ label: "كل الرسائل", value: "all" }, { label: "عدد محدد", value: "custom" }]} value={filters.limit === 0 ? "all" : "custom"} onChange={value => edit({ limit: value === "all" ? 0 : 100 })} disabled={locked} />
                         {filters.limit !== 0 && <label className="vc-evenclean-field">العدد<TextInput type="number" min={1} step={1} value={filters.limit > 0 ? String(filters.limit) : ""} onChange={value => edit({ limit: /^\d+$/.test(value) ? Number(value) : -1 })} disabled={locked} /></label>}
                         <Button disabled={locked || !selected.size || unavailableCount > 0 || !Number.isSafeInteger(filters.limit) || filters.limit < 0} onClick={preview}>البحث عن رسائلي</Button>
                     </div>
@@ -142,7 +175,7 @@ function CleanupPanel(props: RenderModalProps) {
                             {state.mode === "delete" && <span>{completed} / {count}</span>}
                         </div>
                         {busy && <progress aria-label="تقدم العملية" value={state.mode === "delete" ? completed : undefined} max={Math.max(1, count)} />}
-                        {busy && state.mode === "preview" && <p>المحادثة {state.targetIndex} من {state.targets.length}</p>}
+                        {busy && state.mode === "preview" && <p>المحادثة {state.targetIndex} من {state.targets.length}، الصفحة {state.page}</p>}
                         {state.waitUntil > clock ? <p>استئناف الطلبات خلال {Math.ceil((state.waitUntil - clock) / 1000)} ثانية.</p> : state.requestPending && <p>بانتظار استجابة Discord منذ {Math.max(0, Math.floor((clock - state.requestStartedAt) / 1000))} ثانية.</p>}
                         {state.mode === "delete" && <p>{state.deleted} محذوفة{state.missing > 0 ? `، ${state.missing} محذوفة مسبقاً` : ""}{state.skipped > 0 ? `، ${state.skipped} متجاوزة` : ""}</p>}
                         {busy && <div className="vc-evenclean-actions">
@@ -160,14 +193,15 @@ function CleanupPanel(props: RenderModalProps) {
                             <Button size="xs" variant="none" disabled={locked} onClick={invalidate}>مسح النتائج</Button>
                         </div>
                         <div className="vc-evenclean-messages">
-                            {state.messages.slice(0, 100).map(message => <article key={message.id}>
+                            {state.messages.slice(0, previewCount).map(message => <article key={message.id}>
                                 <div className="vc-evenclean-message-meta"><time dateTime={message.timestamp}>{new Date(message.timestamp).toLocaleString("ar")}</time><Link href={`https://discord.com/channels/${state.targets.find(t => t.id === message.channelId)?.guildId ?? "@me"}/${message.channelId}/${message.id}`}>فتح الرسالة</Link></div>
                                 <p dir="auto" data-hidden={!reveal}>{reveal ? message.content || "رسالة دون نص" : "نص الرسالة مخفي"}</p>
                                 {(message.attachments > 0 || message.pinned) && <span className="vc-evenclean-muted">{message.attachments > 0 ? `${message.attachments} مرفقات` : ""}{message.pinned ? " · مثبتة" : ""}</span>}
                             </article>)}
                         </div>
                         <div className="vc-evenclean-preview-footer">
-                            <span>{count > 100 ? `عرض 100 من ${count} رسالة` : `${count} رسالة في هذه الدفعة`}</span>
+                            <span>{Math.min(count, previewCount)} من {count} رسالة</span>
+                            {count > previewCount && <Button size="xs" variant="secondary" onClick={() => setPreviewCount(value => value + 100)}>عرض المزيد</Button>}
                             <Button size="xs" variant="none" disabled={busy || state.accountId !== UserStore.getCurrentUser()?.id} onClick={() => saveFile(new File([JSON.stringify({ product: "EvenCord EvenClean", exportedAt: new Date().toISOString(), accountId: state.accountId, targets: state.targets, messages: state.messages }, null, 2)], "evenclean-preview.json", { type: "application/json" }))}>تصدير النتائج</Button>
                         </div>
                     </> : <div className="vc-evenclean-empty">
