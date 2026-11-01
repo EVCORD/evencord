@@ -45,7 +45,8 @@
     },
     "web_accessible_resources": [
         "dist/EvenCord.js",
-        "dist/EvenCord.css"
+        "dist/EvenCord.css",
+        "vendor/*"
     ],
     "browser_specific_settings": {
         "gecko": {
