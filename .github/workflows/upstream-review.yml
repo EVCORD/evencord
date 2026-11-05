@@ -74,7 +74,7 @@ jobs:
       - name: Install dependencies
         if: steps.version.outputs.publish == 'true'
         run: |
-          npm install --global pnpm@12.15.0
+          npm install --global "$(node -p 'require("./package.json").packageManager')"
           pnpm install --frozen-lockfile
       - name: Optional full checks
         if: steps.version.outputs.publish == 'true' && (github.event_name == 'schedule' || inputs.run_checks == true)
