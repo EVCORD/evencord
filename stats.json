@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-07T17:51:49.974Z",
+  "updatedAt": "2026-11-07T19:07:20.955Z",
   "firstUpdatedAt": "2026-10-31T13:41:54.638Z",
   "metric": "Installer asset downloads, not unique users",
   "source": "https://github.com/EVCORD/evencord-installer/releases",
@@ -9,7 +9,7 @@
     "macos": 28,
     "linux": 54
   },
-  "latestRelease": "core-v1.1.16",
+  "latestRelease": "core-v1.1.18",
   "assets": [
     {
       "release": "installer-v1.1.2",
