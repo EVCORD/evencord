@@ -57,7 +57,7 @@ function DeafenIcon({ className, active = false }: { className?: string; active?
     </svg>;
 }
 
-const controlSettings = ["active", "hideIcon"] as const;
+const controlSettings: ("active" | "hideIcon")[] = ["active", "hideIcon"];
 const Control = ErrorBoundary.wrap(() => {
     const { active, hideIcon } = settings.use(controlSettings);
     const label = `FakeDeafen: ${active ? "ON" : "OFF"}`;
