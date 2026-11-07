@@ -1,0 +1,12 @@
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.vc-fakedeafen-active[role="switch"] {
+    color: var(--status-positive);
+    background: color-mix(in srgb, var(--status-positive) 18%, transparent);
+    box-shadow: inset 0 0 0 1px var(--status-positive);
+    border-radius: 8px;
+}

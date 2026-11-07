@@ -176,11 +176,16 @@ export function createCleaner(deps: Dependencies) {
             if (status === 400 && method === "del" && record(response.body).code === 50083) return { ...response, archived: true };
             const retry = status === 429 || status === 202 || status === 0 || status >= 500;
             if (!retry) throw new Error(`Discord returned HTTP ${Number.isFinite(status) ? status : "unknown"}${typeof record(response.body).message === "string" ? `: ${String(record(response.body).message).slice(0, 200)}` : ""}. Cleanup stopped.`);
-            if (status === 429 || status === 202) {
-                if (status === 202) nextRequestAt = Math.max(nextRequestAt, now() + Math.max(3000, number(record(response.body).retry_after) * 1000 || 10000));
-                set({ detail: status === 429 ? "Discord requested a cooldown. All EvenClean requests are waiting." : "Discord is building its search index. Waiting before retrying." });
+            if (status === 429) {
+                set({ detail: "Discord requested a cooldown. Requests will resume automatically." });
+                attempt--;
+                continue;
+            }
+            if (status === 202) {
+                nextRequestAt = Math.max(nextRequestAt, now() + Math.max(3000, number(record(response.body).retry_after) * 1000 || 10000));
+                set({ detail: "Discord is building its search index. Waiting before retrying." });
             } else nextRequestAt = Math.max(nextRequestAt, now() + Math.min(30000, 2000 * 2 ** attempt));
-            if (attempt === 3) throw new Error("Discord is still rate limited, indexing or unavailable after four attempts. No further requests will be sent. Wait, then create a fresh preview.");
+            if (attempt === 3) throw new Error("Discord is unavailable after four attempts. Try again later.");
         }
         throw new Error("Request could not complete.");
     }
@@ -190,9 +195,10 @@ export function createCleaner(deps: Dependencies) {
         running = true; cancelled = paused = finishRequested = false;
         try { await task(); }
         catch (error) {
-            if (error === previewFinished) { set({ phase: "review", limited: true, waitUntil: 0, detail: "Search ended early. Review only the messages found so far, or start a fresh preview to search further." }); return; }
+            if (error === previewFinished) { planAt = now(); set({ phase: "review", limited: true, waitUntil: 0, detail: "Search ended early. Review the messages found so far." }); return; }
             if (state.mode === "preview" && error !== stopped && state.messages.length > 0) {
-                set({ phase: "review", limited: true, waitUntil: 0, detail: error instanceof Error ? error.message : "Search could not finish. Review the messages found so far." }); return;
+                planAt = now();
+                set({ phase: "review", limited: true, waitUntil: 0, error: error instanceof Error ? error.message : "Search could not finish. Review the messages found so far." }); return;
             }
             set({ phase: error === stopped ? "stopped" : "error", waitUntil: 0, error: error === stopped ? "" : error instanceof Error ? error.message : "Cleanup failed.", detail: error === stopped ? "Stopped. A request already in flight may have completed." : "No further requests will be sent." });
         } finally { running = false; paused = false; if (forgetOnStop) { approvedFilters = undefined; forgetOnStop = false; set(initial()); } else set({}); }
@@ -235,7 +241,7 @@ export function createCleaner(deps: Dependencies) {
                         set({ detail: `Searching ${target.label}.`, scanned: state.scanned + 1, targetIndex: targetIndex + 1, page: page + 1 });
                         let response: Record<string, unknown>;
                         try { response = await request("get", url, query, 3000); }
-                        catch (error) { if (!history && error === searchUnavailable) { readHistory(); continue; } throw error; }
+                        catch (error) { if (!history && (error === searchUnavailable || error === requestTimedOut)) { readHistory(); continue; } throw error; }
                         const body = record(response.body);
                         const groups = history ? response.body : body.messages;
                         if (!Array.isArray(groups)) {
@@ -284,6 +290,7 @@ export function createCleaner(deps: Dependencies) {
                     if (found.length >= limit || state.limited) break;
                 }
                 await gate();
+                planAt = now();
                 set({ phase: "review", detail: state.limited ? "The selected message count was reached. Review the matches found so far." : found.length ? "Review this fixed batch, then confirm below. Nothing has been deleted yet." : "No matching own messages were found in the selected conversations and filters. Nothing was deleted.", waitUntil: 0 });
             });
         },
@@ -297,7 +304,7 @@ export function createCleaner(deps: Dependencies) {
                 deleteDelay = Math.max(deleteDelay, minimumDeleteDelay);
                 const plan = state.messages.map(m => ({ ...m }));
                 const archivedChannels = new Set<string>();
-                set({ phase: "deleting", mode: "delete", detail: "Deleting only the confirmed batch of your own messages." });
+                set({ phase: "deleting", mode: "delete", error: "", detail: "Deleting only the confirmed batch of your own messages." });
                 for (const message of plan) {
                     await gate();
                     if (message.authorId !== state.accountId || !deps.canAccess(message.channelId)) throw new Error("Message ownership or channel access no longer matches the approved preview.");

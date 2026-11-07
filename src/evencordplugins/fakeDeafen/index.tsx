@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "./style.css";
+
 import { definePluginSettings } from "@api/Settings";
 import { UserAreaButton } from "@api/UserArea";
 import ErrorBoundary from "@components/ErrorBoundary";
@@ -15,12 +17,12 @@ import definePlugin, { OptionType } from "@utils/types";
 import { VoiceActions } from "@webpack/common";
 
 const settings = definePluginSettings({
-    mute: { type: OptionType.BOOLEAN, description: "إظهار حالة كتم الميكروفون للآخرين عند التفعيل.", default: true },
-    deafen: { type: OptionType.BOOLEAN, description: "إظهار حالة كتم السماعات للآخرين عند التفعيل.", default: true },
-    cam: { type: OptionType.BOOLEAN, description: "إظهار حالة الكاميرا للآخرين عند التفعيل.", default: false },
-    hideIcon: { type: OptionType.BOOLEAN, description: "إخفاء زر الإضافة بجانب أدوات المستخدم.", default: false },
-    keybind: { type: OptionType.STRING, description: "اختصار التفعيل، مثل F9 أو Ctrl+Shift+D.", default: "F9" },
-    active: { type: OptionType.BOOLEAN, description: "الحالة الحالية.", default: false, hidden: true }
+    mute: { type: OptionType.BOOLEAN, description: "Appear muted while active.", default: true },
+    deafen: { type: OptionType.BOOLEAN, description: "Appear deafened while active.", default: true },
+    cam: { type: OptionType.BOOLEAN, description: "Appear to have your camera on while active.", default: false },
+    hideIcon: { type: OptionType.BOOLEAN, description: "Hide the user panel button.", default: false },
+    keybind: { type: OptionType.STRING, description: "Toggle shortcut, such as F9 or Ctrl+Shift+D.", default: "F9" },
+    active: { type: OptionType.BOOLEAN, description: "Current state.", default: false, hidden: true }
 });
 
 const logger = new Logger("FakeDeafen");
@@ -46,18 +48,25 @@ function onKey(event: KeyboardEvent) {
     toggle();
 }
 
-function DeafenIcon({ className }: { className?: string; }) {
-    return <svg className={className} viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3M4 13H2v7h5v-7zm16 0h2v7h-5v-7zM3 3l18 18" /></svg>;
+function DeafenIcon({ className, active = false }: { className?: string; active?: boolean; }) {
+    return <svg className={className} viewBox="0 0 32 32" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+        <path d="M8 15v-3a8 8 0 0 1 16 0v3M8 13H6v7h5v-7zm16 0h2v7h-5v-7z" />
+        {active && <path d="m7 3 18 18" />}
+        <rect x="3" y="22" width="26" height="10" rx="4" fill={active ? "var(--status-positive)" : "var(--background-modifier-accent)"} stroke="none" />
+        <text x="16" y="29.5" textAnchor="middle" fill={active ? "var(--white)" : "var(--text-muted)"} stroke="none" fontSize="9" fontWeight="800">{active ? "ON" : "OFF"}</text>
+    </svg>;
 }
 
+const controlSettings = ["active", "hideIcon"] as const;
 const Control = ErrorBoundary.wrap(() => {
-    const { active, hideIcon } = settings.use(["active", "hideIcon"]);
-    return hideIcon ? null : <UserAreaButton icon={<DeafenIcon />} tooltipText={active ? "إيقاف FakeDeafen" : "تفعيل FakeDeafen"} redGlow={active} onClick={toggle} />;
+    const { active, hideIcon } = settings.use(controlSettings);
+    const label = `FakeDeafen: ${active ? "ON" : "OFF"}`;
+    return hideIcon ? null : <UserAreaButton className={active ? "vc-fakedeafen-active" : undefined} icon={<DeafenIcon active={active} />} tooltipText={`${label} · Click to ${active ? "disable" : "enable"}`} role="switch" aria-checked={active} aria-label={label} onClick={toggle} />;
 }, { noop: true });
 
 export default definePlugin({
     name: "FakeDeafen",
-    description: "يخصص حالة الميكروفون والسماعات والكاميرا المعروضة للآخرين.",
+    description: "Customize the voice status others see while keeping your local audio controls.",
     authors: [EvenCordAuthors.desu, EvenCordAuthors.viciouscal],
     dependencies: ["UserAreaAPI"],
     tags: ["Voice"],
@@ -72,7 +81,7 @@ export default definePlugin({
     }],
     flag(value: boolean, key: "mute" | "deafen" | "cam") { return settings.store.active ? settings.store[key] : value; },
     userAreaButton: { icon: DeafenIcon, render: () => <Control /> },
-    toolboxActions: { "تفعيل أو إيقاف FakeDeafen": toggle },
+    toolboxActions: { "Toggle FakeDeafen": toggle },
     start() { settings.store.active = false; document.addEventListener("keydown", onKey); },
     stop() {
         document.removeEventListener("keydown", onKey);

@@ -46,7 +46,7 @@ migratePluginSettings("Quoter Enhanced", "Quoter");
 export default definePlugin({
     name: "Quoter Enhanced",
     searchTerms: ["Quoter", "Valenced", "quotes", "GIF"],
-    description: "اقتباسات مصورة تدعم الخطوط العربية والصور والوسائط المتحركة.",
+    description: "Turn messages into image quotes, with Arabic fonts and animated media.",
     tags: ["Chat"],
     authors: [Devs.Samwich, Devs.thororen, EquicordDevs.neoarz, Devs.prism],
     settings,

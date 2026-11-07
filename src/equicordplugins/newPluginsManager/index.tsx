@@ -13,7 +13,7 @@ import { openNewPluginsModal } from "./NewPluginsModal";
 
 export default definePlugin({
     name: "NewPluginsManager",
-    description: "يعرض الإضافات والإعدادات الجديدة بعد تحديث EvenCord.",
+    description: "Shows new plugins and settings after updating EvenCord.",
     tags: ["Utility"],
     authors: [Devs.Sqaaakoi],
     enabledByDefault: true,

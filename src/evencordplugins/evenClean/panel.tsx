@@ -117,7 +117,7 @@ function CleanupPanel(props: RenderModalProps) {
                     <span aria-hidden="true">{step > index ? "✓" : index + 1}</span>{label}
                 </li>)}
             </ol>
-            {state.error && <Notice.Danger>{state.error}</Notice.Danger>}
+            {state.error && <Notice.Danger><span dir="auto">{state.error}</span></Notice.Danger>}
             <div className="vc-evenclean-layout">
                 <section className="vc-evenclean-options vc-evenclean-sidebar" aria-label="المحادثات والفلاتر">
                     <div className="vc-evenclean-section-heading">
@@ -210,7 +210,7 @@ function CleanupPanel(props: RenderModalProps) {
                         <p>{state.phase === "review" ? "جرّب محادثة أخرى أو عدّل فلاتر البحث." : busy ? "ستظهر الرسائل التي يعثر عليها البحث تباعاً." : "حدد المحادثات ثم اضغط البحث عن رسائلي."}</p>
                     </div>}
                     {ready && <div className="vc-evenclean-confirm">
-                        <Checkbox value={acknowledged} onChange={(_, checked) => setAcknowledged(checked)} size={20}>
+                        <Checkbox value={acknowledged} onChange={() => setAcknowledged(value => !value)} size={20}>
                             <Paragraph>أوافق على حذف {count} رسالة نهائياً.</Paragraph>
                         </Checkbox>
                         <Button variant="dangerPrimary" disabled={!acknowledged} onClick={() => { void cleaner.remove(`DELETE ${count}`, acknowledged, settings.store.deleteDelay).catch(notifyError); }}>حذف {count} رسالة</Button>
@@ -225,7 +225,7 @@ function CleanupPanel(props: RenderModalProps) {
 export function openCleanup() {
     if (!isPluginEnabled("EvenClean")) { showToast({ text: "فعّل إضافة حذف الرسائل من إعدادات EvenCord أولاً.", variant: "critical" }); return; }
     if (modalKey) return;
-    modalKey = openModal(props => <CleanupPanel {...props} />, { onCloseCallback: () => { modalKey = undefined; } });
+    modalKey = openModal(props => <CleanupPanel {...props} onClose={closeCleanup} />, { onCloseCallback: () => { modalKey = undefined; } });
 }
 
 export function closeCleanup() {

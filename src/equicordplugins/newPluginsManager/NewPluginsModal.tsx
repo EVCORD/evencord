@@ -73,7 +73,7 @@ function NewPluginsModal({ modalProps, newPlugins, newSettings }: ModalComponent
 
         if (isRequired) {
             const tooltipText = p.required
-                ? "هذه الإضافة مطلوبة لتشغيل EvenCord."
+                ? "This plugin is required by EvenCord."
                 : <PluginDependencyList deps={depMap[p.name]?.filter(d => settings.plugins[d].enabled)} />;
 
             requiredPluginCards.push(
@@ -118,11 +118,11 @@ function NewPluginsModal({ modalProps, newPlugins, newSettings }: ModalComponent
         <Modal
             {...modalProps}
             size="lg"
-            title={`جديد EvenCord (${totalCount})`}
-            subtitle="إضافات وإعدادات جديدة متاحة. اختر ما تريد تفعيله."
+            title={`What's new (${totalCount})`}
+            subtitle="New plugins and settings in EvenCord."
             actions={[
                 {
-                    text: "عدم الإظهار مجدداً",
+                    text: "Don't show again",
                     onClick: () => {
                         Settings.plugins.NewPluginsManager.enabled = false;
                         modalProps.onClose();
@@ -130,7 +130,7 @@ function NewPluginsModal({ modalProps, newPlugins, newSettings }: ModalComponent
                     variant: "secondary"
                 },
                 {
-                    text: changes.hasChanges ? "إعادة التشغيل" : "إغلاق",
+                    text: changes.hasChanges ? "Restart" : "Close",
                     onClick: handleContinue,
                     variant: "primary"
                 }

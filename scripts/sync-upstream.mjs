@@ -27,6 +27,6 @@ const version = previous.version.split(".").map(Number);
 version[2]++;
 pkg.version = version.join(".");
 writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
-writeFileSync(`docs/releases/${pkg.version}.md`, `# EvenCord ${pkg.version}\n\nIntegrates Equicord ${upstream}. EvenCord branding, settings and plugins are preserved.\n`);
+writeFileSync(`docs/releases/${pkg.version}.md`, `# EvenCord ${pkg.version}\n\nLatest Equicord fixes and plugin updates.\n`);
 git("add", "package.json", `docs/releases/${pkg.version}.md`);
 git("commit", "-m", `Integrate Equicord ${upstream.slice(0, 9)} in ${pkg.version}`);

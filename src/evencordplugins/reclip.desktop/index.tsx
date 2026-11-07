@@ -162,7 +162,7 @@ migratePluginSettings("Reclip", "bossclip");
 
 export default definePlugin({
     name: "Reclip",
-    description: "يحفظ آخر لحظات نافذة Discord بالصوت على Windows.",
+    description: "Save recent Discord footage with audio on Windows.",
     authors: [],
     tags: ["Media", "Utility"],
     searchTerms: ["bossclip", "replay", "recorder", "clips"],

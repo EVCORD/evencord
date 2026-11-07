@@ -13,6 +13,7 @@ if (webhook) {
     const arabicNotes = `docs/releases/ar/${version}.md`;
     const hasArabic = existsSync(arabicNotes);
     const notes = readFileSync(hasArabic ? arabicNotes : `docs/releases/${version}.md`, "utf8").replace(/^# .+\n+/, "").trim();
+    const summary = notes.split(/\r?\n/).filter(line => line.trim() && !line.startsWith("#")).slice(0, 3).join("\n").slice(0, 600);
     const release = `https://github.com/EVCORD/evencord/releases/tag/core-v${version}`;
     const links = [
         ["تحميل البرنامج", "https://evcord.github.io/evencord/download/"],
@@ -28,14 +29,14 @@ if (webhook) {
             accent_color: 0x805263,
             components: [
                 { type: 10, content: `<@&${community.releaseRoleId}>\n## <:ev_logo:${icons.logoEmojiId}> تحديث جديد\nEvenCord ${version}` },
-                { type: 10, content: "‏حمّل التحديث من قسم المحدث داخل إعدادات البرنامج، ثم أعد تشغيل ديسكورد عند اكتمال التنزيل." },
+                { type: 10, content: "‏حدّث EvenCord من الإعدادات، ثم أعد تشغيل Discord." },
                 { type: 14, divider: true, spacing: 1 },
-                { type: 10, content: hasArabic ? notes : "‏تحسينات وإصلاحات جديدة متاحة. ملخص التغييرات بالإنجليزية في القسم التالي، والتفاصيل الكاملة من زر تفاصيل الإصدار." },
+                { type: 10, content: hasArabic ? summary : "‏تحسينات وإصلاحات جديدة. التفاصيل من زر تفاصيل الإصدار." },
                 { type: 14, divider: true, spacing: 1 },
                 { type: 1, components: links.map(([label, url], index) => ({ type: 2, style: 5, label, url, ...(index === 0 ? { emoji: { id: icons.downloadEmojiId } } : {}) })) },
                 { type: 10, content: "-# EvenCord · BOSS" }
             ]
-        }, ...(!hasArabic ? [{ type: 17, accent_color: 0x34353B, components: [{ type: 10, content: "### Release notes\n" + (notes.length > 2200 ? notes.slice(0, 2200) + `\n\n[Full release notes](${release})` : notes) }] }] : [])]
+        }]
     };
     try {
         const response = await fetch(webhook + "?wait=true&with_components=true", {

@@ -19,7 +19,7 @@ import { closeCleanup, openCleanup } from "./panel";
 export const settings = definePluginSettings({
     deleteDelay: {
         type: OptionType.SELECT,
-        description: "أقل فاصل بين الرسائل. يُضاف وقت عشوائي حتى نصف هذا الفاصل، مع احترام انتظار Discord بالكامل.",
+        description: "Minimum delay between deletions. Rate limits are respected automatically.",
         options: [
             { label: "1.5 seconds", value: 1500, default: true },
             { label: "3 seconds", value: 3000 },
@@ -64,7 +64,7 @@ function CleanupSettings() {
 export default definePlugin({
     name: "EvenClean",
     searchTerms: ["حذف الرسائل", "Message deletion", "Delete messages"],
-    description: "مراجعة رسائلك وحذفها، مع فلاتر وإيقاف واستئناف.",
+    description: "Find, review and delete your messages.",
     authors: [EvenCordAuthors.EvenCord],
     enabledByDefault: false,
     tags: ["Chat", "Utility"],

@@ -44,7 +44,7 @@ function pull() {
 
 export default definePlugin({
     name: "PullUser",
-    description: "ينقل أعضاء تختارهم معك بين الرومات الصوتية ضمن صلاحياتك.",
+    description: "Move selected members with you between voice channels when permitted.",
     authors: [EvenCordAuthors.viciouscal],
     tags: ["Voice"],
     settingsAboutComponent: () => <Paragraph dir="rtl">أضف العضو من قائمته بزر الفأرة الأيمن. المصدر: <Link href="https://github.com/viciouscal/Vencord/tree/main/src/plugins/pulluser">viciouscal</Link>.</Paragraph>,
