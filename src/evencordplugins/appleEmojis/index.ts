@@ -29,25 +29,32 @@ export default definePlugin({
         sprite.onload = () => {
             if (image !== sprite) return;
             const positions = new Map<string, string>();
+            const selectors = new Map<string, string>();
             const ambiguous = new Set<string>();
-            for (const [sequence, x, y] of emojiData as [string, number, number][]) {
+            for (const [sequence, x, y, names] of emojiData as [string, number, number, string[]][]) {
                 const unicode = String.fromCodePoint(...sequence.split("-").map(code => parseInt(code, 16)));
+                const position = `${(x * 66 + 1) / (sprite.naturalWidth - 64) * 100}% ${(y * 66 + 1) / (sprite.naturalHeight - 64) * 100}%`;
+                for (const name of names) {
+                    selectors.set(`img[src*="/assets/"][alt=${JSON.stringify(`:${name}:`)}]`, position);
+                    selectors.set(`[data-type="emoji"][data-name=${JSON.stringify(name)}]:not([data-id]) img`, position);
+                }
                 for (const value of new Set([unicode, unicode.replaceAll("\uFE0F", "")])) {
+                    selectors.set(`img[alt=${JSON.stringify(value)}]:not([src*="/emojis/"])`, position);
                     let url: string;
                     try { url = EmojiUtils.getURL(value); } catch { continue; }
                     if (typeof url !== "string") continue;
                     const asset = /\/assets\/[\w.-]+\.(?:svg|png|webp)/.exec(url)?.[0];
                     if (!asset || ambiguous.has(asset)) continue;
-                    const position = `${(x * 66 + 1) / (sprite.naturalWidth - 64) * 100}% ${(y * 66 + 1) / (sprite.naturalHeight - 64) * 100}%`;
                     if (positions.has(asset) && positions.get(asset) !== position) {
                         positions.delete(asset);
                         ambiguous.add(asset);
                     } else positions.set(asset, position);
                 }
             }
-            requireStyle(style).source = Array.from(positions, ([asset, position]) =>
-                `.vc-apple-emojis img[src*=${JSON.stringify(asset)}]{content:url("${transparent}");background-image:url("${source}");background-repeat:no-repeat;background-size:${sprite.naturalWidth / 64 * 100}% ${sprite.naturalHeight / 64 * 100}%;background-position:${position};}`
-            ).join("\n");
+            for (const [asset, position] of positions) selectors.set(`img[src*=${JSON.stringify(asset)}]`, position);
+            const rules = Array.from(selectors, ([selector, position]) => ({ selector: `.vc-apple-emojis ${selector}`, position }));
+            requireStyle(style).source = `${rules.map(rule => rule.selector).join(",")} {content:url("${transparent}");background-image:url("${source}");background-repeat:no-repeat;background-size:${sprite.naturalWidth / 64 * 100}% ${sprite.naturalHeight / 64 * 100}%;}\n`
+                + rules.map(({ selector, position }) => `${selector}{background-position:${position};}`).join("\n");
             enableStyle(style);
             document.documentElement.classList.add("vc-apple-emojis");
         };
