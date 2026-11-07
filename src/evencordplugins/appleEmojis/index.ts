@@ -53,7 +53,12 @@ export default definePlugin({
             }
             for (const [asset, position] of positions) selectors.set(`img[src*=${JSON.stringify(asset)}]`, position);
             const rules = Array.from(selectors, ([selector, position]) => ({ selector: `.vc-apple-emojis ${selector}`, position }));
-            requireStyle(style).source = `${rules.map(rule => rule.selector).join(",")} {content:url("${transparent}");background-image:url("${source}");background-repeat:no-repeat;background-size:${sprite.naturalWidth / 64 * 100}% ${sprite.naturalHeight / 64 * 100}%;}\n`
+            const declarations = `content:url("${transparent}");background-image:url("${source}");background-repeat:no-repeat;background-size:${sprite.naturalWidth / 64 * 100}% ${sprite.naturalHeight / 64 * 100}%;`;
+            const groups: string[] = [];
+            for (let i = 0; i < rules.length; i += 100) {
+                groups.push(`${rules.slice(i, i + 100).map(rule => rule.selector).join(",")}{${declarations}}`);
+            }
+            requireStyle(style).source = groups.join("\n")
                 + rules.map(({ selector, position }) => `${selector}{background-position:${position};}`).join("\n");
             enableStyle(style);
             document.documentElement.classList.add("vc-apple-emojis");
