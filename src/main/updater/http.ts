@@ -17,7 +17,7 @@
 */
 
 import { DATA_DIR } from "@main/utils/constants";
-import { checkedFetch, fetchJson } from "@main/utils/http";
+import { fetchJson } from "@main/utils/http";
 import { Project } from "@shared/project";
 import type { UpdateStatus } from "@shared/UpdateStatus";
 import { VENCORD_USER_AGENT } from "@shared/vencordUserAgent";
@@ -34,7 +34,7 @@ interface Release {
     tag_name: string;
     body: string;
     target_commitish: string;
-    assets: { name: string; browser_download_url: string; size: number; digest: string; }[];
+    assets: { id: number; name: string; browser_download_url: string; size: number; digest: string; }[];
 }
 
 let pending: Release["assets"][number] | undefined;
@@ -59,7 +59,7 @@ async function listUpdates() {
         const difference = parts.map((part, i) => part - running[i]).find(part => part !== 0) || 0;
         if (difference <= 0) { pending = undefined; status.phase = "current"; return []; }
         const asset = release.assets.find(asset => asset.name === ASAR_FILE);
-        if (!asset || !/^sha256:[a-f0-9]{64}$/.test(asset.digest) || asset.size <= 0 || asset.size > 134217728)
+        if (!asset || !Number.isSafeInteger(asset.id) || asset.id <= 0 || !/^sha256:[a-f0-9]{64}$/.test(asset.digest) || asset.size <= 0 || asset.size > 134217728)
             throw new Error("The release payload or its GitHub digest is unavailable.");
         const expected = `https://github.com/${gitRemote}/releases/download/${release.tag_name}/${ASAR_FILE}`;
         if (asset.browser_download_url !== expected) throw new Error("The release payload belongs to another repository.");
@@ -73,6 +73,49 @@ async function listUpdates() {
         status.error = error instanceof Error ? error.message : String(error);
         throw error;
     }
+}
+
+async function downloadAsset(asset: Release["assets"][number]) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+        status.received = 0;
+        let retry = true;
+        let delay = 2000 * (attempt + 1);
+        try {
+            const url = attempt === 0 ? asset.browser_download_url : `https://api.github.com/repos/${gitRemote}/releases/assets/${asset.id}`;
+            const response = await fetch(url, {
+                headers: { Accept: "application/octet-stream", "User-Agent": VENCORD_USER_AGENT },
+                signal: AbortSignal.timeout(120_000)
+            });
+            if (!response.ok) {
+                retry = [408, 429, 500, 502, 503, 504].includes(response.status);
+                const retryAfter = response.headers.get("retry-after");
+                if (retryAfter) {
+                    const seconds = Number(retryAfter);
+                    const wait = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(retryAfter) - Date.now();
+                    if (Number.isFinite(wait)) delay = Math.max(delay, wait);
+                    if (delay > 60_000) retry = false;
+                }
+                await response.body?.cancel();
+                throw new Error(`GitHub could not serve the update (HTTP ${response.status}). Please try again shortly.`);
+            }
+            if (!response.body) throw new Error("The update download is empty.");
+            const chunks: Uint8Array[] = [];
+            for await (const chunk of response.body) {
+                status.received += chunk.byteLength;
+                if (status.received > asset.size) {
+                    retry = false;
+                    throw new Error("The update exceeds its published size.");
+                }
+                chunks.push(chunk);
+            }
+            if (status.received !== asset.size) throw new Error("The update download was interrupted. Please try again.");
+            return Buffer.concat(chunks);
+        } catch (error) {
+            if (!retry || attempt === 2) throw error;
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    throw new Error("The update download could not complete.");
 }
 
 async function downloadUpdate() {
@@ -90,15 +133,7 @@ async function downloadUpdate() {
     const pointer = join(DATA_DIR, "current-core.json");
     const pointerTemporary = pointer + ".pending";
     try {
-        const response = await checkedFetch(asset.browser_download_url, { signal: AbortSignal.timeout(120_000) });
-        if (!response.body) throw new Error("The update download is empty.");
-        const chunks: Uint8Array[] = [];
-        for await (const chunk of response.body) {
-            status.received += chunk.byteLength;
-            if (status.received > asset.size) throw new Error("The update exceeds its published size.");
-            chunks.push(chunk);
-        }
-        const data = Buffer.concat(chunks);
+        const data = await downloadAsset(asset);
         status.phase = "verifying";
         if (data.length !== asset.size || "sha256:" + createHash("sha256").update(data).digest("hex") !== asset.digest)
             throw new Error("The update does not match its published digest.");
