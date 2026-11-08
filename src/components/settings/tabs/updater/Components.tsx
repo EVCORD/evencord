@@ -11,6 +11,7 @@ import { Flex } from "@components/Flex";
 import { Link } from "@components/Link";
 import { Paragraph } from "@components/Paragraph";
 import type { UpdateStatus } from "@shared/UpdateStatus";
+import { formatUpdateError } from "@shared/updateErrors";
 import { Margins } from "@utils/margins";
 import { changes, checkForUpdates, getUpdateStatus, restartAfterUpdate, update } from "@utils/updater";
 import { Parser, React, useState } from "@webpack/common";
@@ -111,7 +112,7 @@ export function Updatable(props: CommonProps) {
         </Flex>
         <Paragraph aria-live="polite">{message}</Paragraph>
         {phase === "downloading" && <progress aria-label="Update download" max={status?.total || 1} value={status?.received || 0} style={{ width: "100%" }} />}
-        {(status?.error || error) && <ErrorCard className={Margins.top8} style={{ padding: "1em" }}><p>{status?.error || error}</p></ErrorCard>}
-        {updates?.length > 0 && <Changes updates={updates} {...props} />}
+        {(status?.error || error) && <ErrorCard className={Margins.top8} style={{ padding: "1em" }}><p>{formatUpdateError(status?.error || error)}</p></ErrorCard>}
+        {["available", "ready"].includes(phase || "") && updates?.length > 0 && <Changes updates={updates} {...props} />}
     </>;
 }

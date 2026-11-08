@@ -36,7 +36,13 @@ async function Unwrap<T>(p: Promise<IpcRes<T>>) {
 }
 
 export async function checkForUpdates() {
-    changes = await Unwrap(VencordNative.updater.getUpdates());
+    try {
+        changes = await Unwrap(VencordNative.updater.getUpdates());
+    } catch (error) {
+        changes = [];
+        isOutdated = false;
+        throw error;
+    }
 
     isNewer = false;
     updateError = undefined;

@@ -5,46 +5,30 @@
  */
 
 import { ErrorCard } from "@components/ErrorCard";
+import { formatUpdateError } from "@shared/updateErrors";
 import { UpdateLogger } from "@utils/updater";
-import { ConfirmModal, openModal, Parser } from "@webpack/common";
+import { ConfirmModal, openModal } from "@webpack/common";
 
-function getErrorMessage(e: any) {
-    if (typeof e?.message === "string") return e.message;
-    if (!e?.code || !e.cmd)
-        return "An unknown error occurred.\nPlease try again or see the console for more info.";
-
-    const { code, path, cmd, stderr } = e;
-
-    if (code === "ENOENT")
-        return `Command \`${path}\` not found.\nPlease install it and try again.`;
-
-    const extra = stderr || `Code \`${code}\`. See the console for more info.`;
-
-    return `An error occurred while running \`${cmd}\`:\n${extra}`;
-}
-
-export function runWithDispatch(dispatch: React.Dispatch<React.SetStateAction<boolean>>, action: () => any) {
+export function runWithDispatch(dispatch: React.Dispatch<React.SetStateAction<boolean>>, action: () => unknown) {
     return async () => {
         dispatch(true);
 
         try {
             await action();
-        } catch (e: any) {
+        } catch (e) {
             UpdateLogger.error(e);
 
-            const err = getErrorMessage(e);
+            const err = formatUpdateError(e);
 
             openModal(props => (
                 <ConfirmModal
                     {...props}
-                    title="Oops!"
+                    title="Update unavailable"
                     confirmText="OK"
                     variant="primary"
                 >
                     <ErrorCard>
-                        {err.split("\n").map((line, idx) =>
-                            <div key={idx}>{Parser.parse(line)}</div>
-                        )}
+                        <p>{err}</p>
                     </ErrorCard>
                 </ConfirmModal>
             ));

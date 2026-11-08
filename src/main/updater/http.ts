@@ -17,9 +17,9 @@
 */
 
 import { DATA_DIR } from "@main/utils/constants";
-import { fetchJson } from "@main/utils/http";
 import { Project } from "@shared/project";
 import type { UpdateStatus } from "@shared/UpdateStatus";
+import { formatUpdateError } from "@shared/updateErrors";
 import { VENCORD_USER_AGENT } from "@shared/vencordUserAgent";
 import { createHash } from "crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "original-fs";
@@ -43,15 +43,45 @@ const status: UpdateStatus = { phase: "idle", installedVersion: VERSION, availab
 const target = IS_DISCORD_DESKTOP ? join(DATA_DIR, Project.storage.payload) : __dirname;
 export const getUpdateStatus = (): UpdateStatus => ({ ...status });
 
+async function getLatestRelease(): Promise<Release> {
+    for (let attempt = 0; attempt < 3; attempt++) {
+        let retry = true;
+        let delay = 2000 * (attempt + 1);
+        try {
+            const response = await fetch(`https://api.github.com/repos/${gitRemote}/releases/latest`, {
+                headers: { Accept: "application/vnd.github+json", "User-Agent": VENCORD_USER_AGENT },
+                signal: AbortSignal.timeout(15_000)
+            });
+            if (!response.ok) {
+                retry = [408, 429, 500, 502, 503, 504].includes(response.status);
+                const retryAfter = response.headers.get("retry-after");
+                if (retryAfter) {
+                    const seconds = Number(retryAfter);
+                    const wait = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(retryAfter) - Date.now();
+                    if (Number.isFinite(wait)) delay = Math.max(delay, wait);
+                    if (delay > 60_000) retry = false;
+                }
+                await response.body?.cancel();
+                throw new Error(`GitHub update check failed (HTTP ${response.status}). Please try again later.`);
+            }
+            return await response.json();
+        } catch (error) {
+            if (!retry || attempt === 2) throw new Error(formatUpdateError(error));
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    throw new Error("Could not reach GitHub. Please try again later.");
+}
+
 async function listUpdates() {
-    if (IS_UPDATER_DISABLED || status.phase === "ready") return [];
+    if (IS_UPDATER_DISABLED || ["ready", "downloading", "verifying", "staging"].includes(status.phase)) return [];
     status.phase = "checking";
     status.error = "";
+    status.availableVersion = "";
+    status.total = status.received = 0;
+    pending = undefined;
     try {
-        const release = await fetchJson<Release>(`https://api.github.com/repos/${gitRemote}/releases/latest`, {
-            headers: { Accept: "application/vnd.github+json", "User-Agent": VENCORD_USER_AGENT },
-            signal: AbortSignal.timeout(30_000)
-        });
+        const release = await getLatestRelease();
         const version = release.tag_name.replace(/^core-v/, "");
         if (!/^core-v\d+\.\d+\.\d+$/.test(release.tag_name)) throw new Error("The latest release has an unsupported version.");
         const parts = version.split(".").map(Number);
@@ -70,8 +100,8 @@ async function listUpdates() {
         return [{ hash: release.target_commitish, author: "EvenCord", message: version + "\n" + release.body }];
     } catch (error) {
         status.phase = "error";
-        status.error = error instanceof Error ? error.message : String(error);
-        throw error;
+        status.error = formatUpdateError(error);
+        throw new Error(status.error);
     }
 }
 
@@ -160,8 +190,8 @@ async function downloadUpdate() {
         if (existsSync(temporary)) unlinkSync(temporary);
         if (IS_DISCORD_DESKTOP && existsSync(pointerTemporary)) unlinkSync(pointerTemporary);
         status.phase = "error";
-        status.error = error instanceof Error ? error.message : String(error);
-        throw error;
+        status.error = formatUpdateError(error);
+        throw new Error(status.error);
     }
 }
 

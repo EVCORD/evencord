@@ -174,15 +174,6 @@ async function runUpdateCheck() {
     } catch (error) {
         UpdateLogger.error("Failed to check for updates", error);
         updateRetry = setTimeout(runUpdateCheck, Math.min(15 * 60_000, 60_000 * 2 ** Math.min(updateFailures++, 4)));
-        if (UpdaterTab && notifiedUpdate !== "error") {
-            const tab = UpdaterTab;
-            notifiedUpdate = "error";
-            notifyUpdate({
-                title: "EvenCord update needs attention",
-                body: "Your current build is preserved. Click here for details.",
-                noPersist: true, useNative: false, onClick: () => openSettingsTabModal(tab)
-            });
-        }
     } finally { updateCheckRunning = false; }
 }
 
