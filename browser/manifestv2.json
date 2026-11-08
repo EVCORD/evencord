@@ -17,12 +17,8 @@
     "content_scripts": [
         {
             "run_at": "document_start",
-            "matches": [
-                "*://*.discord.com/*"
-            ],
-            "js": [
-                "content.js"
-            ],
+            "matches": ["*://*.discord.com/*"],
+            "js": ["content.js"],
             "all_frames": true,
             "world": "ISOLATED"
         },
@@ -39,9 +35,7 @@
         }
     ],
     "background": {
-        "scripts": [
-            "background.js"
-        ]
+        "scripts": ["background.js"]
     },
     "web_accessible_resources": [
         "dist/EvenCord.js",
@@ -53,13 +47,8 @@
             "id": "evencord@evcord.github.io",
             "strict_min_version": "128.0",
             "data_collection_permissions": {
-                "required": [
-                    "none"
-                ],
-                "optional": [
-                    "authenticationInfo",
-                    "locationInfo"
-                ]
+                "required": ["none"],
+                "optional": ["authenticationInfo", "locationInfo"]
             }
         }
     }
