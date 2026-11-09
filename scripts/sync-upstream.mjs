@@ -11,7 +11,7 @@ git("fetch", "--no-tags", "https://github.com/Equicord/Equicord.git", "main");
 const upstream = git("rev-parse", "FETCH_HEAD");
 const unchanged = spawnSync("git", ["merge-base", "--is-ancestor", upstream, "HEAD"]).status === 0;
 if (unchanged) { console.log("Equicord is already integrated."); process.exit(0); }
-const merge = spawnSync("git", ["merge", "--no-commit", "--no-ff", upstream], { stdio: "inherit" });
+const merge = spawnSync("git", ["-c", "merge.renormalize=true", "merge", "--no-commit", "--no-ff", upstream], { stdio: "inherit" });
 if (merge.status) {
     const conflicts = git("diff", "--name-only", "--diff-filter=U").split("\n");
     if (conflicts.some(file => file !== "package.json")) throw Error("Upstream has source conflicts. Resolve them before publishing.");

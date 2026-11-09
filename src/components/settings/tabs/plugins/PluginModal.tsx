@@ -21,12 +21,12 @@ import "./PluginModal.css";
 import { generateId } from "@api/Commands";
 import { hasAnyVisibleSettings, isSettingHidden } from "@api/PluginManager";
 import { useSettings } from "@api/Settings";
-import { BaseText } from "@components/BaseText";
 import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
+import { Text } from "@components/Text";
 import { debounce } from "@shared/debounce";
 import { gitRemote } from "@shared/vencordUserAgent";
 import { classNameFactory } from "@utils/css";
@@ -184,7 +184,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
             title={
                 <div className={cl("header")}>
                     <PluginSourceIcon plugin={plugin} className="vc-plugin-modal-source-icon" />
-                    <BaseText tag="h1" weight="semibold" size="lg">{plugin.name}</BaseText>
+                    <Text tag="h1" weight="semibold" size="lg">{plugin.name}</Text>
                 </div>
             }
             subtitle={
@@ -236,7 +236,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                 </section>
 
                 <section>
-                    <BaseText size="lg" weight="semibold" color="text-strong" className={classes(Margins.top16, Margins.bottom8)}>Settings</BaseText>
+                    <Text size="lg" weight="semibold" color="text-strong" className={classes(Margins.top16, Margins.bottom8)}>Settings</Text>
                     {renderSettings()}
                 </section>
             </div>
@@ -258,12 +258,12 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                                 )}
                             </Tooltip>
                         ) : <div />}
-                        {!pluginMeta.userPlugin && (
-                            <div className={cl("links")}>
-                                <FavoriteButton
-                                    isFavorite={pluginSettings.isFavorite ?? false}
-                                    onClick={() => pluginSettings.isFavorite = !pluginSettings.isFavorite}
-                                />
+                        <div className={cl("links")}>
+                            <FavoriteButton
+                                isFavorite={pluginSettings.isFavorite ?? false}
+                                onClick={() => pluginSettings.isFavorite = !pluginSettings.isFavorite}
+                            />
+                            {!pluginMeta.userPlugin && <>
                                 <WebsiteButton
                                     text="Website"
                                     href={source.website}
@@ -272,8 +272,8 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                                     text="Source Code"
                                     href={source.id === "esharq" ? source.website : `https://github.com/${gitRemote}/tree/main/${pluginMeta.folderName}`}
                                 />
-                            </div>
-                        )}
+                            </>}
+                        </div>
                     </Flex>
                 </Flex>
             </div>

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { BaseText } from "@components/BaseText";
+import { Text } from "@components/Text";
 
 interface StatsProps {
     totalStockPlugins: number;
@@ -15,16 +15,16 @@ interface StatsProps {
 export function StockPluginsCard({ totalStockPlugins, enabledStockPlugins, title = "Built-in plugins" }: StatsProps) {
     return (
         <div className="vc-plugin-stats vc-stockplugins-stats-card">
-            <BaseText size="md" weight="semibold">{title}</BaseText>
+            <Text size="md" weight="semibold">{title}</Text>
             <div className="vc-plugin-stats-card-container">
                 <div className="vc-plugin-stats-card-section">
-                    <BaseText size="sm">Enabled</BaseText>
-                    <BaseText size="xl" weight="bold">{enabledStockPlugins}</BaseText>
+                    <Text size="sm">Enabled</Text>
+                    <Text size="xl" weight="bold">{enabledStockPlugins}</Text>
                 </div>
                 <div className="vc-plugin-stats-card-divider" />
                 <div className="vc-plugin-stats-card-section">
-                    <BaseText size="sm">Available</BaseText>
-                    <BaseText size="xl" weight="bold">{totalStockPlugins}</BaseText>
+                    <Text size="sm">Available</Text>
+                    <Text size="xl" weight="bold">{totalStockPlugins}</Text>
                 </div>
             </div>
         </div>
