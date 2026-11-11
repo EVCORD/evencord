@@ -34,6 +34,7 @@ import { GuildMemberStore, React } from "@webpack/common";
 
 import { MacOSVibrancySettings } from "./MacVibrancySettings";
 import { NotificationSection } from "./NotificationSettings";
+import { openPlayground } from "./playground";
 import { WindowsMaterialSettings } from "./WindowsMaterialSettings";
 
 const cl = classNameFactory("vc-vencord-tab-");
@@ -237,6 +238,11 @@ function EquicordSettings() {
                         )
                     }
                 />
+                {IS_DEV && <QuickAction
+                    Icon={PaintbrushIcon}
+                    text="Open Component Playground"
+                    action={() => openPlayground()}
+                />}
             </QuickActionCard>
 
             <Divider className={Margins.top20} />

@@ -1,6 +1,6 @@
 {
     "name": "evencord",
-    "version": "1.1.22",
+    "version": "1.1.23",
     "private": "true",
     "description": "An open-source Discord client modification based on Equicord.",
     "homepage": "https://github.com/EVCORD/evencord#readme",
@@ -95,7 +95,7 @@
     "engines": {
         "node": ">=22"
     },
-    "packageManager": "pnpm@12.16.1",
+    "packageManager": "pnpm@12.18.0",
     "contributors": [
         "Equicord contributors",
         "Vendicated and Vencord contributors"
