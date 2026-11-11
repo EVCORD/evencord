@@ -19,30 +19,33 @@ async function fixture(t) {
     let bytes = payload;
     const release = {
         tag_name: "core-v1.1.1", body: "Upstream update", target_commitish: "a".repeat(40),
-        assets: [{ name: "desktop.asar", size: payload.length, digest: "sha256:" + crypto.createHash("sha256").update(payload).digest("hex"), browser_download_url: "https://github.com/alrimii/evencord/releases/download/core-v1.1.1/desktop.asar" }]
+        assets: [{ id: 123, name: "desktop.asar", size: payload.length, digest: "sha256:" + crypto.createHash("sha256").update(payload).digest("hex"), browser_download_url: "https://github.com/EVCORD/evencord/releases/download/core-v1.1.1/desktop.asar" }]
     };
     const result = await esbuild.build({
         entryPoints: [path.resolve(__dirname, "../src/main/updater/http.ts")], bundle: true, write: false, platform: "node", format: "cjs",
         define: { VERSION: '"1.1.0"', IS_DISCORD_DESKTOP: "true", IS_VESKTOP: "false", IS_EQUIBOP: "false", IS_UPDATER_DISABLED: "false" },
         plugins: [{ name: "fixtures", setup(build) {
-            build.onResolve({ filter: /^(?:@main\/utils\/(?:constants|http)|@shared\/(?:project|vencordUserAgent)|~git-remote|original-fs)$/ }, ({ path }) => ({ path, namespace: "fixture" }));
+            build.onResolve({ filter: /^(?:@main\/utils\/constants|@shared\/(?:project|vencordUserAgent)|~git-remote|original-fs)$/ }, ({ path }) => ({ path, namespace: "fixture" }));
             build.onLoad({ filter: /.*/, namespace: "fixture" }, ({ path: name }) => {
                 const sources = {
                     "@main/utils/constants": `export const DATA_DIR=${JSON.stringify(root)}`,
-                    "@main/utils/http": "export const fetchJson=()=>globalThis.__fixture.release; export const checkedFetch=()=>globalThis.__fixture.download()",
                     "@shared/project": 'export const Project={storage:{payload:"evencord.asar"},release:{coreAsset:"desktop.asar"}}',
                     "@shared/vencordUserAgent": 'export const VENCORD_USER_AGENT="Fixture"',
-                    "~git-remote": 'export default "alrimii/evencord"',
+                    "~git-remote": 'export default "EVCORD/evencord"',
                     "original-fs": 'export * from "node:fs"'
                 };
                 return { contents: sources[name] };
             });
         } }]
     });
-    globalThis.__fixture = { release, download() { downloads++; return new Response(bytes); } };
-    t.after(() => { delete globalThis.__fixture; });
+    const fetch = async url => {
+        if (url === "https://api.github.com/repos/EVCORD/evencord/releases/latest") return Response.json(release);
+        assert.equal(url, release.assets[0].browser_download_url);
+        downloads++;
+        return new Response(bytes);
+    };
     const module = { exports: {} };
-    new Function("require", "module", "exports", "__dirname", result.outputFiles[0].text)(require, module, module.exports, root);
+    new Function("require", "module", "exports", "__dirname", "fetch", result.outputFiles[0].text)(require, module, module.exports, root, fetch);
     const target = path.join(root, "evencord.asar");
     fs.writeFileSync(target, "previous payload");
     return { updater: module.exports.default, status: module.exports.getUpdateStatus, restart: module.exports.prepareUpdateRestart, release, payload, target, tamper(value) { bytes = value; }, downloads: () => downloads };

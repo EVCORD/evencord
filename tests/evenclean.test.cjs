@@ -90,16 +90,17 @@ test("an archived thread is skipped after one response instead of requesting eve
     assert.equal(f.calls.filter(c=>c.method==='del').length,1);assert.equal(f.cleaner.snapshot().skipped,2);
 });
 
-test("a stalled search times out, releases the panel and cannot insert late results", async () => {
-    let resolve;
-    const f = fixture({ request: () => new Promise(done => { resolve = done; }) });
+test("stalled search and history fallback time out without inserting late results", async () => {
+    const pending = [];
+    const f = fixture({ request: () => new Promise(done => { pending.push(done); }) });
     await f.preview();
     assert.equal(f.cleaner.snapshot().phase, "error");
     assert.match(f.cleaner.snapshot().error, /30 seconds/);
     assert.equal(f.cleaner.snapshot().requestPending, false);
     assert.equal(f.cleaner.busy(), false);
-    assert.equal(f.calls.length, 1);
-    resolve({ status: 200, body: { total_results: 1, messages: [[f.results[0]]] } });
+    assert.deepEqual(f.calls.map(call => call.url), [`/channels/${channel}/messages/search`, `/channels/${channel}/messages`]);
+    pending[0]({ status: 200, body: { total_results: 1, messages: [[f.results[0]]] } });
+    pending[1]({ status: 200, body: [f.results[0]] });
     await new Promise(done => setImmediate(done));
     assert.equal(f.cleaner.snapshot().requestPending, false);
     assert.equal(f.cleaner.snapshot().messages.length, 0);
