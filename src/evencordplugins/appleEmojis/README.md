@@ -1,6 +1,6 @@
 # AppleEmojis
 
-Enabled by default. Toggle it in EvenCord's plugin list. Disabling it immediately restores Discord's artwork. Custom server emojis are unchanged.
+Off by default. Enable it in EvenCord's plugin list to use Apple artwork. Existing saved preferences are respected. Disabling it immediately restores Discord's artwork. Custom server emojis are unchanged.
 
 Uses the Apple Emoji 17.0 artwork provided by [iamcal/emoji-data](https://github.com/iamcal/emoji-data/tree/e77759c296ed37beb0dbd63908b43d8619509c6d), whose documented source is macOS 26.4 beta 4. This is the newest Apple artwork in that source, not a guarantee of every subsequent iOS design revision.
 

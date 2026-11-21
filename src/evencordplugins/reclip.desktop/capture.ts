@@ -24,6 +24,8 @@ export async function capture(config: CaptureOptions, createMuxer: typeof create
     let hasClusterTime = false;
     let packets: Packet[] = [];
     let bytes = 0;
+    let queuedBytes = 0;
+    let nextKeyframeTime = Infinity;
     let lastTime = 0;
     let chain = Promise.resolve();
     let snapshot: ReturnType<typeof createReplayMuxer> | undefined;
@@ -96,9 +98,15 @@ export async function capture(config: CaptureOptions, createMuxer: typeof create
 
     function prune() {
         let first = 0;
-        for (let i = 0; i < packets.length; i++) {
-            const packet = packets[i];
-            if (packet.video && packet.key && packet.time <= lastTime - keepMs) first = i;
+        const cutoff = lastTime - keepMs;
+        if (cutoff >= nextKeyframeTime) {
+            nextKeyframeTime = Infinity;
+            for (let i = 1; i < packets.length; i++) {
+                const packet = packets[i];
+                if (!packet.video || !packet.key) continue;
+                if (packet.time <= cutoff) first = i;
+                else nextKeyframeTime = Math.min(nextKeyframeTime, packet.time);
+            }
         }
         if (first) {
             for (let i = 0; i < first; i++) bytes -= packets[i].data.length;
@@ -179,11 +187,13 @@ export async function capture(config: CaptureOptions, createMuxer: typeof create
                         throw new Error("Invalid WebM frame timing.");
                     const relative = new DataView(block.buffer, block.byteOffset + track.length, 2).getInt16(0);
                     const time = (clusterTime + relative) * scale;
-                    packets.push({
+                    const packet = {
                         time, video: track.value === videoTrack,
                         key: item.id === 0xa3 ? (block[track.length + 2] & 0x80) !== 0 : key,
                         data: body.slice(), timingOffset: block.byteOffset - body.byteOffset + track.length, id: item.id
-                    });
+                    };
+                    if (packets.length && packet.video && packet.key) nextKeyframeTime = Math.min(nextKeyframeTime, time);
+                    packets.push(packet);
                     bytes += body.length;
                     lastTime = Math.max(lastTime, time);
                 }
@@ -323,8 +333,20 @@ export async function capture(config: CaptureOptions, createMuxer: typeof create
         const options = { mimeType, videoBitsPerSecond: config.bitrate, audioBitsPerSecond: 128_000, videoKeyFrameIntervalDuration: 2000 };
         recorder = new MediaRecorder(mixed, options);
         recorder.ondataavailable = event => {
+            if (error) return;
+            const { data } = event;
+            if (queuedBytes + data.size > 32 * 1024 * 1024) {
+                fail("The video encoder is producing data faster than it can be buffered. Try a lower recording quality.");
+                return;
+            }
+            queuedBytes += data.size;
             chain = chain.then(async () => {
-                if (event.data.size && !error) append(new Uint8Array(await event.data.arrayBuffer()));
+                try {
+                    if (data.size && !error) {
+                        const chunk = await data.arrayBuffer();
+                        if (!error) append(new Uint8Array(chunk));
+                    }
+                } finally { queuedBytes -= data.size; }
             }).catch(reason => fail(reason instanceof Error ? reason.message : "Could not read encoded video."));
             const resolve = flush;
             flush = undefined;
