@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-11-22T10:05:50.258Z",
+  "updatedAt": "2026-11-22T11:03:36.105Z",
   "firstUpdatedAt": "2026-10-31T13:41:54.638Z",
   "metric": "Installer asset downloads, not unique users",
   "source": "https://github.com/EVCORD/evencord-installer/releases",
   "downloads": {
-    "total": 239,
+    "total": 240,
     "windows": 123,
     "macos": 33,
-    "linux": 83
+    "linux": 84
   },
   "latestRelease": "core-v1.1.27",
   "assets": [
@@ -44,7 +44,7 @@
     {
       "release": "installer-v1.1.2",
       "name": "EvenCord-cli-linux",
-      "downloads": 5
+      "downloads": 6
     },
     {
       "release": "installer-v1.1.2",
