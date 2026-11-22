@@ -1,20 +1,20 @@
 {
-  "updatedAt": "2026-11-22T09:06:08.213Z",
+  "updatedAt": "2026-11-22T10:05:50.258Z",
   "firstUpdatedAt": "2026-10-31T13:41:54.638Z",
   "metric": "Installer asset downloads, not unique users",
   "source": "https://github.com/EVCORD/evencord-installer/releases",
   "downloads": {
-    "total": 237,
+    "total": 239,
     "windows": 123,
     "macos": 33,
-    "linux": 81
+    "linux": 83
   },
   "latestRelease": "core-v1.1.27",
   "assets": [
     {
       "release": "installer-v1.1.2",
       "name": "EvenCord",
-      "downloads": 4
+      "downloads": 5
     },
     {
       "release": "installer-v1.1.2",
@@ -69,7 +69,7 @@
     {
       "release": "installer-v1.1.2",
       "name": "EvenCord-wayland",
-      "downloads": 3
+      "downloads": 4
     },
     {
       "release": "installer-v1.1.2",
